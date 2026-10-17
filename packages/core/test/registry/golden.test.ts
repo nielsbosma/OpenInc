@@ -24,7 +24,7 @@ describe('golden fixture: Swedish AB history', () => {
     const end = exportsAt(items);
     await expect(end.csv).toMatchFileSnapshot('./fixtures/__golden__/se-history.register.csv');
     await expect(exportsAt(items, '2022-12-31').csv).toMatchFileSnapshot('./fixtures/__golden__/se-history.2022-12-31.csv');
-    await expect(end.json).toMatchFileSnapshot('./fixtures/__golden__/se-history.ledger.json');
+    await expect(end.json).toMatchFileSnapshot('./fixtures/__golden__/se-history.ledger.txt');
   });
 
   it('gives identical exports whatever order the transactions are loaded in', () => {
