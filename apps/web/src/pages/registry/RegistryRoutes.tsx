@@ -17,17 +17,20 @@ import { cn } from '@/lib/utils';
 import { ClassesTab } from './ClassesTab';
 import { useRegistryStatus } from './common';
 import { HolderPage } from './HolderPage';
+import { ImportReview } from './ImportReview';
+import { ImportTab } from './ImportTab';
 import { RegisterTab } from './RegisterTab';
 import { RegistrySettingsForm } from './RegistrySettingsForm';
 import { TransactionPage } from './TransactionPage';
 import { TransactionsTab } from './TransactionsTab';
 import { TransactionWizard } from './wizard/TransactionWizard';
 
-const TABS = [
+const TABS: { to: string; label: string; end?: boolean; permission?: 'registry.manage' | 'registry.draft' }[] = [
   { to: '/registry', label: 'Register', end: true },
   { to: '/registry/transactions', label: 'Transactions' },
   { to: '/registry/classes', label: 'Classes' },
-  { to: '/registry/settings', label: 'Settings', permission: 'registry.manage' as const },
+  { to: '/registry/import', label: 'Import', permission: 'registry.draft' },
+  { to: '/registry/settings', label: 'Settings', permission: 'registry.manage' },
 ];
 
 const NEW_TYPES: { type: TransactionType; group: string }[] = [
@@ -164,6 +167,8 @@ export function RegistryRoutes() {
         <Route path="transactions/:id" element={<TransactionPage />} />
         <Route path="holders/:id" element={<HolderPage />} />
         <Route path="classes" element={<ClassesTab />} />
+        <Route path="import" element={<ImportTab />} />
+        <Route path="import/:id" element={<ImportReview />} />
         <Route path="settings" element={<RegistrySettingsForm />} />
         <Route
           path="*"

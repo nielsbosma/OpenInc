@@ -13,6 +13,7 @@ export { initErrorTracking, reportError } from './lib/sentry.ts';
 export { getObjectBuffer, getObjectStream } from './lib/storage.ts';
 export * from './oauth.ts';
 export * as registryExports from './registry/exports-files.ts';
+export { runImport as runRegistryImport } from './registry/import/run.ts';
 export { runRegistryChainCheck } from './registry/jobs.ts';
 export * from './registry.ts';
 export * from './service.ts';

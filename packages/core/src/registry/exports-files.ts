@@ -302,7 +302,7 @@ export async function registerExport(
       { header: t.holder, width: 4 },
       { header: t.id, width: 3, mono: true },
       { header: t.address, width: 4 },
-      { header: t.class, width: 1.3 },
+      { header: t.class, width: 2 },
       { header: t.count, width: 2, align: 'right' },
       { header: t.numbers, width: 4, mono: true },
       { header: t.capitalPct, width: 1.8, align: 'right' },

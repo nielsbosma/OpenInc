@@ -9,6 +9,7 @@ import {
   notify,
   runDataMigrations,
   runRegistryChainCheck,
+  runRegistryImport,
   systemCtx,
 } from '@openinc/core';
 import { auditLog, loginChallenges, lt, oauthCodes, passwordResetTokens } from '@openinc/db';
@@ -61,6 +62,8 @@ export const handlers: Handlers = {
   },
 
   'registry.verifyChain': () => runRegistryChainCheck(systemCtx('worker')),
+
+  'registry.import': ({ importId }) => runRegistryImport(systemCtx('worker'), importId),
 };
 
 export const schedules: { name: JobName; cron: string }[] = [

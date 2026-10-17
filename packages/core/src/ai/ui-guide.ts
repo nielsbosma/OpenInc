@@ -74,7 +74,7 @@ export const uiGuide: GuideEntry[] = [
     where: 'Sidebar → **Share Register**',
     permission: 'registry.read',
     summary:
-      'The share register (aktiebok): holders, classes, share numbers, votes and capital percentages as of any date, every transaction behind it, and exports. Tabs: **Register**, **Transactions**, **Classes**, **Settings**. Every change is a transaction: prepared as a draft, checked against the whole history, then committed by the board, after which it never changes (mistakes are fixed with **Reverse**).',
+      'The share register (aktiebok): holders, classes, share numbers, votes and capital percentages as of any date, every transaction behind it, and exports. Tabs: **Register**, **Transactions**, **Classes**, **Import**, **Settings**. Every change is a transaction: prepared as a draft, checked against the whole history, then committed by the board, after which it never changes (mistakes are fixed with **Reverse**).',
     tasks: [
       {
         task: 'Set up the share register',
@@ -127,6 +127,12 @@ export const uiGuide: GuideEntry[] = [
         steps:
           'Open it and click **Reverse**, give a reason, then enter the right transaction. If a later transaction depends on it, the reversal is refused and the conflict is named.',
         permission: 'registry.commit',
+      },
+      {
+        task: 'Import an existing register from a spreadsheet or PDF',
+        steps:
+          'Open **Import**, click **Upload a File** and pick an XLSX, XLS, CSV or PDF. When it is **Ready for Review**, click each row to see its cell or line in the file on the right, correct anything, click **Check Again**, then **Create Drafts**. Nothing is entered until the drafts are committed (or **Commit All in Order**).',
+        permission: 'registry.draft',
       },
       {
         task: 'Download the register',

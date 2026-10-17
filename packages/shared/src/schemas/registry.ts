@@ -413,3 +413,66 @@ export const reverseTransactionInput = z.object({
 });
 
 export const searchHoldersInput = z.object({ search: z.string().trim().max(200).default('') });
+
+/** Where in the uploaded file a value came from: a spreadsheet cell, or a PDF page and line. */
+export const importSource = z.object({
+  sheet: z.string().nullable(),
+  cell: z.string().nullable(),
+  page: z.number().int().nullable(),
+  line: z.number().int().nullable(),
+});
+export type ImportSource = z.output<typeof importSource>;
+
+const sourced = { source: importSource, confidence: z.number().min(0).max(1) };
+
+/**
+ * What the AI import asks the model for. Every field is required (null when unknown) so the same
+ * schema works with every provider's structured output. Values stay strings until validation.
+ */
+export const importExtraction = z.object({
+  company: z.object({
+    name: z.string().nullable(),
+    nationalNumber: z.string().nullable(),
+    shareCapital: z.string().nullable(),
+    currency: z.string().nullable(),
+    asOfDate: z.string().nullable(),
+    ...sourced,
+  }),
+  classes: z.array(z.object({ code: z.string(), votesPerShare: z.string(), ...sourced })),
+  holders: z.array(
+    z.object({
+      ref: z.string(),
+      kind: z.enum(HOLDER_KINDS),
+      name: z.string(),
+      nationalId: z.string(),
+      country: z.string(),
+      address: z.string(),
+      ...sourced,
+    }),
+  ),
+  mode: z.enum(['snapshot', 'history']),
+  holdings: z.array(z.object({ holderRef: z.string(), classCode: z.string(), count: z.string(), shareNumbers: z.string(), ...sourced })),
+  events: z.array(
+    z.object({
+      date: z.string(),
+      type: z.enum(['incorporation', 'new_issue', 'transfer', 'split', 'other']),
+      fromRef: z.string().nullable(),
+      toRef: z.string().nullable(),
+      classCode: z.string(),
+      count: z.string(),
+      shareNumbers: z.string(),
+      pricePerShare: z.string().nullable(),
+      ratio: z.number().nullable(),
+      description: z.string(),
+      ...sourced,
+    }),
+  ),
+  notes: z.array(z.string()),
+});
+export type ImportExtraction = z.output<typeof importExtraction>;
+
+export const IMPORT_TYPES = /\.(xlsx|xls|csv|pdf)$/i;
+
+export const startImportInput = z.object({ fileId: z.uuid() });
+export const importIdInput = z.object({ importId: z.uuid() });
+export const updateImportInput = z.object({ importId: z.uuid(), extraction: importExtraction });
