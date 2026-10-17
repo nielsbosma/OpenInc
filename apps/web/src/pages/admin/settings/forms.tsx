@@ -370,10 +370,11 @@ export function AiForm({ wizard, onSaved, onSkip }: FormProps) {
 
   const refreshModels = () => models.mutate({ settings: draft() as never });
   // Load the provider's own list once its connection details are known; the key itself stays on the server.
+  // Waits until the form holds the saved values; before that the draft has no provider and the call is refused.
   // biome-ignore lint/correctness/useExhaustiveDependencies: refetch only when the connection changes
   useEffect(() => {
-    if (view) refreshModels();
-  }, [view, provider, keySet]);
+    if (view && values.provider) refreshModels();
+  }, [view, values.provider, keySet]);
 
   const options = useMemo(() => {
     const list = models.data?.models.length ? models.data.models : AI_CURATED_MODELS[provider];
