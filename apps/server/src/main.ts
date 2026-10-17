@@ -1,3 +1,4 @@
+import { createServer } from 'node:http';
 import {
   boot,
   closeDb,
@@ -36,6 +37,13 @@ if (runsWeb) {
   const server = await listen(createApp(), port);
   console.log(`[openinc] ${getSystemStatus().version} listening on :${port} (role ${role})`);
   process.on('SIGTERM', () => server.close());
+} else {
+  // Hosts health-check every service over HTTP, so a worker-only container still answers /api/health.
+  createServer((_req, res) => {
+    const status = getSystemStatus();
+    res.writeHead(200, { 'content-type': 'application/json' }).end(JSON.stringify({ ok: true, role, phase: status.phase }));
+  }).listen(port);
+  console.log(`[openinc] ${getSystemStatus().version} worker, health on :${port}`);
 }
 
 onReady(async () => {
