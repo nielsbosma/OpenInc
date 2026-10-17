@@ -19,7 +19,10 @@ export const password = z
 
 export const personName = z.string().trim().min(1, 'Enter a name').max(120);
 
-export const totpCode = z.string().trim().regex(/^\d{6}$/, 'Enter the 6-digit code');
+export const totpCode = z
+  .string()
+  .trim()
+  .regex(/^\d{6}$/, 'Enter the 6-digit code');
 
 /** A TOTP code or a recovery code (xxxxx-xxxxx). */
 export const secondFactorCode = z

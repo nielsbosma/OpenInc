@@ -1,6 +1,14 @@
 import pg from 'pg';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { DatabaseTooNewError, MigrationFailedError, compareVersions, loadMigrations, migrate, planMigrations, type Migration } from './migrator.ts';
+import {
+  compareVersions,
+  DatabaseTooNewError,
+  loadMigrations,
+  type Migration,
+  MigrationFailedError,
+  migrate,
+  planMigrations,
+} from './migrator.ts';
 
 const adminUrl = process.env.TEST_DATABASE_URL ?? 'postgres://openinc:openinc@localhost:5470/openinc_test';
 const dbName = 'openinc_migrator_test';
@@ -102,7 +110,12 @@ describe.runIf(await reachable())('migrate (database)', () => {
 
   it('rolls a failing migration back completely', async () => {
     const all = [...loadMigrations(), { idx: 99, tag: '0099_extra', hash: 'x', statements: [] }];
-    const broken: Migration = { idx: 100, tag: '0100_broken', hash: 'y', statements: ['create table half_done (id int)', 'select * from nope'] };
+    const broken: Migration = {
+      idx: 100,
+      tag: '0100_broken',
+      hash: 'y',
+      statements: ['create table half_done (id int)', 'select * from nope'],
+    };
     const error = await migrate({ connectionString: url, appVersion: '1.2.0', migrations: [...all, broken] }).catch((e) => e);
     expect(error).toBeInstanceOf(MigrationFailedError);
     const exists = await withClient((c) => c.query(`select to_regclass('public.half_done') as t`));

@@ -44,6 +44,9 @@ export const emailSettings = z.object({
   fromName: text().default(''),
 });
 
+/** Secrets are optional on input: left out means keep the stored value. */
+const emailSettingsInput = emailSettings.extend({ password: z.string().max(500).optional() });
+
 export const AI_PROVIDERS = ['anthropic', 'openai', 'openai-compatible'] as const;
 export type AiProvider = (typeof AI_PROVIDERS)[number];
 
@@ -119,7 +122,7 @@ export const getSettingsInput = z.object({ group: z.enum(EDITABLE_GROUPS) });
  */
 export const updateSettingsInput = z.discriminatedUnion('group', [
   z.object({ group: z.literal('company'), values: companySettings }),
-  z.object({ group: z.literal('email'), values: emailSettings.partial({ password: true }) }),
+  z.object({ group: z.literal('email'), values: emailSettingsInput }),
   z.object({ group: z.literal('ai'), values: aiSettingsInput }),
   z.object({ group: z.literal('errorTracking'), values: errorTrackingSettings }),
   z.object({ group: z.literal('security'), values: securitySettings }),
@@ -130,7 +133,7 @@ export const clearSettingsInput = z.object({ group: z.enum(['email', 'ai', 'erro
 
 export const testEmailInput = z.object({
   to: z.email().optional().describe('Defaults to your own address'),
-  settings: emailSettings.partial({ password: true }).optional().describe('Unsaved settings to test; saved ones are used when left out'),
+  settings: emailSettingsInput.optional().describe('Unsaved settings to test; saved ones are used when left out'),
 });
 
 export const testAiInput = z.object({

@@ -2,8 +2,9 @@ import { drizzle, type NodePgDatabase } from 'drizzle-orm/node-postgres';
 import pg from 'pg';
 import * as schema from './schema/index.ts';
 
-export * from './schema/index.ts';
+export * from 'drizzle-orm';
 export * from './migrator.ts';
+export * from './schema/index.ts';
 export { schema };
 
 export type Database = NodePgDatabase<typeof schema> & { $client: pg.Pool };

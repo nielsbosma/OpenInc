@@ -21,7 +21,12 @@
       "recommended": true,
       "style": { "noNonNullAssertion": "off", "noParameterAssign": "off" },
       "suspicious": { "noExplicitAny": "warn", "noArrayIndexKey": "off" },
-      "a11y": { "noAutofocus": "off", "useKeyWithClickEvents": "off", "noStaticElementInteractions": "off", "noLabelWithoutControl": "off" },
+      "a11y": {
+        "noAutofocus": "off",
+        "useKeyWithClickEvents": "off",
+        "noStaticElementInteractions": "off",
+        "noLabelWithoutControl": "off"
+      },
       "correctness": { "useExhaustiveDependencies": "warn" }
     }
   }

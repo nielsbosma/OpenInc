@@ -1,0 +1,39 @@
+{
+  "name": "@openinc/core",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "seed": "tsx src/cli/seed.ts",
+    "reset": "tsx src/cli/reset.ts",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@ai-sdk/anthropic": "^4.0.82",
+    "@ai-sdk/openai": "^4.0.96",
+    "@ai-sdk/openai-compatible": "^3.0.71",
+    "@ai-sdk/provider": "^4.0.29",
+    "@aws-sdk/client-s3": "^3.1152.0",
+    "@aws-sdk/lib-storage": "^3.1152.0",
+    "@openinc/db": "workspace:^",
+    "@openinc/shared": "workspace:^",
+    "@sentry/node": "^11.8.0",
+    "ai": "^7.0.143",
+    "nodemailer": "^10.1.2",
+    "pg": "^8.23.1",
+    "pg-boss": "^12.38.0",
+    "qrcode": "^1.5.4",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/nodemailer": "^8.0.2",
+    "@types/pg": "^8.23.1",
+    "@types/qrcode": "^1.5.6",
+    "tsx": "^4.23.15",
+    "vitest": "^5.0.5"
+  }
+}

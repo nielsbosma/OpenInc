@@ -102,11 +102,20 @@ export async function planMigrations(client: pg.ClientBase, migrations = loadMig
 }
 
 export function requiredVersion(unknown: AppliedMigration[]): string {
-  return unknown.map((u) => u.appVersion).sort(compareVersions).at(-1) ?? 'a newer version';
+  return (
+    unknown
+      .map((u) => u.appVersion)
+      .sort(compareVersions)
+      .at(-1) ?? 'a newer version'
+  );
 }
 
 export function compareVersions(a: string, b: string): number {
-  const parse = (v: string) => v.replace(/^v/, '').split(/[.-]/).map((p) => (/^\d+$/.test(p) ? Number(p) : p));
+  const parse = (v: string) =>
+    v
+      .replace(/^v/, '')
+      .split(/[.-]/)
+      .map((p) => (/^\d+$/.test(p) ? Number(p) : p));
   const pa = parse(a);
   const pb = parse(b);
   for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
@@ -125,7 +134,9 @@ export interface MigrateOptions {
   migrations?: Migration[];
   /** Runs before the first pending migration when the database already has migrations. Return the backup's name. */
   backup?: () => Promise<string | null>;
-  onProgress?: (event: { type: 'plan'; pending: string[] } | { type: 'backup'; key: string | null } | { type: 'start' | 'done'; tag: string }) => void;
+  onProgress?: (
+    event: { type: 'plan'; pending: string[] } | { type: 'backup'; key: string | null } | { type: 'start' | 'done'; tag: string },
+  ) => void;
 }
 
 /**

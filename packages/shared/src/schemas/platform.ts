@@ -28,7 +28,12 @@ export const fileIdInput = z.object({ fileId: id });
 export const chatThreadIdInput = z.object({ threadId: id });
 
 export const helpUiInput = z.object({
-  query: z.string().trim().max(200).optional().describe('What the user wants to do, e.g. "invite someone" or "two-factor". Leave out for the whole guide.'),
+  query: z
+    .string()
+    .trim()
+    .max(200)
+    .optional()
+    .describe('What the user wants to do, e.g. "invite someone" or "two-factor". Leave out for the whole guide.'),
 });
 
 export const setupCodeInput = z.object({ code: z.string().trim().min(1, 'Enter the setup code').max(40) });
