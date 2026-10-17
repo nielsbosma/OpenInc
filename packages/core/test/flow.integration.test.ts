@@ -1,6 +1,9 @@
 import { auditLog, eq, settings, sql } from '@openinc/db';
+import { generateText, stepCountIs } from 'ai';
+import { MockLanguageModelV4 } from 'ai/test';
 import pg from 'pg';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { buildTools } from '../src/ai/tools.ts';
 import { loadActor, resolveSession } from '../src/auth/sessions.ts';
 import { closeDb, createCtx, getDb } from '../src/context.ts';
 import { getEnv } from '../src/env.ts';
@@ -152,6 +155,34 @@ describe.runIf(await reachable())('first run, settings and invites (database)', 
       code: 'FORBIDDEN',
     });
     expect(await invoke(services.invites.list, admin, {})).toHaveLength(0);
+  });
+
+  it('gives the assistant tools that run as the user', async () => {
+    const usage = { inputTokens: { total: 1 }, outputTokens: { total: 1 } };
+    let call = 0;
+    const model = new MockLanguageModelV4({
+      doGenerate: async () =>
+        (call++ === 0
+          ? {
+              content: [{ type: 'tool-call', toolCallId: 't1', toolName: 'users_list', input: '{}' }],
+              finishReason: { unified: 'tool-calls', raw: 'tool_calls' },
+              usage,
+              warnings: [],
+            }
+          : {
+              content: [{ type: 'text', text: 'Two people.' }],
+              finishReason: { unified: 'stop', raw: 'stop' },
+              usage,
+              warnings: [],
+            }) as never,
+    });
+    const memberTools = buildTools(member);
+    expect(Object.keys(memberTools)).toContain('users_list');
+    expect(Object.keys(memberTools)).not.toContain('settings_update');
+    const result = await generateText({ model, tools: memberTools, prompt: 'Who is here?', stopWhen: stepCountIs(3) });
+    expect(result.text).toBe('Two people.');
+    const output = result.steps[0]!.toolResults[0]!.output as { items: { email: string }[] };
+    expect(output.items.map((u) => u.email)).toEqual(expect.arrayContaining(['ada@example.com', 'max@example.com']));
   });
 
   it('keeps at least one active admin', async () => {
