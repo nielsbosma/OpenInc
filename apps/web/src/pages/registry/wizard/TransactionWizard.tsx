@@ -20,14 +20,14 @@ import { cn } from '@/lib/utils';
 import { parseRanges, today, useHolderOptions, useRegistryStatus } from '../common';
 import { Documents } from '../Documents';
 import type { Draft, FormContext } from './fields';
-import { StepFields } from './forms';
+import { NEW_CLASS, StepFields } from './forms';
 import { Preview } from './Preview';
 
 const restrictionsOff = { consent: false, preEmption: false, firstRefusal: false };
 
 function blank(type: TransactionType, search: URLSearchParams): Draft {
   const base = { type, effectiveDate: today(), decisionDate: null, registrationDate: null, note: '', holders: [] };
-  const classes = [{ code: 'A', name: '', votesPerShare: '1', nominalPerShare: null, restrictions: restrictionsOff }];
+  const classes = [{ ...NEW_CLASS, code: 'A', restrictions: restrictionsOff }];
   switch (type) {
     case 'incorporation':
       return { ...base, shareCapital: undefined, classes, allocations: [{ holderId: '', classCode: 'A', count: '' }] };
@@ -67,6 +67,8 @@ function blank(type: TransactionType, search: URLSearchParams): Draft {
       };
     case 'pledge_release':
       return { ...base, pledgeId: '' };
+    case 'class_change':
+      return { ...base, classes: [] };
     case 'reversal':
       return { ...base, reversesId: search.get('of') ?? '', reason: '' };
   }
@@ -140,12 +142,17 @@ export function TransactionWizard() {
       <PageHeader
         title={`${params.id ? 'Edit' : 'New'} ${TRANSACTION_LABELS[type]}`}
         description={
-          <Link
-            to={draftId ? `/registry/transactions/${draftId}` : '/registry'}
-            className="inline-flex items-center gap-1 text-xs hover:text-foreground"
-          >
-            <ArrowLeft className="size-3" /> Share Register
-          </Link>
+          <>
+            <Link
+              to={draftId ? `/registry/transactions/${draftId}` : '/registry'}
+              className="inline-flex items-center gap-1 text-xs hover:text-foreground"
+            >
+              <ArrowLeft className="size-3" /> Share Register
+            </Link>
+            {existing.data?.origin && (
+              <span className="ml-3 text-xs">Prepared in {existing.data.origin.label || existing.data.origin.module}</span>
+            )}
+          </>
         }
       />
       <div className="grid gap-6 lg:grid-cols-[12rem_1fr]">

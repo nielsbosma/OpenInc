@@ -223,7 +223,9 @@ export function TransactionPage() {
               <Fact label="Entered">
                 {t.enteredAt ? `${format.dateTime(t.enteredAt)}${t.committedByName ? ` by ${t.committedByName}` : ''}` : ''}
               </Fact>
-              <Fact label="Prepared By">{t.createdByName}</Fact>
+              <Fact label="Prepared By">
+                {[t.createdByName, t.origin && `in ${t.origin.label || t.origin.module}`].filter(Boolean).join(' ')}
+              </Fact>
               {t.reversedBy && (
                 <Fact label="Reversed By">
                   <Link to={`/registry/transactions/${t.reversedBy.id}`} className="text-primary hover:underline">

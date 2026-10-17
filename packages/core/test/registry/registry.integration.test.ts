@@ -93,6 +93,22 @@ describe.runIf(await reachable())('share register (database)', () => {
     expect(after.holders.find((h) => h.holderId === H.cecilia)?.shares).toBe(20000n);
   });
 
+  it('lets another module prepare a draft that a person commits in the wizard', async () => {
+    const d = await invoke(services.registry.draftTransaction, member, {
+      transaction: {
+        type: 'class_change',
+        effectiveDate: '2024-05-01',
+        registrationDate: '2024-05-01',
+        classes: [{ code: 'P', liqPrefMultiple: '1', seniorityRank: 1 }],
+      },
+      origin: { module: 'cap-table', reference: 'scenario-7', label: 'Cap Table: Series A' },
+    });
+    expect(d.status).toBe('draft');
+    expect(d.url).toBe(`/registry/transactions/${d.id}/edit`);
+    expect(d.origin).toEqual({ module: 'cap-table', reference: 'scenario-7', label: 'Cap Table: Series A' });
+    await invoke(services.registry.deleteDraft, member, { transactionId: d.id });
+  });
+
   it('blocks a backdated transaction that breaks a later one, naming it', async () => {
     const d = await draft(member, {
       type: 'transfer',

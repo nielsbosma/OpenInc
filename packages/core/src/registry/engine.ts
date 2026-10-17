@@ -232,6 +232,9 @@ export class Ledger {
       case 'pledge_release':
         this.applyPledgeRelease(tx);
         break;
+      case 'class_change':
+        this.applyClassChange(tx);
+        break;
     }
     this.checkInvariants();
     const last = this.capitalHistory.at(-1);
@@ -464,14 +467,7 @@ export class Ledger {
     for (const def of tx.classes) {
       if (seen.has(def.code)) fail('DUPLICATE_CLASS', `Share class ${def.code} is listed twice`);
       seen.add(def.code);
-      if (this.config.settings.capitalMode === 'nominal' && def.nominalPerShare === null)
-        fail('NOMINAL_REQUIRED', `Share class ${def.code} needs a nominal value per share`);
-      this.classes.set(def.code, {
-        def,
-        issued: 0n,
-        nominal: this.config.settings.capitalMode === 'nominal' && def.nominalPerShare !== null ? parseDec(def.nominalPerShare) : null,
-        fromTx: this.current.id,
-      });
+      this.addClass(def);
     }
     this.shareCapital = toBig(tx.shareCapital);
     const entries =
@@ -538,6 +534,42 @@ export class Ledger {
           toDate: null,
         });
       });
+    }
+  }
+
+  private checkClassTerms(def: ShareClassDef) {
+    if (def.participation === 'capped' && def.liqPrefCapMultiple === null)
+      fail('PARTICIPATION_CAP_REQUIRED', `Share class ${def.code} participates up to a cap: give the cap as a multiple`);
+    if (def.liqPrefCapMultiple !== null && parseDec(def.liqPrefCapMultiple) < parseDec(def.liqPrefMultiple))
+      fail('PARTICIPATION_CAP_BELOW_PREFERENCE', `Share class ${def.code}: the cap is below the liquidation preference`);
+  }
+
+  private addClass(def: ShareClassDef) {
+    this.checkClassTerms(def);
+    if (this.config.settings.capitalMode === 'nominal' && def.nominalPerShare === null)
+      fail('NOMINAL_REQUIRED', `Share class ${def.code} needs a nominal value per share`);
+    this.classes.set(def.code, {
+      def,
+      issued: 0n,
+      nominal: this.config.settings.capitalMode === 'nominal' && def.nominalPerShare !== null ? parseDec(def.nominalPerShare) : null,
+      fromTx: this.current.id,
+    });
+  }
+
+  /** New classes start with no shares; existing ones keep their shares and nominal value and get the new terms. */
+  private applyClassChange(tx: Extract<RegistryTransaction, { type: 'class_change' }>) {
+    const seen = new Set<string>();
+    for (const def of tx.classes) {
+      if (seen.has(def.code)) fail('DUPLICATE_CLASS', `Share class ${def.code} is listed twice`);
+      seen.add(def.code);
+      const existing = this.classes.get(def.code);
+      if (!existing) {
+        this.addClass(def);
+        continue;
+      }
+      this.checkClassTerms(def);
+      existing.def = { ...def, nominalPerShare: existing.def.nominalPerShare };
+      existing.fromTx = this.current.id;
     }
   }
 

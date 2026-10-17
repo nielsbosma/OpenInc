@@ -43,6 +43,7 @@ const NEW_TYPES: { type: TransactionType; group: string }[] = [
   { type: 'bonus_issue', group: 'Capital' },
   { type: 'split', group: 'Capital' },
   { type: 'reverse_split', group: 'Capital' },
+  { type: 'class_change', group: 'Capital' },
 ];
 
 export function NewTransactionMenu({ initialized }: { initialized: boolean }) {

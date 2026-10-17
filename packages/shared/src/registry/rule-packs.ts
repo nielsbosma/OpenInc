@@ -116,6 +116,8 @@ function genericSteps(type: TransactionType, registrationWaits: boolean): Wizard
       return [decision, { key: 'details', label: 'Terms' }, registration, documents, review];
     case 'registration':
       return [registration, documents, review];
+    case 'class_change':
+      return [decision, { key: 'details', label: 'Class Terms' }, registration, documents, review];
     case 'pledge':
       return [{ key: 'parties', label: 'Pledgee' }, { key: 'shares', label: 'Shares' }, documents, review];
     case 'pledge_release':
@@ -200,7 +202,7 @@ export const seAbl: RulePack = {
     registrationAuthority: 'Bolagsverket',
   },
   interimUntilRegistered: ['new_issue'],
-  registrationRequired: ['bonus_issue', 'split', 'reverse_split'],
+  registrationRequired: ['bonus_issue', 'split', 'reverse_split', 'class_change'],
   steps: (type) => genericSteps(type, true),
   checkHolder(holder) {
     const out: Violation[] = [];

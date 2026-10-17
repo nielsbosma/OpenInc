@@ -142,6 +142,9 @@ function txDto(row: TxRow, extra: { names?: Map<string, string>; documents?: num
     approvedBy: row.approvedBy,
     submittedAt: row.submittedAt,
     documents: extra.documents ?? 0,
+    origin: row.origin ?? null,
+    /** Where a person reviews and commits it: the wizard while it is a draft. */
+    url: isDraftStatus(row.status) ? `/registry/transactions/${row.id}/edit` : `/registry/transactions/${row.id}`,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
   };
@@ -497,7 +500,7 @@ async function checkHolderList(tx: RegistryTransaction) {
 export const createDraft = defineService({
   name: 'registry.draftTransaction',
   description:
-    'Save a share register transaction as a draft (incorporation, opening balance, transfer, holder details change, new issue, registration, bonus issue, split, reverse split, pledge, pledge release or reversal). Drafts change nothing; validate shows what it would do and a board member commits it.',
+    'Save a share register transaction as a draft (incorporation, opening balance, transfer, holder details change, new issue, registration, bonus issue, split, reverse split, pledge, pledge release, class terms change or reversal). Drafts change nothing; validate shows what it would do and a person commits it in the wizard at the returned url. Other modules (e.g. the cap table) pass origin so the draft shows where it came from.',
   kind: 'mutation',
   access: 'registry.draft',
   input: draftTransactionInput,
@@ -511,6 +514,7 @@ export const createDraft = defineService({
         ...columnsFor(input.transaction),
         status: 'draft',
         summary: input.summary ?? summarize(input.transaction, names),
+        origin: input.origin ?? null,
         createdBy: ctx.actor!.userId,
       })
       .returning();
@@ -518,7 +522,7 @@ export const createDraft = defineService({
       action: 'registry.draft_create',
       entityType: 'registry_transaction',
       entityId: row!.id,
-      after: { type: row!.type, summary: row!.summary, effectiveDate: row!.effectiveDate },
+      after: { type: row!.type, summary: row!.summary, effectiveDate: row!.effectiveDate, origin: row!.origin },
     });
     return txDto(row!);
   },

@@ -129,6 +129,12 @@ export const uiGuide: GuideEntry[] = [
         permission: 'registry.commit',
       },
       {
+        task: 'Add a share class or change its rights',
+        steps:
+          'On **Classes**, click **Change Class Terms** (or **New Transaction** → **Class Terms Change**). Click **Change Class** for an existing class or **Add Share Class** for a new one, and set votes, **Seniority**, **Liquidation Preference (x)**, **Participation**, **Cap (x)**, **Anti-dilution** and the transfer restrictions. In a Swedish AB it needs a registration date from Bolagsverket.',
+        permission: 'registry.draft',
+      },
+      {
         task: 'Import an existing register from a spreadsheet or PDF',
         steps:
           'Open **Import**, click **Upload a File** and pick an XLSX, XLS, CSV or PDF. When it is **Ready for Review**, click each row to see its cell or line in the file on the right, correct anything, click **Check Again**, then **Create Drafts**. Nothing is entered until the drafts are committed (or **Commit All in Order**).',

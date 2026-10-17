@@ -1,4 +1,4 @@
-import type { HolderKind } from '@openinc/shared';
+import type { AntiDilution, HolderKind, Participation } from '@openinc/shared';
 import { formatDec, parseDec, percent, perShare } from './decimal.ts';
 import type { EngineConfig, Ledger } from './engine.ts';
 
@@ -38,6 +38,13 @@ export interface ClassRow {
   liquidationTerms: Record<string, unknown>;
   conversionClause: string;
   redemptionClause: string;
+  seniorityRank: number;
+  liqPrefMultiple: string;
+  liqPrefCapMultiple: string | null;
+  participation: Participation;
+  antiDilution: AntiDilution;
+  /** The transaction that last set the class terms. */
+  termsFromTx: string;
 }
 
 export interface RegisterView {
@@ -127,6 +134,12 @@ export function registerView(ledger: Ledger, config: EngineConfig, asOf: string)
     liquidationTerms: c.def.liquidationTerms,
     conversionClause: c.def.conversionClause,
     redemptionClause: c.def.redemptionClause,
+    seniorityRank: c.def.seniorityRank,
+    liqPrefMultiple: formatDec(parseDec(c.def.liqPrefMultiple)),
+    liqPrefCapMultiple: c.def.liqPrefCapMultiple === null ? null : formatDec(parseDec(c.def.liqPrefCapMultiple)),
+    participation: c.def.participation,
+    antiDilution: c.def.antiDilution,
+    termsFromTx: c.fromTx,
   }));
 
   return {

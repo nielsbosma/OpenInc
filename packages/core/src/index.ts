@@ -21,6 +21,7 @@ export type { LoginResult } from './services/auth.ts';
 export { saveChatThread } from './services/chat.ts';
 export { getReadableFile, storeFile } from './services/files.ts';
 export { notify } from './services/notifications.ts';
+export { createDraft as draftRegistryTransaction } from './services/registry.ts';
 export { companyLogo } from './services/settings.ts';
 export * from './settings.ts';
 export { runDataMigrations } from './system/data-migrations.ts';

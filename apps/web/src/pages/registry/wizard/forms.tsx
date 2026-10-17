@@ -1,7 +1,13 @@
 import {
+  ANTI_DILUTION,
+  ANTI_DILUTION_LABELS,
+  type AntiDilution,
   FRACTION_HANDLING,
   type HolderDetails,
   ISSUE_FORMS,
+  PARTICIPATION,
+  PARTICIPATION_LABELS,
+  type Participation,
   ROUNDING,
   RULE_PACKS,
   STEP_OUTCOMES,
@@ -103,94 +109,205 @@ function DecisionStep({ ctx }: { ctx: FormContext }) {
   );
 }
 
-function ClassesEditor({ ctx }: { ctx: FormContext }) {
-  const classes = ctx.tx.classes as {
-    code: string;
-    name: string;
-    votesPerShare: string;
-    nominalPerShare: string | null;
-    restrictions: Record<string, boolean>;
-  }[];
-  const update = (i: number, patch: object) => ctx.set({ classes: classes.map((c, j) => (j === i ? { ...c, ...patch } : c)) });
+export const NEW_CLASS = {
+  code: '',
+  name: '',
+  votesPerShare: '1',
+  nominalPerShare: null,
+  restrictions: { consent: false, preEmption: false, firstRefusal: false },
+  seniorityRank: 0,
+  liqPrefMultiple: '1',
+  liqPrefCapMultiple: null,
+  participation: 'none',
+  antiDilution: 'none',
+};
+
+interface ClassDraft {
+  code: string;
+  name: string;
+  votesPerShare: string;
+  nominalPerShare: string | null;
+  restrictions: Record<string, boolean>;
+  seniorityRank: number;
+  liqPrefMultiple: string;
+  liqPrefCapMultiple: string | null;
+  participation: Participation;
+  antiDilution: AntiDilution;
+}
+
+/** Share classes with their voting, transfer and liquidation terms. Codes of classes that already exist cannot change. */
+function ClassesEditor({ ctx, lockedCodes = [] }: { ctx: FormContext; lockedCodes?: string[] }) {
+  const classes = ctx.tx.classes as ClassDraft[];
+  const update = (i: number, patch: Partial<ClassDraft>) => ctx.set({ classes: classes.map((c, j) => (j === i ? { ...c, ...patch } : c)) });
   const terms = RULE_PACKS[ctx.rulePack].terms;
   return (
     <div className="grid gap-3">
-      {classes.map((c, i) => (
-        <div key={i} className="grid gap-3 rounded-lg border p-3 sm:grid-cols-4">
-          <TextField id={`class-code-${i}`} label="Class" value={c.code} onChange={(v) => update(i, { code: v })} />
-          <TextField id={`class-name-${i}`} label="Name" value={c.name} onChange={(v) => update(i, { name: v })} />
-          <TextField
-            id={`class-votes-${i}`}
-            label="Votes per Share"
-            inputMode="decimal"
-            value={c.votesPerShare}
-            onChange={(v) => update(i, { votesPerShare: v })}
-          />
-          {ctx.nominalMode ? (
+      {classes.map((c, i) => {
+        const locked = lockedCodes.includes(c.code);
+        return (
+          <div key={i} className="grid gap-3 rounded-lg border p-3 sm:grid-cols-4">
+            {locked ? (
+              <Field label="Class" htmlFor={`class-code-${i}`}>
+                <Input id={`class-code-${i}`} value={c.code} disabled />
+              </Field>
+            ) : (
+              <TextField id={`class-code-${i}`} label="Class" value={c.code} onChange={(v) => update(i, { code: v })} />
+            )}
+            <TextField id={`class-name-${i}`} label="Name" value={c.name} onChange={(v) => update(i, { name: v })} />
             <TextField
-              id={`class-nominal-${i}`}
-              label={`Nominal Value (${ctx.currency})`}
+              id={`class-votes-${i}`}
+              label="Votes per Share"
               inputMode="decimal"
-              value={c.nominalPerShare ?? ''}
-              onChange={(v) => update(i, { nominalPerShare: v || null })}
+              value={c.votesPerShare}
+              onChange={(v) => update(i, { votesPerShare: v })}
             />
-          ) : (
-            <div />
-          )}
-          <div className="flex flex-wrap gap-4 sm:col-span-3">
-            {(
-              [
-                ['consent', terms.consent],
-                ['preEmption', terms.preEmption],
-                ['firstRefusal', terms.firstRefusal],
-              ] as const
-            ).map(([key, label]) => (
-              <label key={key} className="flex items-center gap-2 text-sm">
-                <Checkbox
-                  checked={!!c.restrictions?.[key]}
-                  onCheckedChange={(v) => update(i, { restrictions: { ...c.restrictions, [key]: v === true } })}
-                />
-                {label}
-              </label>
-            ))}
+            {ctx.nominalMode && !locked ? (
+              <TextField
+                id={`class-nominal-${i}`}
+                label={`Nominal Value (${ctx.currency})`}
+                inputMode="decimal"
+                value={c.nominalPerShare ?? ''}
+                onChange={(v) => update(i, { nominalPerShare: v || null })}
+              />
+            ) : (
+              <div />
+            )}
+            <TextField
+              id={`class-seniority-${i}`}
+              label="Seniority"
+              inputMode="numeric"
+              hint="Higher is paid first; equal is pari passu"
+              value={String(c.seniorityRank ?? 0)}
+              onChange={(v) => update(i, { seniorityRank: Number(v.replace(/\D/g, '') || 0) })}
+            />
+            <TextField
+              id={`class-pref-${i}`}
+              label="Liquidation Preference (x)"
+              inputMode="decimal"
+              hint="Multiple of the issue price; 0 for common shares"
+              value={c.liqPrefMultiple ?? '1'}
+              onChange={(v) => update(i, { liqPrefMultiple: v })}
+            />
+            <ChoiceField
+              id={`class-participation-${i}`}
+              label="Participation"
+              value={c.participation ?? 'none'}
+              onChange={(v) => update(i, { participation: v, ...(v !== 'capped' ? { liqPrefCapMultiple: null } : {}) })}
+              options={PARTICIPATION.map((p) => ({ value: p, label: PARTICIPATION_LABELS[p] }))}
+            />
+            {c.participation === 'capped' ? (
+              <TextField
+                id={`class-cap-${i}`}
+                label="Cap (x)"
+                inputMode="decimal"
+                value={c.liqPrefCapMultiple ?? ''}
+                onChange={(v) => update(i, { liqPrefCapMultiple: v || null })}
+              />
+            ) : (
+              <div />
+            )}
+            <ChoiceField
+              id={`class-anti-dilution-${i}`}
+              label="Anti-dilution"
+              value={c.antiDilution ?? 'none'}
+              onChange={(v) => update(i, { antiDilution: v })}
+              options={ANTI_DILUTION.map((a) => ({ value: a, label: ANTI_DILUTION_LABELS[a] }))}
+            />
+            <div className="flex flex-wrap items-end gap-4 sm:col-span-2">
+              {(
+                [
+                  ['consent', terms.consent],
+                  ['preEmption', terms.preEmption],
+                  ['firstRefusal', terms.firstRefusal],
+                ] as const
+              ).map(([key, label]) => (
+                <label key={key} className="flex items-center gap-2 text-sm">
+                  <Checkbox
+                    checked={!!c.restrictions?.[key]}
+                    onCheckedChange={(v) => update(i, { restrictions: { ...c.restrictions, [key]: v === true } })}
+                  />
+                  {label}
+                </label>
+              ))}
+            </div>
+            <div className="flex items-end justify-end">
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                aria-label="Remove Class"
+                disabled={classes.length === 1}
+                onClick={() => ctx.set({ classes: classes.filter((_, j) => j !== i) })}
+              >
+                <Trash2 />
+              </Button>
+            </div>
           </div>
-          <div className="flex justify-end">
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              aria-label="Remove Class"
-              disabled={classes.length === 1}
-              onClick={() => ctx.set({ classes: classes.filter((_, j) => j !== i) })}
-            >
-              <Trash2 />
-            </Button>
-          </div>
-        </div>
-      ))}
+        );
+      })}
       <div>
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={() =>
-            ctx.set({
-              classes: [
-                ...classes,
-                {
-                  code: '',
-                  name: '',
-                  votesPerShare: '1',
-                  nominalPerShare: null,
-                  restrictions: { consent: false, preEmption: false, firstRefusal: false },
-                },
-              ],
-            })
-          }
-        >
+        <Button type="button" variant="outline" size="sm" onClick={() => ctx.set({ classes: [...classes, { ...NEW_CLASS }] })}>
           <Plus /> Add Share Class
         </Button>
       </div>
+    </div>
+  );
+}
+
+function ClassChangeStep({ ctx }: { ctx: FormContext }) {
+  const classes = ctx.tx.classes as ClassDraft[];
+  const existing = ctx.register?.classes ?? [];
+  const available = existing.filter((c) => !classes.some((x) => x.code === c.code));
+  return (
+    <div className="grid gap-4">
+      <p className="text-sm text-muted-foreground">
+        Change the terms of a class that has shares, or create a new class. The change becomes part of the history from the effective date
+        on.
+      </p>
+      {available.length > 0 && (
+        <div className="flex flex-wrap gap-2">
+          {available.map((c) => (
+            <Button
+              key={c.code}
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() =>
+                ctx.set({
+                  classes: [
+                    ...classes,
+                    {
+                      code: c.code,
+                      name: c.name,
+                      votesPerShare: c.votesPerShare,
+                      nominalPerShare: c.nominalPerShare,
+                      dividendTerms: c.dividendTerms,
+                      liquidationTerms: c.liquidationTerms,
+                      conversionClause: c.conversionClause,
+                      redemptionClause: c.redemptionClause,
+                      restrictions: c.restrictions,
+                      seniorityRank: c.seniorityRank,
+                      liqPrefMultiple: c.liqPrefMultiple,
+                      liqPrefCapMultiple: c.liqPrefCapMultiple,
+                      participation: c.participation,
+                      antiDilution: c.antiDilution,
+                    },
+                  ],
+                })
+              }
+            >
+              Change Class {c.code}
+            </Button>
+          ))}
+        </div>
+      )}
+      {classes.length > 0 ? (
+        <ClassesEditor ctx={ctx} lockedCodes={existing.map((c) => c.code)} />
+      ) : (
+        <Button type="button" variant="outline" size="sm" className="w-fit" onClick={() => ctx.set({ classes: [{ ...NEW_CLASS }] })}>
+          <Plus /> Add Share Class
+        </Button>
+      )}
     </div>
   );
 }
@@ -796,6 +913,11 @@ export function StepFields({ type, step, ctx }: { type: TransactionType; step: W
         </Grid>
       );
     }
+    case 'class_change':
+      if (step === 'decision') return <DecisionStep ctx={ctx} />;
+      if (step === 'details') return <ClassChangeStep ctx={ctx} />;
+      if (step === 'registration') return <RegistrationStep ctx={ctx} type={type} />;
+      return null;
     case 'reversal':
       return step === 'details' ? (
         <Grid>
