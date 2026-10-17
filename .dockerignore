@@ -1,0 +1,11 @@
+**/node_modules
+**/dist
+**/.turbo
+**/storybook-static
+**/test-results
+**/playwright-report
+.git
+.github
+.env
+.env.local
+*.log
