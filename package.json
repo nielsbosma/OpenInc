@@ -16,7 +16,7 @@
     "test": "turbo run test",
     "test:e2e": "pnpm --filter @openinc/web exec playwright test",
     "storybook": "pnpm --filter @openinc/web storybook",
-    "infra:up": "docker compose up -d --wait postgres minio mailpit && docker compose run --rm minio-init",
+    "infra:up": "docker compose up -d --wait postgres s3 mailpit && docker compose run --rm s3-init",
     "infra:down": "docker compose down",
     "db:generate": "pnpm --filter @openinc/db generate",
     "db:migrate": "pnpm --filter @openinc/db migrate",

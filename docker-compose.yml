@@ -1,9 +1,9 @@
 # Local development and testing only. Production is the single image plus your own Postgres and S3 bucket.
 #
-#   pnpm infra:up                         Postgres, MinIO (S3) and Mailpit for `pnpm dev`
+#   pnpm infra:up                         Postgres, S3 (RustFS) and Mailpit for `pnpm dev`
 #   docker compose --profile prod up -d   also runs the production image at http://localhost:8080
 #
-# Mailpit's inbox: http://localhost:8025. MinIO console: http://localhost:9301 (openinc / openinc-secret).
+# Mailpit's inbox: http://localhost:8025. S3 (RustFS) at http://localhost:9300 (openinc / openinc-secret).
 
 name: openinc
 
@@ -25,34 +25,28 @@ services:
       timeout: 3s
       retries: 30
 
-  minio:
-    image: quay.io/minio/minio:latest
-    command: server /data --console-address ":9001"
+  # S3-compatible storage for development (RustFS). Production uses any S3 bucket.
+  s3:
+    image: rustfs/rustfs:latest
     environment:
-      MINIO_ROOT_USER: openinc
-      MINIO_ROOT_PASSWORD: openinc-secret
+      RUSTFS_ACCESS_KEY: openinc
+      RUSTFS_SECRET_KEY: openinc-secret
     ports:
       - "9300:9000"
-      - "9301:9001"
     volumes:
-      - minio:/data
-    healthcheck:
-      test: ["CMD", "mc", "ready", "local"]
-      interval: 2s
-      timeout: 3s
-      retries: 30
+      - s3:/data
 
-  minio-init:
-    image: quay.io/minio/mc:latest
+  s3-init:
+    image: amazon/aws-cli:latest
     profiles: [tools]
-    depends_on:
-      minio:
-        condition: service_healthy
+    depends_on: [s3]
+    environment:
+      AWS_ACCESS_KEY_ID: openinc
+      AWS_SECRET_ACCESS_KEY: openinc-secret
+      AWS_DEFAULT_REGION: us-east-1
     entrypoint: >
-      /bin/sh -c "mc alias set local http://minio:9000 openinc openinc-secret &&
-      mc mb --ignore-existing local/openinc &&
-      mc mb --ignore-existing local/openinc-test &&
-      mc mb --ignore-existing local/openinc-prod"
+      /bin/sh -c "for i in $$(seq 1 30); do aws --endpoint-url http://s3:9000 s3 ls >/dev/null 2>&1 && break; sleep 1; done;
+      for b in openinc openinc-test openinc-prod; do aws --endpoint-url http://s3:9000 s3 mb s3://$$b 2>/dev/null || true; done; echo buckets ready"
 
   mailpit:
     image: axllent/mailpit:latest
@@ -72,7 +66,7 @@ services:
     image: ${OPENINC_IMAGE:-openinc:local}
     environment:
       DATABASE_URL: postgres://openinc:openinc@postgres:5432/openinc_prod
-      S3_ENDPOINT: http://minio:9000
+      S3_ENDPOINT: http://s3:9000
       S3_BUCKET: openinc-prod
       S3_ACCESS_KEY: openinc
       S3_SECRET_KEY: openinc-secret
@@ -85,9 +79,9 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-      minio:
-        condition: service_healthy
+      s3:
+        condition: service_started
 
 volumes:
   postgres:
-  minio:
+  s3:

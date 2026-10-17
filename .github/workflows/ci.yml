@@ -47,11 +47,15 @@ jobs:
         with:
           node-version: 24
           cache: pnpm
-      - name: Start MinIO
+      - name: Start S3 (RustFS)
         run: |
-          docker run -d --name minio -p 9300:9000 -e MINIO_ROOT_USER=openinc -e MINIO_ROOT_PASSWORD=openinc-secret quay.io/minio/minio server /data
-          for i in $(seq 1 30); do curl -sf http://localhost:9300/minio/health/ready && break; sleep 1; done
-          docker run --rm --network host --entrypoint sh quay.io/minio/mc -c "mc alias set l http://localhost:9300 openinc openinc-secret && mc mb l/openinc-test"
+          docker run -d --name s3 -p 9300:9000 -e RUSTFS_ACCESS_KEY=openinc -e RUSTFS_SECRET_KEY=openinc-secret rustfs/rustfs:latest
+          for i in $(seq 1 30); do aws --endpoint-url http://localhost:9300 s3 ls >/dev/null 2>&1 && break; sleep 1; done
+          aws --endpoint-url http://localhost:9300 s3 mb s3://openinc-test
+        env:
+          AWS_ACCESS_KEY_ID: openinc
+          AWS_SECRET_ACCESS_KEY: openinc-secret
+          AWS_DEFAULT_REGION: us-east-1
       - run: pnpm install --frozen-lockfile
       - run: pnpm lint
       - run: pnpm typecheck
@@ -96,10 +100,10 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Start Postgres, MinIO and Mailpit
+      - name: Start Postgres, S3 and Mailpit
         run: |
-          docker compose up -d --wait postgres minio mailpit
-          docker compose run --rm minio-init
+          docker compose up -d --wait postgres s3 mailpit
+          docker compose run --rm s3-init
 
       - name: Upgrade test, part 1 - install the previous release
         id: previous

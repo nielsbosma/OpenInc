@@ -9,7 +9,7 @@ An open-source company tool you host yourself: shareholder registry, cap table, 
 You need:
 
 - an **empty Postgres database** (14 or newer), and
-- an **S3-compatible bucket** (AWS S3, Cloudflare R2, MinIO, Backblaze B2, …) with an access key that can read and write it.
+- an **S3-compatible bucket** (AWS S3, Cloudflare R2, MinIO, RustFS, Backblaze B2, …) with an access key that can read and write it.
 
 Then run the image `ghcr.io/nielsbosma/openinc:latest` with these environment variables:
 
@@ -118,7 +118,7 @@ Requirements: Node 22.12+, pnpm 10 (`corepack enable`), Docker.
 
 ```sh
 pnpm install
-pnpm infra:up             # Postgres :5470, MinIO :9300 (console :9301), Mailpit :8025
+pnpm infra:up             # Postgres :5470, S3 (RustFS) :9300, Mailpit :8025
 cp .env.example .env
 pnpm db:reset             # wipe, install and seed; or `pnpm db:reset -- --empty` to try the wizard
 pnpm dev                  # http://localhost:5173 with hot reload (API on :3000)
@@ -128,7 +128,7 @@ Seeded accounts: `admin@openinc.local` / `openinc-admin-1` (Admin), `maria@openi
 
 | Command | |
 | --- | --- |
-| `pnpm typecheck` / `pnpm lint` / `pnpm test` | Checks; tests use the local Postgres and MinIO and skip DB tests if they are down |
+| `pnpm typecheck` / `pnpm lint` / `pnpm test` | Checks; tests use the local Postgres and S3 and skip DB tests if they are down |
 | `pnpm test:e2e` | Playwright: the full wizard, invites, MCP OAuth. Needs `pnpm dev` on an empty database |
 | `pnpm storybook` | Every UI component, light and dark, at http://localhost:6006 |
 | `pnpm db:generate` | Write a migration after changing `packages/db/src/schema` (no database needed) |
