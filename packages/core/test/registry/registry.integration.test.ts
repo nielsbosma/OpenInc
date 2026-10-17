@@ -8,6 +8,7 @@ import { type Ctx, closeDb, createCtx, getDb } from '../../src/context.ts';
 import { stopJobs } from '../../src/jobs.ts';
 import { setupCode } from '../../src/lib/crypto.ts';
 import { hashPassword } from '../../src/lib/password.ts';
+import * as registryExports from '../../src/registry/exports-files.ts';
 import { runRegistryChainCheck } from '../../src/registry/jobs.ts';
 import { services } from '../../src/registry.ts';
 import { invoke } from '../../src/service.ts';
@@ -255,5 +256,27 @@ describe.runIf(await reachable())('share register (database)', () => {
     expect(doc.sha256).toBe(createHash('sha256').update('%PDF-1.4 minutes').digest('hex'));
     const tx = await invoke(services.registry.getTransaction, auditor, { transactionId: incorporationId });
     expect(tx.documents).toHaveLength(1);
+  });
+
+  it('exports the register, history, extracts and settlement notes', async () => {
+    for (const lang of ['en', 'sv'] as const) {
+      const pdf = await registryExports.registerExport(auditor, { asOf: '2024-12-31', format: 'pdf', lang });
+      expect(pdf.body.subarray(0, 4).toString()).toBe('%PDF');
+      const xlsx = await registryExports.registerExport(auditor, { asOf: '2024-12-31', format: 'xlsx', lang });
+      expect(xlsx.body.subarray(0, 2).toString()).toBe('PK');
+      const history = await registryExports.historyExport(auditor, { format: 'csv', lang });
+      expect(history.body.toString()).toContain(lang === 'sv' ? 'Bildande' : 'Incorporation');
+      const extract = await registryExports.holderExtract(auditor, { holderId: H.anna, lang });
+      expect(extract.body.subarray(0, 4).toString()).toBe('%PDF');
+      const note = await registryExports.settlementNote(auditor, { transactionId: saleId, lang });
+      expect(note.contentType).toBe('application/pdf');
+    }
+    const csv = await registryExports.registerExport(auditor, { format: 'csv', lang: 'en' });
+    expect(csv.body.toString()).toContain('Anna Andersson');
+    const full = JSON.parse((await registryExports.fullJsonExport(auditor)).body.toString());
+    expect(full.transactions.length).toBe(5);
+    await expect(registryExports.registerExport(createCtx({ surface: 'web' }), { format: 'pdf', lang: 'en' })).rejects.toMatchObject({
+      code: 'UNAUTHORIZED',
+    });
   });
 });
