@@ -1,14 +1,16 @@
 import { and, count, eq, files, isNull, sum } from '@openinc/db';
 import {
+  AI_CURATED_MODELS,
   clearSettingsInput,
   empty,
   getSettingsInput,
+  listAiModelsInput,
   type SettingsValues,
   testAiInput,
   testEmailInput,
   updateSettingsInput,
 } from '@openinc/shared';
-import { testModel } from '../ai/model.ts';
+import { listModels, testModel } from '../ai/model.ts';
 import { audit } from '../audit.ts';
 import { getDb } from '../context.ts';
 import { getEnv } from '../env.ts';
@@ -108,6 +110,29 @@ export const testEmail = defineService({
   },
 });
 
+/** The saved AI key is reused only for the same provider and URL, so a test never sends it somewhere new. */
+async function aiDraft<T extends { provider: string; baseUrl: string; apiKey?: string }>(draft: T): Promise<T & { apiKey: string }> {
+  if (draft.apiKey !== undefined) return { ...draft, apiKey: draft.apiKey };
+  const saved = await getSettings('ai');
+  const same = saved && saved.provider === draft.provider && saved.baseUrl === draft.baseUrl;
+  return { ...draft, apiKey: same ? saved.apiKey : '' };
+}
+
+export const listAiModels = defineService({
+  name: 'settings.listAiModels',
+  description:
+    'The models an AI provider offers, fetched with the saved or entered key. Falls back to a short built-in list without a key.',
+  kind: 'mutation',
+  access: 'settings.manage',
+  transaction: false,
+  input: listAiModelsInput,
+  async handler(_ctx, input) {
+    const connection = input.settings ? await aiDraft(input.settings) : await getSettings('ai');
+    if (!connection) return { models: AI_CURATED_MODELS.anthropic, source: 'built-in' as const, error: null };
+    return listModels(connection);
+  },
+});
+
 export const testAi = defineService({
   name: 'settings.testAi',
   description: 'Check that the AI provider, model and API key work by sending a tiny request.',
@@ -116,9 +141,7 @@ export const testAi = defineService({
   transaction: false,
   input: testAiInput,
   async handler(_ctx, input) {
-    const settings = input.settings
-      ? ((await mergeSecret('ai', input.settings, 'apiKey')) as SettingsValues<'ai'>)
-      : await getSettings('ai');
+    const settings = input.settings ? ((await aiDraft(input.settings)) as SettingsValues<'ai'>) : await getSettings('ai');
     if (!settings) throw badRequest('Choose a provider and model first');
     return testModel(settings);
   },

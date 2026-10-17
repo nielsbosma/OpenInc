@@ -24,7 +24,7 @@ export function ConsentPage() {
   if (!user) return <Navigate to={`/login?next=${encodeURIComponent(location.pathname + location.search)}`} replace />;
 
   return (
-    <AuthLayout title="Connect an MCP client">
+    <AuthLayout title="Connect an MCP Client">
       {describe.isLoading && <Spinner />}
       {describe.error && (
         <Alert variant="destructive">

@@ -1,4 +1,5 @@
 import { Check, ChevronsUpDown } from 'lucide-react';
+import type * as React from 'react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
@@ -20,6 +21,8 @@ export function Combobox({
   placeholder = 'Select…',
   disabled,
   invalid,
+  allowCustom,
+  footer,
 }: {
   id?: string;
   value: string;
@@ -28,9 +31,14 @@ export function Combobox({
   placeholder?: string;
   disabled?: boolean;
   invalid?: boolean;
+  /** Offer whatever was typed as a value, e.g. a model id that is not in the list. */
+  allowCustom?: boolean;
+  footer?: React.ReactNode;
 }) {
   const [open, setOpen] = useState(false);
-  const selected = options.find((o) => o.value === value);
+  const [search, setSearch] = useState('');
+  const selected = options.find((o) => o.value === value) ?? (value ? { value, label: value } : undefined);
+  const custom = allowCustom && search.trim() && !options.some((o) => o.value === search.trim()) ? search.trim() : null;
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -50,9 +58,26 @@ export function Combobox({
       </PopoverTrigger>
       <PopoverContent className="w-(--radix-popover-trigger-width) min-w-64 p-0" align="start">
         <Command>
-          <CommandInput placeholder="Search…" />
+          <CommandInput placeholder={allowCustom ? 'Search or type a custom value…' : 'Search…'} value={search} onValueChange={setSearch} />
           <CommandList>
-            <CommandEmpty>No match.</CommandEmpty>
+            {!custom && <CommandEmpty>No match.</CommandEmpty>}
+            {custom && (
+              <CommandGroup>
+                <CommandItem
+                  value={`custom ${custom}`}
+                  onSelect={() => {
+                    onChange(custom);
+                    setSearch('');
+                    setOpen(false);
+                  }}
+                >
+                  <Check className="size-4 opacity-0" />
+                  <span className="truncate">
+                    Use <span className="font-mono">{custom}</span>
+                  </span>
+                </CommandItem>
+              </CommandGroup>
+            )}
             <CommandGroup>
               {options.map((o) => (
                 <CommandItem
@@ -70,6 +95,7 @@ export function Combobox({
               ))}
             </CommandGroup>
           </CommandList>
+          {footer && <div className="border-t p-1">{footer}</div>}
         </Command>
       </PopoverContent>
     </Popover>

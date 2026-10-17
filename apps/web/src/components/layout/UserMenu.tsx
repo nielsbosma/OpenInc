@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { LogOut, Monitor, Moon, Sun, User } from 'lucide-react';
+import { LogOut, Moon, User } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -8,13 +8,12 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Switch } from '@/components/ui/switch';
 import { useSession } from '@/lib/session';
-import { type ThemeChoice, useTheme } from '@/lib/theme';
+import { useTheme } from '@/lib/theme';
 import { useTRPC } from '@/lib/trpc';
 
 export function initials(name: string) {
@@ -51,14 +50,14 @@ export function useLogout() {
 
 export function UserMenu() {
   const { user } = useSession();
-  const { theme, setTheme } = useTheme();
+  const { theme, toggle } = useTheme();
   const navigate = useNavigate();
   const logout = useLogout();
   if (!user) return null;
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="rounded-full" aria-label="User menu">
+        <Button variant="ghost" size="icon" className="rounded-full" aria-label="User Menu">
           <UserAvatar name={user.name} url={user.avatarUrl} className="size-7" />
         </Button>
       </DropdownMenuTrigger>
@@ -72,21 +71,18 @@ export function UserMenu() {
           <User /> Account
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">Theme</DropdownMenuLabel>
-        <DropdownMenuRadioGroup value={theme} onValueChange={(v) => setTheme(v as ThemeChoice)}>
-          <DropdownMenuRadioItem value="light">
-            <Sun /> Light
-          </DropdownMenuRadioItem>
-          <DropdownMenuRadioItem value="dark">
-            <Moon /> Dark
-          </DropdownMenuRadioItem>
-          <DropdownMenuRadioItem value="system">
-            <Monitor /> System
-          </DropdownMenuRadioItem>
-        </DropdownMenuRadioGroup>
+        <DropdownMenuItem
+          onSelect={(e) => {
+            e.preventDefault();
+            toggle();
+          }}
+        >
+          <Moon /> Dark Mode
+          <Switch checked={theme === 'dark'} className="pointer-events-none ml-auto" aria-hidden tabIndex={-1} />
+        </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem onSelect={() => logout.mutate({})}>
-          <LogOut /> Sign out
+          <LogOut /> Sign Out
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

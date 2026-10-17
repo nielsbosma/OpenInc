@@ -183,7 +183,7 @@ export async function issuePasswordReset(ctx: Ctx, user: { id: string; email: st
       subject: `Reset your ${product} password`,
       greeting: `Hi ${user.name},`,
       paragraphs: ['Use the button below to choose a new password. The link works for one hour.'],
-      action: { label: 'Choose a new password', url: `${appUrl()}/reset-password?token=${encodeURIComponent(token)}` },
+      action: { label: 'Choose a New Password', url: `${appUrl()}/reset-password?token=${encodeURIComponent(token)}` },
       footer: 'If you did not ask for this, you can ignore this email.',
     }),
   );

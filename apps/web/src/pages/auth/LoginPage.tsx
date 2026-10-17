@@ -65,7 +65,7 @@ export function LoginPage() {
   if (challenge) {
     return (
       <AuthLayout
-        title="Two-factor authentication"
+        title="Two-Factor Authentication"
         description="Enter the 6-digit code from your authenticator app, or one of your recovery codes."
       >
         <form onSubmit={submitCode} className="grid gap-4">
@@ -96,7 +96,7 @@ export function LoginPage() {
   }
 
   return (
-    <AuthLayout title="Sign in">
+    <AuthLayout title="Sign In">
       <form onSubmit={submitPassword} className="grid gap-4" noValidate>
         {error && (
           <Alert variant="destructive">
@@ -116,10 +116,10 @@ export function LoginPage() {
           />
         </Field>
         <Button type="submit" disabled={login.isPending}>
-          {login.isPending && <Spinner className="text-primary-foreground" />} Sign in
+          {login.isPending && <Spinner className="text-primary-foreground" />} Sign In
         </Button>
         <Link to="/forgot-password" className="text-center text-muted-foreground hover:text-foreground">
-          Forgot your password?
+          Forgot Your Password?
         </Link>
       </form>
     </AuthLayout>

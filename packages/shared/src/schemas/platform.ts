@@ -46,3 +46,7 @@ export const createFirstAdminInput = z.object({
 });
 
 export const runDemoJobInput = z.object({ seconds: z.number().int().min(0).max(60).default(3) });
+
+export const systemInfoInput = z
+  .object({ recheck: z.boolean().default(false).describe('Ask GitHub again instead of using the cached answer') })
+  .default({ recheck: false });

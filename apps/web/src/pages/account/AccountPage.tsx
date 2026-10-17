@@ -101,7 +101,7 @@ function ProfileTab() {
               onChange={(e) => e.target.files?.[0] && onAvatar(e.target.files[0])}
             />
             <Button type="button" variant="outline" size="sm" onClick={() => fileInput.current?.click()} disabled={uploading}>
-              {uploading ? <Spinner /> : <Upload />} Upload image
+              {uploading ? <Spinner /> : <Upload />} Upload Image
             </Button>
             {user.avatarUrl && (
               <Button type="button" variant="ghost" size="sm" onClick={() => setAvatar.mutate({ fileId: null })}>
@@ -127,10 +127,10 @@ function ProfileTab() {
             if (data) changeEmail.mutate(data);
           }}
         >
-          <Field label="New email" htmlFor="new-email" error={errors.email}>
+          <Field label="New Email" htmlFor="new-email" error={errors.email}>
             <Input id="new-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
           </Field>
-          <Field label="Current password" htmlFor="email-password" error={errors.currentPassword}>
+          <Field label="Current Password" htmlFor="email-password" error={errors.currentPassword}>
             <Input
               id="email-password"
               type="password"
@@ -140,7 +140,7 @@ function ProfileTab() {
             />
           </Field>
           <Button type="submit" variant="outline" className="justify-self-start" disabled={changeEmail.isPending}>
-            Change email
+            Change Email
           </Button>
         </form>
       </Section>
@@ -196,7 +196,7 @@ function SecurityTab() {
   return (
     <div className="grid gap-6">
       <Section
-        title="Two-factor authentication"
+        title="Two-Factor Authentication"
         description={
           user.totpEnabled ? (
             <span className="flex items-center gap-2">
@@ -212,10 +212,10 @@ function SecurityTab() {
         ) : user.totpEnabled ? (
           <div className="flex flex-wrap gap-2">
             <Button variant="outline" onClick={() => setConfirm('codes')}>
-              New recovery codes
+              New Recovery Codes
             </Button>
             <Button variant="ghost" className="text-destructive" onClick={() => setConfirm('disable')}>
-              Turn off
+              Turn Off
             </Button>
           </div>
         ) : setupOpen ? (
@@ -227,12 +227,12 @@ function SecurityTab() {
             onSkip={() => setSetupOpen(false)}
           />
         ) : (
-          <Button onClick={() => setSetupOpen(true)}>Set up two-factor</Button>
+          <Button onClick={() => setSetupOpen(true)}>Set Up Two-Factor</Button>
         )}
       </Section>
       <Section title="Password">
         <form onSubmit={submitPassword} className="grid max-w-md gap-4" noValidate>
-          <Field label="Current password" htmlFor="current-password" error={errors.currentPassword}>
+          <Field label="Current Password" htmlFor="current-password" error={errors.currentPassword}>
             <Input
               id="current-password"
               type="password"
@@ -242,7 +242,7 @@ function SecurityTab() {
             />
           </Field>
           <Field
-            label="New password"
+            label="New Password"
             htmlFor="new-password"
             error={errors.newPassword}
             hint="At least 12 characters, with letters and digits."
@@ -250,7 +250,7 @@ function SecurityTab() {
             <Input id="new-password" type="password" autoComplete="new-password" value={next} onChange={(e) => setNext(e.target.value)} />
           </Field>
           <Button type="submit" className="justify-self-start" disabled={changePassword.isPending}>
-            Change password
+            Change Password
           </Button>
         </form>
       </Section>
@@ -265,7 +265,7 @@ function SecurityTab() {
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{confirm === 'disable' ? 'Turn off two-factor?' : 'Replace your recovery codes?'}</DialogTitle>
+            <DialogTitle>{confirm === 'disable' ? 'Turn Off Two-Factor?' : 'Replace Your Recovery Codes?'}</DialogTitle>
             <DialogDescription>
               {confirm === 'disable' ? 'Signing in will only need your password.' : 'Your old codes stop working.'} Enter your password to
               confirm.
@@ -284,7 +284,7 @@ function SecurityTab() {
               disabled={!confirmPassword || disable.isPending || regenerate.isPending}
               onClick={() => (confirm === 'disable' ? disable : regenerate).mutate({ currentPassword: confirmPassword })}
             >
-              {confirm === 'disable' ? 'Turn off' : 'Replace codes'}
+              {confirm === 'disable' ? 'Turn Off' : 'Replace Codes'}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -307,7 +307,7 @@ function McpTab() {
   return (
     <div className="grid gap-6">
       <Section
-        title="Connect Claude or another MCP client"
+        title="Connect Claude or Another MCP Client"
         description="Everything you can do here, an MCP client can do for you: with your permissions, and every change in the audit log."
       >
         <div className="grid gap-4">
@@ -320,7 +320,7 @@ function McpTab() {
           <ol className="grid list-decimal gap-2 pl-5 text-muted-foreground">
             <li>
               In Claude Desktop or claude.ai, open <b className="text-foreground">Settings → Connectors</b> and choose{' '}
-              <b className="text-foreground">Add custom connector</b>.
+              <b className="text-foreground">Add Custom Connector</b>.
             </li>
             <li>
               Give it a name (e.g. <span className="text-foreground">{connection.data?.name ?? 'OpenInc'}</span>) and paste the URL above.
@@ -334,9 +334,9 @@ function McpTab() {
           </p>
         </div>
       </Section>
-      <Section title="Connected clients">
+      <Section title="Connected Clients">
         {!clients.data?.length ? (
-          <EmptyState title="No clients connected" />
+          <EmptyState title="No Clients Connected" />
         ) : (
           <ul className="divide-y rounded-lg border">
             {clients.data.map((c) => (

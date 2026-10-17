@@ -16,10 +16,10 @@ import { AiForm, CompanyForm, EmailForm, ErrorTrackingForm } from '../admin/sett
 
 const STEPS = [
   { key: 'install', title: 'Database' },
-  { key: 'admin', title: 'Admin account' },
+  { key: 'admin', title: 'Admin Account' },
   { key: 'company', title: 'Company' },
   { key: 'email', title: 'Email' },
-  { key: 'extras', title: 'Optional extras' },
+  { key: 'extras', title: 'Optional Extras' },
 ] as const;
 
 type Step = 'code' | 'install' | 'admin' | 'twoFactor' | 'company' | 'email' | 'extras' | 'errors';
@@ -103,7 +103,7 @@ function CodeStep({ onDone }: { onDone: (code: string) => void }) {
           <AlertDescription>{verify.error.message}</AlertDescription>
         </Alert>
       )}
-      <Field label="Setup code" htmlFor="setup-code">
+      <Field label="Setup Code" htmlFor="setup-code">
         <Input
           id="setup-code"
           placeholder="XXXX-XXXX"
@@ -155,12 +155,12 @@ function InstallStep({ code, initial, onDone }: { code: string; initial: SystemS
     <div className="grid gap-4">
       <ul className="grid gap-2">
         <CheckRow icon={Database} label="Postgres" ok detail="Connected, with permission to create tables" />
-        <CheckRow icon={HardDrive} label="S3 bucket" ok detail="Wrote, read back and deleted a test object" />
+        <CheckRow icon={HardDrive} label="S3 Bucket" ok detail="Wrote, read back and deleted a test object" />
       </ul>
       {progress && (
         <div className="grid gap-2 rounded-md border p-3">
           <div className="flex items-center justify-between text-xs text-muted-foreground">
-            <span>Applying migrations</span>
+            <span>Applying Migrations</span>
             <span className="font-mono">
               {progress.done}/{progress.total}
             </span>
@@ -191,7 +191,7 @@ function InstallStep({ code, initial, onDone }: { code: string; initial: SystemS
       )}
       <p className="text-muted-foreground">The database is empty. OpenInc will create its tables now; this takes a few seconds.</p>
       <Button className="justify-self-start" onClick={() => install.mutate({ code })} disabled={running}>
-        {running && <Spinner className="text-primary-foreground" />} {failed ? 'Try again' : 'Install database'}
+        {running && <Spinner className="text-primary-foreground" />} {failed ? 'Try Again' : 'Install Database'}
       </Button>
     </div>
   );
@@ -224,7 +224,7 @@ function AdminStep({ code, onDone }: { code: string; onDone: () => void }) {
   return (
     <form onSubmit={submit} className="grid gap-4" noValidate>
       <p className="text-muted-foreground">This is the first Admin. You can invite the rest of the team afterwards.</p>
-      <Field label="Your name" htmlFor="admin-name" error={errors.name}>
+      <Field label="Your Name" htmlFor="admin-name" error={errors.name}>
         <Input id="admin-name" autoComplete="name" value={values.name} onChange={set('name')} autoFocus />
       </Field>
       <Field label="Email" htmlFor="admin-email" error={errors.email}>
@@ -234,7 +234,7 @@ function AdminStep({ code, onDone }: { code: string; onDone: () => void }) {
         <Input id="admin-password" type="password" autoComplete="new-password" value={values.password} onChange={set('password')} />
       </Field>
       <Button type="submit" className="justify-self-start" disabled={create.isPending}>
-        {create.isPending && <Spinner className="text-primary-foreground" />} Create account
+        {create.isPending && <Spinner className="text-primary-foreground" />} Create Account
       </Button>
     </form>
   );
@@ -242,13 +242,13 @@ function AdminStep({ code, onDone }: { code: string; onDone: () => void }) {
 
 const TITLES: Record<Step, { title: string; description?: string }> = {
   code: { title: 'Welcome to OpenInc', description: 'Let’s set up your install. It takes about five minutes.' },
-  install: { title: 'Install the database', description: 'OpenInc checked your database and bucket.' },
-  admin: { title: 'Create your admin account' },
-  twoFactor: { title: 'Turn on two-factor authentication', description: 'Recommended for every Admin account.' },
-  company: { title: 'Your company', description: 'Used across the app. You can change it later in Admin settings.' },
+  install: { title: 'Install the Database', description: 'OpenInc checked your database and bucket.' },
+  admin: { title: 'Create Your Admin Account' },
+  twoFactor: { title: 'Turn On Two-Factor Authentication', description: 'Recommended for every Admin account.' },
+  company: { title: 'Your Company', description: 'Used across the app. You can change it later in Admin settings.' },
   email: { title: 'Email', description: 'For invitations, password resets and notifications. You can skip this and set it up later.' },
-  extras: { title: 'AI assistant', description: 'Optional. With a provider set, an assistant can answer questions and do things for you.' },
-  errors: { title: 'Error tracking', description: 'Optional. Send errors to Bugsink or Sentry.' },
+  extras: { title: 'AI Assistant', description: 'Optional. With a provider set, an assistant can answer questions and do things for you.' },
+  errors: { title: 'Error Tracking', description: 'Optional. Send errors to Bugsink or Sentry.' },
 };
 
 export function SetupWizard({ status }: { status: SystemStatus }) {
@@ -290,7 +290,7 @@ export function SetupWizard({ status }: { status: SystemStatus }) {
     <div className="flex min-h-svh flex-col items-center bg-muted/40 px-4 py-10 sm:py-16">
       <div className="mb-6 flex items-center gap-2.5">
         <Logo className="size-8" />
-        <span className="text-base font-semibold">OpenInc setup</span>
+        <span className="text-base font-semibold">OpenInc Setup</span>
       </div>
       <div className="w-full max-w-2xl">
         <div className="mb-4">

@@ -1,4 +1,4 @@
-import { AppError, type Ctx, reportError, run, type ServiceDefinition } from '@openinc/core';
+import { AppError, type Ctx, run, type ServiceDefinition } from '@openinc/core';
 import { initTRPC, TRPCError } from '@trpc/server';
 import type { Request, Response } from 'express';
 import superjson from 'superjson';
@@ -10,7 +10,24 @@ export interface TrpcContext {
   res: Response;
 }
 
-const t = initTRPC.context<TrpcContext>().create({ transformer: superjson });
+export const INTERNAL_ERROR_MESSAGE = 'Something went wrong. Try again, or check the logs.';
+
+/**
+ * Expected failures (AppError, validation) reach the browser as they are. Anything else is a bug: the
+ * browser gets a generic message with the request id, and the full error goes to the log and Sentry.
+ */
+const t = initTRPC.context<TrpcContext>().create({
+  transformer: superjson,
+  errorFormatter({ shape, error, ctx }) {
+    if (error.code !== 'INTERNAL_SERVER_ERROR') return { ...shape, data: { ...shape.data, stack: undefined } };
+    const requestId = (ctx?.res.locals.requestId as string | undefined) ?? 'unknown';
+    return {
+      ...shape,
+      message: `${INTERNAL_ERROR_MESSAGE} (reference ${requestId})`,
+      data: { ...shape.data, stack: undefined, requestId },
+    };
+  },
+});
 
 export const router = t.router;
 export const procedure = t.procedure;
@@ -20,7 +37,6 @@ export async function call<I extends z.ZodType, O>(def: ServiceDefinition<I, O>,
     return await run(def, ctx, input);
   } catch (error) {
     if (error instanceof AppError) throw new TRPCError({ code: error.code, message: error.message });
-    reportError(error, { service: def.name });
     throw error;
   }
 }

@@ -13,49 +13,50 @@ test.skip(!!process.env.E2E_UPGRADE, 'The upgrade check runs upgrade.spec.ts aga
 test('first run: install, admin with two-factor, company, email, extras', async ({ page }) => {
   await page.goto('/');
   await expect(page.getByText('Welcome to OpenInc')).toBeVisible();
-  await page.getByLabel('Setup code').fill('WRONG-CODE');
+  await page.getByLabel('Setup Code').fill('WRONG-CODE');
   await page.getByRole('button', { name: 'Continue' }).click();
   await expect(page.getByText('That setup code is not right')).toBeVisible();
-  await page.getByLabel('Setup code').fill(setupCode());
+  await page.getByLabel('Setup Code').fill(setupCode());
   await page.getByRole('button', { name: 'Continue' }).click();
 
-  await expect(page.getByText('Install the database')).toBeVisible();
-  await page.getByRole('button', { name: 'Install database' }).click();
-  await expect(page.getByText('Create your admin account')).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByText('Install the Database')).toBeVisible();
+  await page.getByRole('button', { name: 'Install Database' }).click();
+  await expect(page.getByText('Create Your Admin Account')).toBeVisible({ timeout: 30_000 });
 
-  await page.getByLabel('Your name').fill(admin.name);
+  await page.getByLabel('Your Name').fill(admin.name);
   await page.getByLabel('Email').fill(admin.email);
   await page.getByLabel('Password').fill(admin.password);
-  await page.getByRole('button', { name: 'Create account' }).click();
+  await page.getByRole('button', { name: 'Create Account' }).click();
 
-  await page.getByRole('button', { name: 'Set up two-factor' }).click();
+  await page.getByRole('button', { name: 'Set Up Two-Factor' }).click();
   adminSecret = (await page.getByTestId('totp-secret').textContent())!.trim();
   await page.getByLabel('Code').fill(await freshTotp(adminSecret));
-  await page.getByRole('button', { name: 'Turn on' }).click();
+  await page.getByRole('button', { name: 'Turn On' }).click();
   await expect(page.getByTestId('recovery-codes')).toBeVisible();
-  await page.getByRole('button', { name: 'I saved them' }).click();
+  await page.getByRole('button', { name: 'I Saved Them' }).click();
 
-  await expect(page.getByText('Your company')).toBeVisible();
-  await page.getByLabel('Company name').fill('Acme Robotics AB');
-  await page.getByLabel('Registration number').fill('559000-1234');
+  await expect(page.getByText('Your Company')).toBeVisible();
+  await page.getByLabel('Company Name').fill('Acme Robotics AB');
+  await page.getByLabel('Registration Number').fill('559000-1234');
   await page.getByRole('button', { name: 'Continue' }).click();
 
-  await expect(page.getByLabel('SMTP host')).toBeVisible();
-  await page.getByLabel('SMTP host').fill(SMTP_HOST);
+  await expect(page.getByLabel('SMTP Host')).toBeVisible();
+  await page.getByLabel('SMTP Host').fill(SMTP_HOST);
   await page.getByLabel('Port').fill('1025');
   await page.getByLabel('Security').click();
   await page.getByRole('option', { name: 'None' }).click();
-  await page.getByLabel('Sender address').fill('noreply@acme.example');
-  await page.getByRole('button', { name: /Send test email/ }).click();
+  await page.getByLabel('Sender Address').fill('noreply@acme.example');
+  await page.getByRole('button', { name: 'Send Test Email' }).click();
   await expect(page.getByText(/Sent a test email to/)).toBeVisible({ timeout: 20_000 });
-  await page.getByRole('button', { name: 'Save and continue' }).click();
+  await page.getByRole('button', { name: 'Save and Continue' }).click();
 
-  await expect(page.getByText('AI assistant')).toBeVisible();
-  await page.getByRole('button', { name: 'Skip for now' }).click();
+  await expect(page.getByText('AI Assistant')).toBeVisible();
+  await page.getByRole('button', { name: 'Skip for Now' }).click();
   await page.getByRole('button', { name: 'Skip' }).click();
 
   await expect(page.getByRole('heading', { name: /Welcome, Ada/ })).toBeVisible();
-  await expect(page.getByText('Finish setting up')).toBeVisible();
+  await expect(page.getByTestId('setup-checklist')).toContainText('Finish Setting Up');
+  await expect(page.getByTestId('app-version')).toContainText('OpenInc v');
   await expect(page.getByText('Acme Robotics AB').first()).toBeVisible();
 });
 
@@ -72,34 +73,48 @@ test('admin invites a member, who accepts by email and lands on the dashboard', 
   await page.goto('/login');
   await page.getByLabel('Email').fill(admin.email);
   await page.getByLabel('Password').fill(admin.password);
-  await page.getByRole('button', { name: 'Sign in' }).click();
+  await page.getByRole('button', { name: 'Sign In' }).click();
   await page.getByLabel('Code').fill(await freshTotp(adminSecret));
   await page.getByRole('button', { name: 'Verify' }).click();
   await expect(page.getByRole('heading', { name: /Welcome/ })).toBeVisible();
+
+  // The assistant is always reachable; without a provider it explains how to set one up, and the app stays usable beside it.
+  await page.getByTestId('chat-toggle').click();
+  await expect(page.getByTestId('chat-panel')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Set Up AI Provider' })).toBeVisible();
+  await page
+    .getByRole('navigation', { name: 'Main' })
+    .getByRole('link', { name: /Cap Table/ })
+    .click();
+  await expect(page).toHaveURL(/\/cap-table/);
+  await page.getByRole('button', { name: 'Close Assistant' }).click();
+  await expect(page.getByTestId('chat-panel')).toHaveCount(0);
 
   await page.keyboard.press('Control+k');
   await page.getByPlaceholder('Type a page or action…').fill('Invite');
   await page.keyboard.press('Enter');
   await page.getByLabel('Email').fill(member.email);
-  await page.getByRole('button', { name: 'Send invitation' }).click();
+  await page.getByRole('button', { name: 'Send Invitation' }).click();
   await expect(page.getByText(`Invitation sent to ${member.email}`)).toBeVisible();
-  await expect(page.getByText('Pending invitations')).toBeVisible();
+  await expect(page.getByText('Pending Invitations', { exact: true })).toBeVisible();
 
   const link = new URL(await linkFromLatestEmail(member.email));
   const context = await browser.newContext();
   const invitee = await context.newPage();
   await invitee.goto(link.pathname + link.search);
   await expect(invitee.getByText(/You were invited as Member/)).toBeVisible();
-  await invitee.getByLabel('Your name').fill(member.name);
+  await invitee.getByLabel('Your Name').fill(member.name);
   await invitee.getByLabel('Password').fill(member.password);
-  await invitee.getByRole('button', { name: 'Create account' }).click();
-  await expect(invitee.getByText('Protect your account')).toBeVisible();
+  await invitee.getByRole('button', { name: 'Create Account' }).click();
+  await expect(invitee.getByText('Protect Your Account')).toBeVisible();
   await invitee.getByRole('button', { name: 'Later' }).click();
   await expect(invitee.getByRole('heading', { name: /Welcome, Max/ })).toBeVisible();
-  await expect(invitee.getByRole('link', { name: 'Settings' })).toHaveCount(0);
+  await invitee.getByRole('link', { name: 'Settings' }).click();
+  await expect(invitee.getByRole('navigation', { name: 'Settings' }).getByRole('button')).toHaveText(['Users']);
   await context.close();
 
   await page.goto('/admin/audit');
+  await expect(page).toHaveURL(/\/admin\/settings\/audit-log/);
   await expect(page.getByRole('cell', { name: 'invites.accept' })).toBeVisible();
 });
 
@@ -136,7 +151,7 @@ test('an MCP client connects with OAuth and calls tools as the user', async ({ p
   await page.goto(`/authorize?${authorize}`);
   await page.getByLabel('Email').fill(admin.email);
   await page.getByLabel('Password').fill(admin.password);
-  await page.getByRole('button', { name: 'Sign in' }).click();
+  await page.getByRole('button', { name: 'Sign In' }).click();
   await page.getByLabel('Code').fill(await freshTotp(adminSecret));
   await page.getByRole('button', { name: 'Verify' }).click();
   await expect(page.getByText('E2E client')).toBeVisible();

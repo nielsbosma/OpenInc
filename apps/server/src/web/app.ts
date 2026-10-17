@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import { existsSync, readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -5,10 +6,11 @@ import { boot, type Ctx, getSystemStatus, isReady, readEnv, rememberRequestOrigi
 import { createExpressMiddleware } from '@trpc/server/adapters/express';
 import express, { type NextFunction, type Request, type Response } from 'express';
 import { chatHandler } from './chat.ts';
-import { filesRouter, logoHandler } from './files.ts';
+import { backupHandler, filesRouter, logoHandler } from './files.ts';
 import { ctxFromRequest } from './http-context.ts';
 import { mcpRouter } from './mcp.ts';
 import { appRouter } from './router.ts';
+import { INTERNAL_ERROR_MESSAGE } from './trpc.ts';
 
 const webDist = resolve(dirname(fileURLToPath(import.meta.url)), '../../../web/dist');
 
@@ -31,6 +33,8 @@ export function createApp() {
   app.set('trust proxy', true);
 
   app.use((req, res, next) => {
+    res.locals.requestId = randomUUID().slice(0, 8);
+    res.setHeader('X-Request-Id', res.locals.requestId);
     res.setHeader('X-Content-Type-Options', 'nosniff');
     res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
     res.setHeader('X-Frame-Options', 'DENY');
@@ -78,8 +82,8 @@ export function createApp() {
     createExpressMiddleware({
       router: appRouter,
       createContext: async ({ req, res }) => ({ app: await trpcContext(req), req, res }),
-      onError: ({ error, path }) => {
-        if (error.code === 'INTERNAL_SERVER_ERROR') reportError(error.cause ?? error, { path });
+      onError: ({ error, path, ctx }) => {
+        if (error.code === 'INTERNAL_SERVER_ERROR') reportError(error.cause ?? error, { path, requestId: ctx?.res.locals.requestId });
       },
     }),
   );
@@ -91,6 +95,9 @@ export function createApp() {
     chatHandler(req, res).catch(next);
   });
   app.use('/api/files', requireReady, filesRouter());
+  app.get('/api/backups/:name', requireReady, (req, res, next) => {
+    backupHandler(req, res).catch(next);
+  });
   app.get('/api/public/logo', requireReady, (req, res, next) => {
     logoHandler(req, res).catch(next);
   });
@@ -110,8 +117,8 @@ export function createApp() {
   }
 
   app.use((error: unknown, _req: Request, res: Response, _next: NextFunction) => {
-    reportError(error);
-    if (!res.headersSent) res.status(500).json({ error: 'Something went wrong' });
+    reportError(error, { requestId: res.locals.requestId });
+    if (!res.headersSent) res.status(500).json({ error: `${INTERNAL_ERROR_MESSAGE} (reference ${res.locals.requestId})` });
   });
 
   return app;

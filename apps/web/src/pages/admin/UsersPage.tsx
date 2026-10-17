@@ -4,7 +4,7 @@ import { MoreHorizontal, ShieldCheck, UserPlus } from 'lucide-react';
 import { type FormEvent, useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { toast } from 'sonner';
-import { Field, PageHeader, Spinner, validate } from '@/components/common';
+import { Field, Spinner, validate } from '@/components/common';
 import { UserAvatar } from '@/components/layout/UserMenu';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -57,7 +57,7 @@ function InviteDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (op
       <DialogContent>
         <form onSubmit={submit} className="grid gap-4" noValidate>
           <DialogHeader>
-            <DialogTitle>Invite someone</DialogTitle>
+            <DialogTitle>Invite Someone</DialogTitle>
             <DialogDescription>They get an email with a link to choose a password. The link works for 7 days.</DialogDescription>
           </DialogHeader>
           {overview.data && !overview.data.email && (
@@ -84,7 +84,7 @@ function InviteDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (op
           </Field>
           <DialogFooter>
             <Button type="submit" disabled={create.isPending}>
-              {create.isPending && <Spinner className="text-primary-foreground" />} Send invitation
+              {create.isPending && <Spinner className="text-primary-foreground" />} Send Invitation
             </Button>
           </DialogFooter>
         </form>
@@ -93,7 +93,8 @@ function InviteDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (op
   );
 }
 
-export function UsersPage() {
+/** Settings → Users. */
+export function UsersSection() {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
   const can = useCan();
@@ -152,22 +153,16 @@ export function UsersPage() {
 
   return (
     <>
-      <PageHeader
-        title="Users"
-        description="Everyone with an account, and what they may do."
-        actions={
-          manage && (
-            <Button onClick={() => setInviteOpen(true)}>
-              <UserPlus /> Invite
-            </Button>
-          )
-        }
-      />
       <div className="mb-3 flex flex-wrap items-center gap-3">
         <Input placeholder="Search by name or email" value={search} onChange={(e) => setSearch(e.target.value)} className="max-w-xs" />
         <label className="flex items-center gap-2 text-muted-foreground">
-          <Switch checked={includeInactive} onCheckedChange={setIncludeInactive} /> Show deactivated
+          <Switch checked={includeInactive} onCheckedChange={setIncludeInactive} /> Show Deactivated
         </label>
+        {manage && (
+          <Button className="ml-auto" onClick={() => setInviteOpen(true)}>
+            <UserPlus /> Invite
+          </Button>
+        )}
       </div>
       <div className="rounded-lg border">
         <Table>
@@ -175,8 +170,8 @@ export function UsersPage() {
             <TableRow>
               <TableHead>Name</TableHead>
               <TableHead>Role</TableHead>
-              <TableHead className="hidden md:table-cell">Two-factor</TableHead>
-              <TableHead className="hidden md:table-cell">Last sign-in</TableHead>
+              <TableHead className="hidden md:table-cell">Two-Factor</TableHead>
+              <TableHead className="hidden md:table-cell">Last Sign-In</TableHead>
               <TableHead className="w-10" />
             </TableRow>
           </TableHeader>
@@ -222,7 +217,7 @@ export function UsersPage() {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuSub>
-                          <DropdownMenuSubTrigger>Change role</DropdownMenuSubTrigger>
+                          <DropdownMenuSubTrigger>Change Role</DropdownMenuSubTrigger>
                           <DropdownMenuSubContent>
                             <DropdownMenuRadioGroup value={u.role} onValueChange={(r) => update.mutate({ userId: u.id, role: r as Role })}>
                               {ROLES.map((r) => (
@@ -234,10 +229,10 @@ export function UsersPage() {
                           </DropdownMenuSubContent>
                         </DropdownMenuSub>
                         <DropdownMenuItem onSelect={() => sendReset.mutate({ userId: u.id })} disabled={!u.active}>
-                          Send password reset
+                          Send Password Reset
                         </DropdownMenuItem>
                         {u.twoFactorEnabled && (
-                          <DropdownMenuItem onSelect={() => resetTwoFactor.mutate({ userId: u.id })}>Reset two-factor</DropdownMenuItem>
+                          <DropdownMenuItem onSelect={() => resetTwoFactor.mutate({ userId: u.id })}>Reset Two-Factor</DropdownMenuItem>
                         )}
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
@@ -264,7 +259,7 @@ export function UsersPage() {
 
       {!!invites.data?.length && (
         <section className="mt-8">
-          <h2 className="mb-3 font-medium">Pending invitations</h2>
+          <h2 className="mb-3 font-medium">Pending Invitations</h2>
           <ul className="divide-y rounded-lg border">
             {invites.data.map((i) => (
               <li key={i.id} className="flex flex-wrap items-center gap-3 px-3 py-2.5">

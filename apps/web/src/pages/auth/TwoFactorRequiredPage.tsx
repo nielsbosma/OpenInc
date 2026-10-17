@@ -10,14 +10,14 @@ export function TwoFactorRequiredPage() {
   const logout = useLogout();
   return (
     <AuthLayout
-      title="Two-factor authentication is required"
+      title="Two-Factor Authentication Is Required"
       description="Your administrator requires it for every account. It takes a minute."
       wide
     >
       <div className="grid gap-6">
         <TwoFactorSetup onDone={() => void queryClient.invalidateQueries()} />
         <Button variant="ghost" size="sm" className="justify-self-start" onClick={() => logout.mutate({})}>
-          Sign out
+          Sign Out
         </Button>
       </div>
     </AuthLayout>

@@ -23,6 +23,7 @@ export const appRouter = router({
     complete: mutation(s.setup.complete),
     checklist: query(s.setup.checklist),
     dismissChecklist: mutation(s.setup.dismissChecklist),
+    showChecklist: mutation(s.setup.showChecklist),
   }),
   auth: router({
     login: procedure.input(loginInput).mutation(async ({ ctx, input }) => finishLogin(ctx, await call(s.auth.login, ctx.app, input))),
@@ -75,6 +76,7 @@ export const appRouter = router({
     overview: query(s.settings.overview),
     testEmail: mutation(s.settings.testEmail),
     testAi: mutation(s.settings.testAi),
+    listAiModels: mutation(s.settings.listAiModels),
     storage: query(s.settings.storage),
     testStorage: mutation(s.settings.testStorage),
   }),
@@ -90,9 +92,6 @@ export const appRouter = router({
     list: query(s.notifications.list),
     markRead: mutation(s.notifications.markRead),
     markAllRead: mutation(s.notifications.markAllRead),
-  }),
-  dashboard: router({
-    summary: query(s.dashboard.summary),
   }),
   system: router({
     clientConfig: query(s.system.clientConfig),

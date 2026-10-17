@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Fragment, useState } from 'react';
-import { EmptyState, PageHeader, Spinner } from '@/components/common';
+import { EmptyState, Spinner } from '@/components/common';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -23,7 +23,8 @@ function Json({ value }: { value: unknown }) {
   );
 }
 
-export function AuditPage() {
+/** Settings → Audit Log. */
+export function AuditSection() {
   const trpc = useTRPC();
   const format = useFormat();
   const [search, setSearch] = useState('');
@@ -48,7 +49,6 @@ export function AuditPage() {
 
   return (
     <>
-      <PageHeader title="Audit log" description="Every change: who, what, when, from where, with before and after values." />
       <div className="mb-3 flex flex-wrap gap-2">
         <Input
           placeholder="Search"
@@ -70,7 +70,7 @@ export function AuditPage() {
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value={ANY}>All actions</SelectItem>
+            <SelectItem value={ANY}>All Actions</SelectItem>
             {facets.data?.actions.map((a) => (
               <SelectItem key={a} value={a} className="font-mono text-xs">
                 {a}
@@ -89,7 +89,7 @@ export function AuditPage() {
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value={ANY}>All surfaces</SelectItem>
+            <SelectItem value={ANY}>All Surfaces</SelectItem>
             {SURFACES.map((s) => (
               <SelectItem key={s} value={s}>
                 {s}
@@ -101,7 +101,7 @@ export function AuditPage() {
       {list.isLoading ? (
         <Spinner />
       ) : !list.data?.items.length ? (
-        <EmptyState title="No entries" />
+        <EmptyState title="No Entries" />
       ) : (
         <div className="rounded-lg border">
           <Table>
@@ -167,7 +167,7 @@ export function AuditPage() {
             size="icon-sm"
             disabled={offset === 0}
             onClick={() => setOffset(offset - PAGE)}
-            aria-label="Previous page"
+            aria-label="Previous Page"
           >
             <ChevronLeft />
           </Button>
@@ -176,7 +176,7 @@ export function AuditPage() {
             size="icon-sm"
             disabled={offset + PAGE >= total}
             onClick={() => setOffset(offset + PAGE)}
-            aria-label="Next page"
+            aria-label="Next Page"
           >
             <ChevronRight />
           </Button>

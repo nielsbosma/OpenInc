@@ -1,12 +1,12 @@
-import { AppError, companyLogo, getObjectStream, getReadableFile, HTTP_STATUS, reportError, storeFile } from '@openinc/core';
+import { AppError, can, companyLogo, getObjectStream, getReadableFile, HTTP_STATUS, reportError, storeFile } from '@openinc/core';
 import { FILE_KINDS, type FileKind, MAX_UPLOAD_BYTES } from '@openinc/shared';
 import express, { type Request, type Response, Router } from 'express';
 import { ctxFromRequest } from './http-context.ts';
 
 export function sendError(res: Response, error: unknown) {
   if (error instanceof AppError) return res.status(HTTP_STATUS[error.code]).json({ error: error.message });
-  reportError(error);
-  return res.status(500).json({ error: 'Something went wrong' });
+  reportError(error, { requestId: res.locals.requestId });
+  return res.status(500).json({ error: `Something went wrong. Try again, or check the logs. (reference ${res.locals.requestId})` });
 }
 
 async function sendFile(
@@ -65,6 +65,23 @@ export async function logoHandler(req: Request, res: Response) {
     const logo = await companyLogo();
     if (!logo) return res.status(404).end();
     await sendFile(req, res, logo, 'public, max-age=300');
+  } catch (error) {
+    sendError(res, error);
+  }
+}
+
+/** Downloads a pg_dump backup from the bucket. Only for people who may see the System page. */
+export async function backupHandler(req: Request, res: Response) {
+  try {
+    const ctx = await ctxFromRequest(req);
+    if (!ctx.actor) return res.status(401).json({ error: 'Sign in required' });
+    if (!can(ctx, 'system.read') || ctx.actor.mustEnableTwoFactor)
+      return res.status(403).json({ error: 'You do not have permission to do that' });
+    if (!/^openinc-[\w.-]+\.dump$/.test(String(req.params.name))) return res.status(404).json({ error: 'Backup not found' });
+    res.setHeader('Content-Type', 'application/octet-stream');
+    res.setHeader('Content-Disposition', `attachment; filename="${String(req.params.name)}"`);
+    res.setHeader('Cache-Control', 'no-store');
+    (await getObjectStream(`backups/${String(req.params.name)}`)).pipe(res);
   } catch (error) {
     sendError(res, error);
   }

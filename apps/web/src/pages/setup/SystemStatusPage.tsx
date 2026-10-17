@@ -7,18 +7,18 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 
 const COPY: Record<string, { title: string; description: string }> = {
   'config-error': {
-    title: 'OpenInc needs a few settings',
+    title: 'OpenInc Needs a Few Settings',
     description: 'Some environment variables are missing or invalid. Set them on the service and redeploy.',
   },
   unreachable: {
-    title: 'Cannot reach the database or bucket',
+    title: 'Cannot Reach the Database or Bucket',
     description: 'OpenInc keeps retrying every few seconds. This page updates by itself.',
   },
   migrating: { title: 'Upgrading', description: 'OpenInc is applying database migrations. This usually takes a few seconds.' },
   starting: { title: 'Starting', description: 'Checking the database and storage…' },
-  failed: { title: 'The upgrade failed', description: 'Nothing was half-applied: the failing migration was rolled back.' },
+  failed: { title: 'The Upgrade Failed', description: 'Nothing was half-applied: the failing migration was rolled back.' },
   'too-new': {
-    title: 'This version is too old for the database',
+    title: 'This Version Is Too Old for the Database',
     description: 'The database was upgraded by a newer OpenInc. Downgrades are not supported.',
   },
 };
@@ -64,7 +64,7 @@ export function SystemStatusPage({ status }: { status: SystemStatus | null }) {
             <span className="font-mono">v{status?.version ?? '?'}</span>
             {(phase === 'unreachable' || phase === 'failed') && (
               <Button variant="outline" size="sm" onClick={() => retry.mutate()} disabled={retry.isPending}>
-                <RefreshCw /> Try again
+                <RefreshCw /> Try Again
               </Button>
             )}
           </div>

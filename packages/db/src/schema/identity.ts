@@ -22,6 +22,8 @@ export const users = pgTable(
     failedLoginCount: integer().notNull().default(0),
     lockedUntil: timestamptz(),
     lastLoginAt: timestamptz(),
+    /** Hid the dashboard's setup checklist. Per person; "Show Setup Checklist" clears it. */
+    checklistDismissedAt: timestamptz(),
     passwordChangedAt: timestamptz().notNull().defaultNow(),
     createdAt: createdAt(),
     updatedAt: updatedAt(),

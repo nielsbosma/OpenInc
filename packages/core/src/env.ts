@@ -86,13 +86,17 @@ export function loadDevEnv(root: URL): void {
 
 let version: string | undefined;
 
-/** Set by the image build (OPENINC_VERSION); in development it is the root package.json version. */
+/**
+ * Release images get the version from the tag they were built for (OPENINC_VERSION, a build arg set
+ * by CI). Anything else, local development included, shows the package.json version with "-dev".
+ */
 export function appVersion(): string {
   if (!version) {
     version = process.env.OPENINC_VERSION?.trim();
     if (!version) {
       try {
-        version = (JSON.parse(readFileSync(new URL('../../../package.json', import.meta.url), 'utf8')) as { version: string }).version;
+        const pkg = JSON.parse(readFileSync(new URL('../../../package.json', import.meta.url), 'utf8')) as { version: string };
+        version = `${pkg.version}-dev`;
       } catch {
         version = '0.0.0';
       }

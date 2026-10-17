@@ -3,9 +3,9 @@ import { EmptyState } from '@/components/common';
 
 export function NotFoundPage() {
   return (
-    <EmptyState title="Page not found">
+    <EmptyState title="Page Not Found">
       <Link to="/" className="text-primary hover:underline">
-        Go to the dashboard
+        Go to the Dashboard
       </Link>
     </EmptyState>
   );

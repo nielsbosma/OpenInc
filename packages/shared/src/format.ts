@@ -1,10 +1,14 @@
-/** Display helpers. Amounts are integer minor units (bigint); time zone and currency come from Company settings. */
+/**
+ * Display helpers. Amounts are integer minor units (bigint); time zone and currency come from Company
+ * settings. The UI is English-only, so formatting uses en-GB rather than the browser's locale.
+ */
+export const UI_LOCALE = 'en-GB';
 
 export function currencyDigits(currency: string): number {
   return new Intl.NumberFormat('en', { style: 'currency', currency }).resolvedOptions().maximumFractionDigits ?? 2;
 }
 
-export function formatMoney(minor: bigint, currency: string, locale?: string): string {
+export function formatMoney(minor: bigint, currency: string, locale = UI_LOCALE): string {
   const digits = currencyDigits(currency);
   const negative = minor < 0n;
   const abs = negative ? -minor : minor;
@@ -32,16 +36,16 @@ export function parseMoney(input: string, currency: string): bigint {
   return sign ? -minor : minor;
 }
 
-export function formatNumber(value: bigint | number, locale?: string): string {
+export function formatNumber(value: bigint | number, locale = UI_LOCALE): string {
   return new Intl.NumberFormat(locale).format(value);
 }
 
-export function formatDateTime(value: Date | string, timeZone?: string, locale?: string): string {
+export function formatDateTime(value: Date | string, timeZone?: string, locale = UI_LOCALE): string {
   return new Intl.DateTimeFormat(locale, { timeZone, dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value));
 }
 
 /** Calendar dates are `YYYY-MM-DD` strings with no time zone. */
-export function formatDate(value: Date | string, timeZone?: string, locale?: string): string {
+export function formatDate(value: Date | string, timeZone?: string, locale = UI_LOCALE): string {
   if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
     return new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeZone: 'UTC' }).format(new Date(`${value}T00:00:00Z`));
   }

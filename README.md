@@ -124,6 +124,16 @@ pnpm db:reset             # wipe, install and seed; or `pnpm db:reset -- --empty
 pnpm dev                  # http://localhost:5173 with hot reload (API on :3000)
 ```
 
+| URL | What |
+| --- | --- |
+| http://localhost:5173 | The app (`pnpm dev`) |
+| http://localhost:8025 | Mailpit: every email the app sends (SMTP on `localhost:1025`) |
+| http://localhost:6006 | Storybook (`pnpm storybook`) |
+| http://localhost:9300 | S3 (RustFS), user `openinc` / `openinc-secret` |
+| http://localhost:8080 | The production image (`docker compose --profile prod up -d --build`) |
+
+The dev server applies new migrations itself when it restarts, as production does; after `pnpm db:generate` it restarts on its own.
+
 Seeded accounts: `admin@openinc.local` / `openinc-admin-1` (Admin), `maria@openinc.local` / `openinc-member-1` (Member), `board@openinc.local` / `openinc-reader-1` (Read-only). All email lands in Mailpit at http://localhost:8025. To try the assistant, put `SEED_AI_PROVIDER`, `SEED_AI_MODEL` and `SEED_AI_API_KEY` in `.env.local` and run `pnpm db:reset` again.
 
 | Command | |
@@ -136,6 +146,22 @@ Seeded accounts: `admin@openinc.local` / `openinc-admin-1` (Admin), `maria@openi
 | `docker compose --profile prod up -d --build` | The production image at http://localhost:8080, the way Sliplane runs it |
 
 See [CLAUDE.md](CLAUDE.md) for conventions and [CONTRIBUTING.md](CONTRIBUTING.md) for how to contribute.
+
+## Releasing
+
+Releases are GitHub Releases; GitHub Actions builds and publishes the image.
+
+1. Bump `version` in the root `package.json` (e.g. `0.2.0`), move the **Unreleased** notes in `CHANGELOG.md` under that version, and merge to `main`.
+2. On GitHub, **Releases → Draft a new release**, create the tag `v0.2.0` on `main`, name the release `v0.2.0`, paste the changelog section and click **Publish release**.
+3. The workflow builds `linux/amd64` and `linux/arm64`, runs the end-to-end and upgrade tests, and pushes `ghcr.io/nielsbosma/openinc:0.2.0`, `:0.2` and `:latest`. The image reports exactly `0.2.0` (sidebar and Admin Settings → System); installs that check for updates see it as soon as the release is published.
+
+Every merge to `main` publishes `:edge` (version `0.2.0-<commit>`). Local builds without the build arg show `<version>-dev`.
+
+### One-time GitHub settings
+
+- **Make the image public** after the first publish: GitHub → your profile → **Packages → openinc → Package settings → Change visibility → Public**. Until then `docker pull` and Sliplane need a registry login. In the same page, under **Manage Actions access**, make sure the `OpenInc` repository has **Write** access (it does when the workflow created the package).
+- **Actions permissions**: Settings → Actions → General. Keep **Allow all actions** (the workflow uses `actions/*`, `docker/*` and `pnpm/action-setup`). The default **Workflow permissions: read** is fine: the workflow asks for `packages: write` itself and publishes with `GITHUB_TOKEN`, so no personal access token or secret is needed.
+- Optional: protect `main` and `v*` tags (Settings → Rules) so releases only come from reviewed code.
 
 ## License
 

@@ -6,3 +6,4 @@ export * from './schemas/common.ts';
 export * from './schemas/platform.ts';
 export * from './schemas/settings.ts';
 export * from './system.ts';
+export * from './title-case.ts';

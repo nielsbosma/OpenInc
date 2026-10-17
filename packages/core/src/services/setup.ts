@@ -1,6 +1,7 @@
 import { and, count, eq, invites, isNull, ne, users } from '@openinc/db';
 import { createFirstAdminInput, empty, type SetupChecklistItem, setupCodeInput } from '@openinc/shared';
 import { audit } from '../audit.ts';
+import type { Ctx } from '../context.ts';
 import { forbidden, preconditionFailed, tooManyRequests } from '../errors.ts';
 import { checkSetupCode } from '../lib/crypto.ts';
 import { hashPassword } from '../lib/password.ts';
@@ -108,7 +109,7 @@ export const completeOnboarding = defineService({
 
 export const checklist = defineService({
   name: 'setup.checklist',
-  description: 'The setup checklist on the dashboard: what is left to do (email, invite the team, two-factor, AI assistant).',
+  description: 'The setup checklist in the sidebar: what is left to do (email, invite the team, two-factor, AI assistant).',
   kind: 'query',
   access: 'authenticated',
   input: empty,
@@ -122,7 +123,10 @@ export const checklist = defineService({
         .select({ value: count() })
         .from(invites)
         .where(and(isNull(invites.acceptedAt), isNull(invites.revokedAt))),
-      ctx.db.select({ totpEnabledAt: users.totpEnabledAt }).from(users).where(eq(users.id, ctx.actor!.userId)),
+      ctx.db
+        .select({ totpEnabledAt: users.totpEnabledAt, checklistDismissedAt: users.checklistDismissedAt })
+        .from(users)
+        .where(eq(users.id, ctx.actor!.userId)),
     ]);
     const done: Record<SetupChecklistItem, boolean> = {
       email: !!email && !(email.host === 'localhost' && email.port === 1025),
@@ -131,22 +135,40 @@ export const checklist = defineService({
       ai: !!ai,
     };
     const isAdmin = ctx.actor!.permissions.has('settings.manage');
-    const visible = Object.values(done).some((d) => !d) && !onboarding.checklistDismissed && isAdmin;
-    return { visible, onboardingCompleted: !!onboarding.completedAt, items: done };
+    const complete = Object.values(done).every(Boolean);
+    const dismissed = !!me?.checklistDismissedAt;
+    return { visible: isAdmin && !complete && !dismissed, dismissed, complete, onboardingCompleted: !!onboarding.completedAt, items: done };
   },
 });
 
+async function setChecklistDismissed(ctx: Ctx, dismissed: boolean) {
+  const at = dismissed ? new Date() : null;
+  await ctx.db.update(users).set({ checklistDismissedAt: at }).where(eq(users.id, ctx.actor!.userId));
+  await audit(ctx, {
+    action: dismissed ? 'setup.dismiss_checklist' : 'setup.show_checklist',
+    entityType: 'user',
+    entityId: ctx.actor!.userId,
+    after: { checklistDismissedAt: at },
+  });
+  return { ok: true };
+}
+
 export const dismissChecklist = defineService({
   name: 'setup.dismissChecklist',
-  description: 'Hide the setup checklist on the dashboard.',
+  description: 'Hide the setup checklist on your dashboard. Only for you; bring it back with setup.showChecklist.',
   kind: 'mutation',
-  transaction: false,
-  access: 'settings.manage',
+  access: 'authenticated',
   tool: false,
   input: empty,
-  async handler(ctx) {
-    const current = await getSettingsOrDefaults('onboarding');
-    await saveSettings(ctx, 'onboarding', { ...current, checklistDismissed: true });
-    return { ok: true };
-  },
+  handler: (ctx) => setChecklistDismissed(ctx, true),
+});
+
+export const showChecklist = defineService({
+  name: 'setup.showChecklist',
+  description: 'Show the setup checklist on your dashboard again after it was dismissed.',
+  kind: 'mutation',
+  access: 'authenticated',
+  tool: false,
+  input: empty,
+  handler: (ctx) => setChecklistDismissed(ctx, false),
 });

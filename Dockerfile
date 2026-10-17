@@ -34,7 +34,8 @@ COPY packages ./packages
 COPY apps/server ./apps/server
 COPY --from=build /app/apps/web/dist ./apps/web/dist
 
-ARG OPENINC_VERSION=0.0.0-dev
+# Set by CI from the release tag; empty means a local build, shown as <package version>-dev.
+ARG OPENINC_VERSION=
 ENV NODE_ENV=production OPENINC_VERSION=$OPENINC_VERSION PORT=3000
 USER node
 WORKDIR /app/apps/server

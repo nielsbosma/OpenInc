@@ -39,7 +39,7 @@ export function InvitePage() {
 
   if (step === 'twoFactor') {
     return (
-      <AuthLayout title="Protect your account" description="One more step: turn on two-factor authentication." wide>
+      <AuthLayout title="Protect Your Account" description="One more step: turn on two-factor authentication." wide>
         <TwoFactorSetup onDone={finish} onSkip={finish} />
       </AuthLayout>
     );
@@ -47,13 +47,13 @@ export function InvitePage() {
 
   if (!token || invite.isError) {
     return (
-      <AuthLayout title="Invitation not valid">
+      <AuthLayout title="Invitation Not Valid">
         <div className="grid gap-4">
           <p className="text-muted-foreground">
             {invite.error?.message ?? 'This link is incomplete.'} Ask the person who invited you to send a new one.
           </p>
           <Link to="/login" className="text-primary hover:underline">
-            Go to sign in
+            Go to Sign In
           </Link>
         </div>
       </AuthLayout>
@@ -89,14 +89,14 @@ export function InvitePage() {
         <Field label="Email" htmlFor="email">
           <Input id="email" value={invite.data.email} disabled />
         </Field>
-        <Field label="Your name" htmlFor="name" error={errors.name}>
+        <Field label="Your Name" htmlFor="name" error={errors.name}>
           <Input id="name" autoComplete="name" value={name} onChange={(e) => setName(e.target.value)} autoFocus />
         </Field>
         <Field label="Password" htmlFor="password" error={errors.password} hint="At least 12 characters, with letters and digits.">
           <Input id="password" type="password" autoComplete="new-password" value={password} onChange={(e) => setPassword(e.target.value)} />
         </Field>
         <Button type="submit" disabled={accept.isPending}>
-          {accept.isPending && <Spinner className="text-primary-foreground" />} Create account
+          {accept.isPending && <Spinner className="text-primary-foreground" />} Create Account
         </Button>
       </form>
     </AuthLayout>

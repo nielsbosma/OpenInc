@@ -3,12 +3,13 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { DefaultChatTransport, type FileUIPart, type UIMessage } from 'ai';
 import { ArrowUp, History, Paperclip, Plus, Sparkles, Square, X } from 'lucide-react';
 import { type ClipboardEvent, type KeyboardEvent, useEffect, useMemo, useRef, useState } from 'react';
-import { useLocation } from 'react-router';
+import { useLocation, useNavigate } from 'react-router';
 import { toast } from 'sonner';
 import { Spinner } from '@/components/common';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Textarea } from '@/components/ui/textarea';
+import { useCan, useClientConfig } from '@/lib/session';
 import { useTRPC, useTRPCClient } from '@/lib/trpc';
 import { uploadFile } from '@/lib/upload';
 import { ChatMessage } from './ChatMessage';
@@ -113,18 +114,18 @@ function Conversation({
 
   return (
     <div className="flex h-full w-full flex-col bg-background">
-      <div className="flex h-14 shrink-0 items-center gap-1 border-b px-3">
+      <div className="flex h-12 shrink-0 items-center gap-1 border-b px-3">
         <Sparkles className="size-4 text-primary" />
         <span className="font-medium">Assistant</span>
         <div className="ml-auto flex items-center">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon-sm" aria-label="Earlier chats">
+              <Button variant="ghost" size="icon-sm" aria-label="Earlier Chats">
                 <History />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-64">
-              <DropdownMenuLabel>Earlier chats</DropdownMenuLabel>
+              <DropdownMenuLabel>Earlier Chats</DropdownMenuLabel>
               {threads.data?.length ? (
                 threads.data.map((t) => (
                   <DropdownMenuItem key={t.id} onSelect={() => onOpenThread(t.id)}>
@@ -132,14 +133,14 @@ function Conversation({
                   </DropdownMenuItem>
                 ))
               ) : (
-                <div className="px-2 py-1.5 text-muted-foreground">No earlier chats</div>
+                <div className="px-2 py-1.5 text-muted-foreground">No Earlier Chats</div>
               )}
             </DropdownMenuContent>
           </DropdownMenu>
-          <Button variant="ghost" size="icon-sm" onClick={onNew} aria-label="New chat">
+          <Button variant="ghost" size="icon-sm" onClick={onNew} aria-label="New Chat">
             <Plus />
           </Button>
-          <Button variant="ghost" size="icon-sm" onClick={onClose} aria-label="Close assistant">
+          <Button variant="ghost" size="icon-sm" onClick={onClose} aria-label="Close Assistant">
             <X />
           </Button>
         </div>
@@ -199,7 +200,7 @@ function Conversation({
         )}
         <div className="flex items-end gap-2 rounded-lg border bg-background p-1.5 focus-within:ring-[3px] focus-within:ring-ring/50">
           <input ref={fileInput} type="file" multiple hidden onChange={(e) => e.target.files && void attach([...e.target.files])} />
-          <Button variant="ghost" size="icon-sm" onClick={() => fileInput.current?.click()} aria-label="Attach files">
+          <Button variant="ghost" size="icon-sm" onClick={() => fileInput.current?.click()} aria-label="Attach Files">
             <Paperclip />
           </Button>
           <Textarea
@@ -227,7 +228,54 @@ function Conversation({
 }
 
 /** The assistant: it calls the same services as the UI, as the signed-in user. Chats are saved per user. */
+/** Shown in the panel until an Admin sets up a provider, so people can always find the assistant. */
+function NotConfigured({ onClose }: { onClose: () => void }) {
+  const can = useCan();
+  const navigate = useNavigate();
+  const config = useClientConfig();
+  const allowed = config?.aiAllowed;
+  return (
+    <div className="flex h-full w-full flex-col bg-background">
+      <div className="flex h-12 shrink-0 items-center gap-1.5 border-b px-3">
+        <Sparkles className="size-4 text-primary" />
+        <span className="font-medium">Assistant</span>
+        <Button variant="ghost" size="icon-sm" className="ml-auto" onClick={onClose} aria-label="Close Assistant">
+          <X />
+        </Button>
+      </div>
+      <div className="flex flex-1 flex-col items-center justify-center gap-3 px-6 text-center" data-testid="chat-not-configured">
+        <Sparkles className="size-8 text-muted-foreground" />
+        <p className="font-medium">The Assistant Needs an AI Provider</p>
+        <p className="text-muted-foreground">
+          {allowed === false
+            ? 'Your role does not include the assistant.'
+            : 'It can answer questions about the app and do things for you, once an AI provider (Anthropic, OpenAI or LiteLLM) is set up.'}
+        </p>
+        {allowed !== false &&
+          (can('settings.manage') ? (
+            <Button
+              onClick={() => {
+                onClose();
+                navigate('/admin/settings/ai');
+              }}
+            >
+              Set Up AI Provider
+            </Button>
+          ) : (
+            <p className="text-muted-foreground">Ask an Admin to set up an AI provider.</p>
+          ))}
+      </div>
+    </div>
+  );
+}
+
 export function ChatPanel({ onClose }: { onClose: () => void }) {
+  const config = useClientConfig();
+  if (!config?.aiConfigured || !config.aiAllowed) return <NotConfigured onClose={onClose} />;
+  return <ChatThreads onClose={onClose} />;
+}
+
+function ChatThreads({ onClose }: { onClose: () => void }) {
   const client = useTRPCClient();
   const [thread, setThread] = useState<{ id: string; messages: UIMessage[] }>(() => ({ id: crypto.randomUUID(), messages: [] }));
   async function open(id: string) {

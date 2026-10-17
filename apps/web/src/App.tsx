@@ -7,9 +7,7 @@ import { useErrorTracking } from '@/lib/error-tracking';
 import { useSession } from '@/lib/session';
 import { useTRPC } from '@/lib/trpc';
 import { AccountPage } from '@/pages/account/AccountPage';
-import { AuditPage } from '@/pages/admin/AuditPage';
 import { SettingsPage } from '@/pages/admin/settings/SettingsPage';
-import { UsersPage } from '@/pages/admin/UsersPage';
 import { InvitePage } from '@/pages/auth/InvitePage';
 import { LoginPage } from '@/pages/auth/LoginPage';
 import { ForgotPasswordPage, ResetPasswordPage } from '@/pages/auth/PasswordPages';
@@ -78,8 +76,8 @@ export function App() {
           <Route key={m.path} path={m.path} element={<ComingSoonPage module={m} />} />
         ))}
         <Route path="/account/:tab?" element={<AccountPage />} />
-        <Route path="/admin/users" element={<UsersPage />} />
-        <Route path="/admin/audit" element={<AuditPage />} />
+        <Route path="/admin/users" element={<Navigate to="/admin/settings/users" replace />} />
+        <Route path="/admin/audit" element={<Navigate to="/admin/settings/audit-log" replace />} />
         <Route path="/admin/settings/:tab?" element={<SettingsPage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Route>

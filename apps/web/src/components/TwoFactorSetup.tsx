@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useTRPC } from '@/lib/trpc';
 
-export function RecoveryCodes({ codes, onDone, doneLabel = 'I saved them' }: { codes: string[]; onDone?: () => void; doneLabel?: string }) {
+export function RecoveryCodes({ codes, onDone, doneLabel = 'I Saved Them' }: { codes: string[]; onDone?: () => void; doneLabel?: string }) {
   const text = codes.join('\n');
   const download = () => {
     const url = URL.createObjectURL(new Blob([`OpenInc recovery codes\n\n${text}\n`], { type: 'text/plain' }));
@@ -26,7 +26,7 @@ export function RecoveryCodes({ codes, onDone, doneLabel = 'I saved them' }: { c
         ))}
       </ul>
       <div className="flex flex-wrap gap-2">
-        <CopyButton value={text} label="Copy codes" />
+        <CopyButton value={text} label="Copy Codes" />
         <Button type="button" variant="outline" size="sm" onClick={download}>
           <Download /> Download
         </Button>
@@ -77,7 +77,7 @@ export function TwoFactorSetup({ onDone, onSkip }: { onDone: () => void; onSkip?
         </div>
         <div className="flex gap-2">
           <Button onClick={() => begin.mutate({})} disabled={begin.isPending}>
-            {begin.isPending && <Spinner className="text-primary-foreground" />} Set up two-factor
+            {begin.isPending && <Spinner className="text-primary-foreground" />} Set Up Two-Factor
           </Button>
           {onSkip && (
             <Button variant="ghost" onClick={onSkip}>
@@ -122,7 +122,7 @@ export function TwoFactorSetup({ onDone, onSkip }: { onDone: () => void; onSkip?
       </Field>
       <div className="flex gap-2">
         <Button type="submit" disabled={enable.isPending}>
-          {enable.isPending && <Spinner className="text-primary-foreground" />} Turn on
+          {enable.isPending && <Spinner className="text-primary-foreground" />} Turn On
         </Button>
         {onSkip && (
           <Button type="button" variant="ghost" onClick={onSkip}>

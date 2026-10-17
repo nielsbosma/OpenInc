@@ -2,6 +2,7 @@ import { Check, Copy, Loader2 } from 'lucide-react';
 import { type ReactNode, useState } from 'react';
 import type { z } from 'zod';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 
@@ -47,7 +48,8 @@ export function Field({
   className?: string;
 }) {
   return (
-    <div className={cn('grid gap-1.5', className)}>
+    // content-start: in a two-column row a field without helper text must not stretch, or its label drifts down.
+    <div className={cn('grid content-start gap-1.5', className)}>
       <Label htmlFor={htmlFor}>{label}</Label>
       {children}
       {error ? <p className="text-xs text-destructive">{error}</p> : hint ? <p className="text-xs text-muted-foreground">{hint}</p> : null}
@@ -102,4 +104,58 @@ export function validate<S extends z.ZodType>(
 export function StatusDot({ tone }: { tone: 'ok' | 'warn' | 'error' | 'off' }) {
   const color = { ok: 'bg-success', warn: 'bg-warning', error: 'bg-destructive', off: 'bg-muted-foreground/40' }[tone];
   return <span className={cn('inline-block size-2 rounded-full', color)} />;
+}
+
+/** A destructive action that asks first. */
+export function ConfirmButton({
+  label,
+  title,
+  description,
+  confirmLabel = label,
+  onConfirm,
+  disabled,
+}: {
+  label: string;
+  title: string;
+  description: ReactNode;
+  confirmLabel?: string;
+  onConfirm: () => void;
+  disabled?: boolean;
+}) {
+  const [open, setOpen] = useState(false);
+  return (
+    <>
+      <Button
+        type="button"
+        variant="ghost"
+        className="text-destructive hover:text-destructive"
+        onClick={() => setOpen(true)}
+        disabled={disabled}
+      >
+        {label}
+      </Button>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{title}</DialogTitle>
+            <DialogDescription>{description}</DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => {
+                setOpen(false);
+                onConfirm();
+              }}
+            >
+              {confirmLabel}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
 }

@@ -1,5 +1,5 @@
-import { auditLog, compareVersions, count, dataMigrations, desc, eq, sql, users } from '@openinc/db';
-import { empty, runDemoJobInput } from '@openinc/shared';
+import { compareVersions, dataMigrations, desc, sql } from '@openinc/db';
+import { empty, runDemoJobInput, systemInfoInput } from '@openinc/shared';
 import { isAiConfigured } from '../ai/model.ts';
 import { audit } from '../audit.ts';
 import { can } from '../context.ts';
@@ -12,22 +12,28 @@ import { getSettings, getSettingsOrDefaults } from '../settings.ts';
 
 export const RELEASES_REPO = 'nielsbosma/OpenInc';
 
-let latestRelease: { checkedAt: number; value: { version: string; url: string } | null } | undefined;
+type ReleaseCheck = { latest: { version: string; url: string } | null; error: string | null };
+let lastCheck: { checkedAt: number; value: ReleaseCheck } | undefined;
 
-async function fetchLatestRelease(): Promise<{ version: string; url: string } | null> {
-  if (latestRelease && Date.now() - latestRelease.checkedAt < 6 * 60 * 60 * 1000) return latestRelease.value;
-  let value: { version: string; url: string } | null = null;
+/** Asks GitHub for the newest release, at most every six hours unless forced. A repo without releases is not an error. */
+async function checkLatestRelease(force: boolean): Promise<ReleaseCheck> {
+  if (!force && lastCheck && Date.now() - lastCheck.checkedAt < 6 * 60 * 60 * 1000) return lastCheck.value;
+  let value: ReleaseCheck;
   try {
     const res = await fetch(`https://api.github.com/repos/${RELEASES_REPO}/releases/latest`, {
       headers: { accept: 'application/vnd.github+json', 'user-agent': 'openinc-update-check' },
       signal: AbortSignal.timeout(5000),
     });
-    if (res.ok) {
+    if (res.status === 404) value = { latest: null, error: null };
+    else if (!res.ok) value = { latest: null, error: `GitHub answered HTTP ${res.status}` };
+    else {
       const body = (await res.json()) as { tag_name: string; html_url: string };
-      value = { version: body.tag_name.replace(/^v/, ''), url: body.html_url };
+      value = { latest: { version: body.tag_name.replace(/^v/, ''), url: body.html_url }, error: null };
     }
-  } catch {}
-  latestRelease = { checkedAt: Date.now(), value };
+  } catch (error) {
+    value = { latest: null, error: error instanceof Error ? error.message : 'Could not reach GitHub' };
+  }
+  lastCheck = { checkedAt: Date.now(), value };
   return value;
 }
 
@@ -46,7 +52,8 @@ export const clientConfig = defineService({
       logoUrl: company?.logoFileId ? '/api/public/logo' : null,
       timeZone: company?.timeZone ?? null,
       currency: company?.currency ?? null,
-      aiEnabled: signedIn ? (await isAiConfigured()) && can(ctx, 'ai.chat') : false,
+      aiConfigured: signedIn ? await isAiConfigured().catch(() => false) : false,
+      aiAllowed: signedIn && can(ctx, 'ai.chat'),
       errorTracking: await browserErrorTracking().catch(() => null),
     };
   },
@@ -58,11 +65,13 @@ export const info = defineService({
     'Running version and whether a newer release exists, applied database migrations, database backups, background queues and data migrations.',
   kind: 'query',
   access: 'system.read',
-  input: empty,
-  async handler(ctx) {
+  input: systemInfoInput,
+  async handler(ctx, input) {
     const systemSettings = await getSettingsOrDefaults('system');
-    const [latest, migrations, backups, queues, data] = await Promise.all([
-      systemSettings.updateCheck ? fetchLatestRelease() : Promise.resolve(null),
+    const version = appVersion();
+    const development = version.endsWith('-dev');
+    const [release, migrations, backups, queues, data] = await Promise.all([
+      systemSettings.updateCheck && !development ? checkLatestRelease(input.recheck) : Promise.resolve(null),
       ctx.db.execute<{ tag: string; app_version: string; applied_at: Date }>(
         sql`select tag, app_version, applied_at from openinc_migrations order by idx desc`,
       ),
@@ -70,11 +79,13 @@ export const info = defineService({
       queueStats().catch(() => []),
       ctx.db.select().from(dataMigrations).orderBy(desc(dataMigrations.createdAt)),
     ]);
-    const version = appVersion();
+    const latest = release?.latest ?? null;
     return {
       version,
       node: process.version,
+      development,
       latest,
+      updateError: release?.error ?? null,
       updateAvailable: !!latest && compareVersions(latest.version, version) > 0,
       updateCheck: systemSettings.updateCheck,
       migrations: migrations.rows.map((r) => ({ tag: r.tag, appVersion: r.app_version, appliedAt: new Date(r.applied_at) })),
@@ -82,33 +93,6 @@ export const info = defineService({
       queues,
       dataMigrations: data,
     };
-  },
-});
-
-export const dashboardSummary = defineService({
-  name: 'dashboard.summary',
-  description: 'Numbers for the dashboard: active people, and recent activity when the user may read the audit log.',
-  kind: 'query',
-  access: 'company.read',
-  input: empty,
-  async handler(ctx) {
-    const [[active], recent] = await Promise.all([
-      ctx.db.select({ value: count() }).from(users).where(eq(users.active, true)),
-      can(ctx, 'audit.read')
-        ? ctx.db
-            .select({
-              id: auditLog.id,
-              occurredAt: auditLog.occurredAt,
-              actorLabel: auditLog.actorLabel,
-              action: auditLog.action,
-              surface: auditLog.surface,
-            })
-            .from(auditLog)
-            .orderBy(desc(auditLog.id))
-            .limit(8)
-        : Promise.resolve([]),
-    ]);
-    return { activeUsers: active?.value ?? 0, recentActivity: recent.map((r) => ({ ...r, id: r.id.toString() })) };
   },
 });
 

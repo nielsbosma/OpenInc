@@ -185,6 +185,14 @@ describe.runIf(await reachable())('first run, settings and invites (database)', 
     expect(output.items.map((u) => u.email)).toEqual(expect.arrayContaining(['ada@example.com', 'max@example.com']));
   });
 
+  it('lets each person dismiss and restore the setup checklist', async () => {
+    expect((await invoke(services.setup.checklist, admin, {})).visible).toBe(true);
+    await invoke(services.setup.dismissChecklist, admin, {});
+    expect(await invoke(services.setup.checklist, admin, {})).toMatchObject({ visible: false, dismissed: true });
+    await invoke(services.setup.showChecklist, admin, {});
+    expect(await invoke(services.setup.checklist, admin, {})).toMatchObject({ visible: true, dismissed: false });
+  });
+
   it('keeps at least one active admin', async () => {
     await expect(invoke(services.users.update, admin, { userId: admin.actor!.userId, role: 'member' })).rejects.toMatchObject({
       code: 'BAD_REQUEST',

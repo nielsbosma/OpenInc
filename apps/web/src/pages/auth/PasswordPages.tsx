@@ -23,12 +23,12 @@ export function ForgotPasswordPage() {
   };
 
   return (
-    <AuthLayout title="Reset your password" description="We will email you a link to choose a new password.">
+    <AuthLayout title="Reset Your Password" description="We will email you a link to choose a new password.">
       {request.isSuccess ? (
         <div className="grid gap-4">
           <p>If an account exists for {email}, a link is on its way. It works for one hour.</p>
           <Link to="/login" className="text-primary hover:underline">
-            Back to sign in
+            Back to Sign In
           </Link>
         </div>
       ) : (
@@ -37,10 +37,10 @@ export function ForgotPasswordPage() {
             <Input id="email" type="email" autoComplete="username" value={email} onChange={(e) => setEmail(e.target.value)} autoFocus />
           </Field>
           <Button type="submit" disabled={request.isPending}>
-            {request.isPending && <Spinner className="text-primary-foreground" />} Send link
+            {request.isPending && <Spinner className="text-primary-foreground" />} Send Link
           </Button>
           <Link to="/login" className="text-center text-muted-foreground hover:text-foreground">
-            Back to sign in
+            Back to Sign In
           </Link>
         </form>
       )}
@@ -65,12 +65,12 @@ export function ResetPasswordPage() {
   };
 
   return (
-    <AuthLayout title="Choose a new password">
+    <AuthLayout title="Choose a New Password">
       {reset.isSuccess ? (
         <div className="grid gap-4">
           <p>Your password is changed. You were signed out everywhere else.</p>
           <Button asChild>
-            <Link to="/login">Sign in</Link>
+            <Link to="/login">Sign In</Link>
           </Button>
         </div>
       ) : (
@@ -80,7 +80,7 @@ export function ResetPasswordPage() {
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
-          <Field label="New password" htmlFor="password" hint="At least 12 characters, with letters and digits.">
+          <Field label="New Password" htmlFor="password" hint="At least 12 characters, with letters and digits.">
             <Input
               id="password"
               type="password"
@@ -91,7 +91,7 @@ export function ResetPasswordPage() {
             />
           </Field>
           <Button type="submit" disabled={reset.isPending || !token}>
-            {reset.isPending && <Spinner className="text-primary-foreground" />} Save password
+            {reset.isPending && <Spinner className="text-primary-foreground" />} Save Password
           </Button>
         </form>
       )}

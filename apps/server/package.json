@@ -7,7 +7,7 @@
     "./router": "./src/web/router.ts"
   },
   "scripts": {
-    "dev": "tsx watch --clear-screen=false src/main.ts",
+    "dev": "tsx watch --clear-screen=false --include \"../../packages/db/migrations/**/*\" src/main.ts",
     "start": "tsx src/main.ts",
     "typecheck": "tsc -p tsconfig.json",
     "test": "vitest run"

@@ -1,9 +1,13 @@
+import { Search } from 'lucide-react';
 import { NavLink } from 'react-router';
 import { Logo } from '@/components/common';
 import { Badge } from '@/components/ui/badge';
+import { Kbd } from '@/components/ui/kbd';
 import { useCan, useClientConfig } from '@/lib/session';
 import { cn } from '@/lib/utils';
-import { ADMIN_NAV, MAIN_NAV, MODULES, type NavItem } from './nav';
+import { isMac } from './keys';
+import { MAIN_NAV, MODULES, type NavItem, SETTINGS_NAV, SETTINGS_PERMISSIONS } from './nav';
+import { SetupChecklist } from './SetupChecklist';
 
 function Item({ item, onNavigate }: { item: NavItem; onNavigate?: () => void }) {
   const soon = MODULES.includes(item);
@@ -30,33 +34,46 @@ function Item({ item, onNavigate }: { item: NavItem; onNavigate?: () => void }) 
   );
 }
 
-export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
+export function Sidebar({ onNavigate, onSearch }: { onNavigate?: () => void; onSearch: () => void }) {
   const can = useCan();
   const config = useClientConfig();
-  const admin = ADMIN_NAV.filter((i) => !i.permission || can(i.permission));
+  const showSettings = SETTINGS_PERMISSIONS.some((p) => can(p));
   return (
     <div className="flex h-full flex-col bg-sidebar">
-      <div className="flex h-14 items-center gap-2.5 px-4">
+      <div className="flex h-14 shrink-0 items-center gap-2.5 px-4">
         <Logo src={config?.logoUrl} name={config?.companyName} />
         <div className="min-w-0">
           <div className="truncate text-sm font-semibold leading-tight">{config?.companyName ?? 'OpenInc'}</div>
-          {config?.companyName && <div className="text-[11px] leading-tight text-muted-foreground">OpenInc</div>}
+          <div className="truncate font-mono text-[11px] leading-tight text-muted-foreground" data-testid="app-version">
+            {config?.companyName ? 'OpenInc ' : ''}v{config?.version}
+          </div>
         </div>
       </div>
-      <nav className="flex flex-1 flex-col gap-0.5 overflow-y-auto px-2 py-2" aria-label="Main">
+      <div className="px-2 pb-2">
+        <button
+          type="button"
+          onClick={() => {
+            onNavigate?.();
+            onSearch();
+          }}
+          className="flex h-8 w-full items-center gap-2 rounded-md border bg-background px-2.5 text-[13px] text-muted-foreground transition-colors hover:bg-sidebar-accent"
+        >
+          <Search className="size-4 shrink-0" />
+          <span className="flex-1 truncate text-left">Search</span>
+          <Kbd>{isMac ? '⌘' : 'Ctrl'} K</Kbd>
+        </button>
+      </div>
+      <nav className="flex flex-1 flex-col gap-0.5 overflow-y-auto px-2 py-1" aria-label="Main">
         {MAIN_NAV.map((item) => (
           <Item key={item.path} item={item} onNavigate={onNavigate} />
         ))}
-        {admin.length > 0 && (
-          <>
-            <div className="mt-auto px-2.5 pt-6 pb-1 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">Manage</div>
-            {admin.map((item) => (
-              <Item key={item.path} item={item} onNavigate={onNavigate} />
-            ))}
-          </>
-        )}
       </nav>
-      <div className="px-4 py-3 font-mono text-[11px] text-muted-foreground">v{config?.version}</div>
+      <SetupChecklist onNavigate={onNavigate} />
+      {showSettings && (
+        <div className="border-t border-sidebar-border px-2 py-2">
+          <Item item={SETTINGS_NAV} onNavigate={onNavigate} />
+        </div>
+      )}
     </div>
   );
 }

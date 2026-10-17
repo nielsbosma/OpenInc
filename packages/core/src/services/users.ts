@@ -170,7 +170,7 @@ async function sendInviteEmail(ctx: Ctx, invite: { email: string; name: string |
       paragraphs: [
         `${ctx.actor?.name ?? 'An administrator'} invited you to ${product}. Choose a password to get started. The link works for 7 days.`,
       ],
-      action: { label: 'Accept the invitation', url: `${appUrl()}/invite?token=${encodeURIComponent(token)}` },
+      action: { label: 'Accept the Invitation', url: `${appUrl()}/invite?token=${encodeURIComponent(token)}` },
     }),
   );
 }

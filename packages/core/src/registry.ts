@@ -25,6 +25,7 @@ export const services = {
     complete: setup.completeOnboarding,
     checklist: setup.checklist,
     dismissChecklist: setup.dismissChecklist,
+    showChecklist: setup.showChecklist,
   },
   auth: {
     login: auth.login,
@@ -69,6 +70,7 @@ export const services = {
     overview: settings.overview,
     testEmail: settings.testEmail,
     testAi: settings.testAi,
+    listAiModels: settings.listAiModels,
     storage: settings.storage,
     testStorage: settings.testStorage,
   },
@@ -84,9 +86,6 @@ export const services = {
     list: notifications.listNotifications,
     markRead: notifications.markNotificationRead,
     markAllRead: notifications.markAllNotificationsRead,
-  },
-  dashboard: {
-    summary: system.dashboardSummary,
   },
   system: {
     clientConfig: system.clientConfig,

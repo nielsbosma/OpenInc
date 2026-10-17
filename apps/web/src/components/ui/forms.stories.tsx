@@ -72,3 +72,27 @@ export const Choices: Story = {
     );
   },
 };
+
+/** Side-by-side fields line up by label and input whether or not one of them has helper text. */
+export const TwoColumnRow: Story = {
+  render: () => (
+    <div className="grid max-w-xl gap-6">
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Field label="Country" htmlFor="tc-country">
+          <Input id="tc-country" defaultValue="Sweden" />
+        </Field>
+        <Field label="Currency" htmlFor="tc-currency" hint="Amounts are shown and stored in this currency">
+          <Input id="tc-currency" defaultValue="SEK" />
+        </Field>
+      </div>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Field label="Sender Address" htmlFor="tc-from" error="Enter a valid sender address">
+          <Input id="tc-from" aria-invalid defaultValue="noreply@" />
+        </Field>
+        <Field label="Sender Name" htmlFor="tc-name">
+          <Input id="tc-name" />
+        </Field>
+      </div>
+    </div>
+  ),
+};

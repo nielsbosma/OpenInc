@@ -34,12 +34,12 @@ export function NotificationBell() {
         <div className="flex items-center justify-between border-b px-3 py-2">
           <span className="font-medium">Notifications</span>
           <Button variant="ghost" size="xs" disabled={!unread} onClick={() => markAll.mutate({})}>
-            Mark all read
+            Mark All Read
           </Button>
         </div>
         <ScrollArea className="max-h-96">
           {!data?.items.length ? (
-            <p className="px-3 py-8 text-center text-muted-foreground">Nothing yet</p>
+            <p className="px-3 py-8 text-center text-muted-foreground">Nothing Yet</p>
           ) : (
             <ul>
               {data.items.map((n) => (

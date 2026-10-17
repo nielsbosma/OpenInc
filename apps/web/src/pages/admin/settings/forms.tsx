@@ -1,5 +1,7 @@
 import {
+  AI_CURATED_MODELS,
   AI_DEFAULT_MODELS,
+  AI_PROVIDER_INFO,
   AI_PROVIDERS,
   type AiProvider,
   companySettings,
@@ -9,11 +11,11 @@ import {
   settingEnvName,
 } from '@openinc/shared';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { CheckCircle2, Lock, Upload, XCircle } from 'lucide-react';
-import { type FormEvent, type ReactNode, useEffect, useRef, useState } from 'react';
+import { CheckCircle2, Lock, RefreshCw, Upload, XCircle } from 'lucide-react';
+import { type FormEvent, type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { Combobox } from '@/components/Combobox';
-import { Field, Logo, Spinner, validate } from '@/components/common';
+import { ConfirmButton, Field, Logo, Spinner, validate } from '@/components/common';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -119,7 +121,7 @@ export function CompanyForm({ wizard, onSaved }: FormProps) {
   const logoId = values.logoFileId as string | null;
   return (
     <FormShell isLoading={isLoading} onSubmit={submit}>
-      <Field label="Company name" htmlFor="company-name" error={errors.name}>
+      <Field label="Company Name" htmlFor="company-name" error={errors.name}>
         <Input
           id="company-name"
           value={String(values.name ?? '')}
@@ -128,7 +130,7 @@ export function CompanyForm({ wizard, onSaved }: FormProps) {
           autoFocus={wizard}
         />
       </Field>
-      <Field label="Registration number" htmlFor="company-reg" error={errors.registrationNumber} hint="Organisation or company number">
+      <Field label="Registration Number" htmlFor="company-reg" error={errors.registrationNumber} hint="Organisation or company number">
         <Input
           id="company-reg"
           value={String(values.registrationNumber ?? '')}
@@ -152,7 +154,7 @@ export function CompanyForm({ wizard, onSaved }: FormProps) {
           <Combobox id="company-currency" value={String(values.currency ?? '')} onChange={set('currency')} options={currencyOptions()} />
         </Field>
       </div>
-      <Field label="Time zone" htmlFor="company-tz" error={errors.timeZone} hint="Dates and times are shown in this time zone">
+      <Field label="Time Zone" htmlFor="company-tz" error={errors.timeZone} hint="Dates and times are shown in this time zone">
         <Combobox id="company-tz" value={String(values.timeZone ?? '')} onChange={set('timeZone')} options={timeZoneOptions()} />
       </Field>
       <Field label="Logo" hint="PNG, JPEG, WebP or SVG. Shown in the sidebar and on the sign-in page.">
@@ -166,7 +168,7 @@ export function CompanyForm({ wizard, onSaved }: FormProps) {
             onChange={(e) => e.target.files?.[0] && onLogo(e.target.files[0])}
           />
           <Button type="button" variant="outline" size="sm" onClick={() => fileInput.current?.click()} disabled={uploading}>
-            {uploading ? <Spinner /> : <Upload />} Upload logo
+            {uploading ? <Spinner /> : <Upload />} Upload Logo
           </Button>
           {logoId && (
             <Button type="button" variant="ghost" size="sm" onClick={() => set('logoFileId')(null)}>
@@ -234,7 +236,7 @@ export function EmailForm({ wizard, onSaved, onSkip }: FormProps) {
     <FormShell isLoading={isLoading} onSubmit={submit}>
       <div className="grid gap-4 sm:grid-cols-[1fr_120px]">
         <Field
-          label="SMTP host"
+          label="SMTP Host"
           htmlFor="smtp-host"
           error={errors.host}
           hint={locked('host') ? <LockedHint group="email" field="host" /> : undefined}
@@ -273,7 +275,7 @@ export function EmailForm({ wizard, onSaved, onSkip }: FormProps) {
         </Select>
       </Field>
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="User name" htmlFor="smtp-user">
+        <Field label="User Name" htmlFor="smtp-user">
           <Input
             id="smtp-user"
             autoComplete="off"
@@ -295,7 +297,7 @@ export function EmailForm({ wizard, onSaved, onSkip }: FormProps) {
         </Field>
       </div>
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="Sender address" htmlFor="smtp-from" error={errors.fromAddress}>
+        <Field label="Sender Address" htmlFor="smtp-from" error={errors.fromAddress}>
           <Input
             id="smtp-from"
             type="email"
@@ -305,7 +307,7 @@ export function EmailForm({ wizard, onSaved, onSkip }: FormProps) {
             disabled={locked('fromAddress')}
           />
         </Field>
-        <Field label="Sender name" htmlFor="smtp-from-name" hint="Defaults to the company name">
+        <Field label="Sender Name" htmlFor="smtp-from-name" hint="Defaults to the company name">
           <Input
             id="smtp-from-name"
             value={String(values.fromName ?? '')}
@@ -315,22 +317,26 @@ export function EmailForm({ wizard, onSaved, onSkip }: FormProps) {
         </Field>
       </div>
       <TestResult result={result} />
+      {user && <p className="text-xs text-muted-foreground">The test email goes to {user.email}.</p>}
       <Actions>
         <Button type="submit" disabled={update.isPending}>
-          {update.isPending && <Spinner className="text-primary-foreground" />} {wizard ? 'Save and continue' : 'Save'}
+          {update.isPending && <Spinner className="text-primary-foreground" />} {wizard ? 'Save and Continue' : 'Save'}
         </Button>
         <Button type="button" variant="outline" onClick={sendTest} disabled={test.isPending || !values.host}>
-          {test.isPending && <Spinner />} Send test email{user ? ` to ${user.email}` : ''}
+          {test.isPending && <Spinner />} Send Test Email
         </Button>
         {wizard && onSkip && (
           <Button type="button" variant="ghost" onClick={onSkip}>
-            Skip for now
+            Skip for Now
           </Button>
         )}
         {!wizard && view?.configured && (
-          <Button type="button" variant="ghost" className="ml-auto text-destructive" onClick={() => clear.mutate({ group: 'email' })}>
-            Remove
-          </Button>
+          <ConfirmButton
+            label="Remove"
+            title="Remove Email Settings?"
+            description="Invitations, password resets and notifications stop being emailed until email is set up again."
+            onConfirm={() => clear.mutate({ group: 'email' })}
+          />
         )}
       </Actions>
     </FormShell>
@@ -344,26 +350,42 @@ export function AiForm({ wizard, onSaved, onSkip }: FormProps) {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [result, setResult] = useState<{ ok: boolean; message: string } | null>(null);
   const test = useMutation(trpc.settings.testAi.mutationOptions());
+  const models = useMutation(trpc.settings.listAiModels.mutationOptions({ meta: { silent: true } }));
 
   useEffect(() => {
     if (view) setValues({ provider: 'anthropic', model: AI_DEFAULT_MODELS.anthropic, baseUrl: '', ...view.values, apiKey: '' });
   }, [view]);
   const set = (field: string) => (value: unknown) => setValues((v) => ({ ...v, [field]: value }));
   const locked = (field: string) => !!view?.locked.includes(field);
-  const keySet = !!view?.secretsSet.apiKey;
-  const provider = values.provider as AiProvider;
+  const provider = (values.provider as AiProvider | undefined) ?? 'anthropic';
+  const info = AI_PROVIDER_INFO[provider];
+  const savedConnection = view?.values.provider === provider && (view?.values.baseUrl ?? '') === (values.baseUrl ?? '');
+  const keySet = !!view?.secretsSet.apiKey && savedConnection;
 
   const draft = () => {
-    const out: Values = { ...values };
+    const out: Values = { ...values, baseUrl: info.needsBaseUrl ? values.baseUrl : '' };
     if (out.apiKey === '' && keySet) delete out.apiKey;
     return out;
   };
+
+  const refreshModels = () => models.mutate({ settings: draft() as never });
+  // Load the provider's own list once its connection details are known; the key itself stays on the server.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: refetch only when the connection changes
+  useEffect(() => {
+    if (view) refreshModels();
+  }, [view, provider, keySet]);
+
+  const options = useMemo(() => {
+    const list = models.data?.models.length ? models.data.models : AI_CURATED_MODELS[provider];
+    return list.map((m) => ({ value: m, label: m }));
+  }, [models.data, provider]);
+
   const check = () => {
     const d = draft();
     const e: Record<string, string> = {};
-    if (!d.model) e.model = 'Enter a model name';
-    if (provider === 'openai-compatible' && !d.baseUrl) e.baseUrl = 'Enter the base URL';
-    if (provider !== 'openai-compatible' && !d.apiKey && !keySet) e.apiKey = 'Enter the API key';
+    if (!d.model) e.model = 'Pick or type a model';
+    if (info.needsBaseUrl && !d.baseUrl) e.baseUrl = 'Enter the base URL';
+    if (provider !== 'openai-compatible' && provider !== 'litellm' && !d.apiKey && !keySet) e.apiKey = 'Enter the API key';
     setErrors(e);
     return Object.keys(e).length ? null : d;
   };
@@ -385,17 +407,28 @@ export function AiForm({ wizard, onSaved, onSkip }: FormProps) {
       { settings: d as never },
       {
         onSuccess: (r) =>
-          setResult(r.ok ? { ok: true, message: `It works: the model answered in ${r.ms} ms.` } : { ok: false, message: r.error }),
+          setResult(r.ok ? { ok: true, message: `It works: ${String(d.model)} answered in ${r.ms} ms.` } : { ok: false, message: r.error }),
       },
     );
   };
+
+  const modelHint = models.isPending
+    ? 'Loading the models...'
+    : models.data?.error
+      ? `Could not load the provider's models: ${models.data.error}`
+      : models.data?.source === 'provider'
+        ? `${models.data.models.length} models from the provider. You can also type a model id.`
+        : "Suggested models. Enter the key to load the provider's full list, or type a model id.";
 
   return (
     <FormShell isLoading={isLoading} onSubmit={submit}>
       <Field label="Provider" htmlFor="ai-provider">
         <Select
-          value={provider ?? 'anthropic'}
-          onValueChange={(p) => setValues((v) => ({ ...v, provider: p, model: AI_DEFAULT_MODELS[p as AiProvider] || v.model }))}
+          value={provider}
+          onValueChange={(p) => {
+            setResult(null);
+            setValues((v) => ({ ...v, provider: p, model: AI_DEFAULT_MODELS[p as AiProvider], baseUrl: '', apiKey: '' }));
+          }}
           disabled={locked('provider')}
         >
           <SelectTrigger id="ai-provider" className="w-full">
@@ -404,23 +437,36 @@ export function AiForm({ wizard, onSaved, onSkip }: FormProps) {
           <SelectContent>
             {AI_PROVIDERS.map((p) => (
               <SelectItem key={p} value={p}>
-                {{ anthropic: 'Anthropic', openai: 'OpenAI', 'openai-compatible': 'OpenAI-compatible (custom URL)' }[p]}
+                {AI_PROVIDER_INFO[p].label}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
       </Field>
-      <Field label="Model" htmlFor="ai-model" error={errors.model}>
-        <Input
-          id="ai-model"
-          className="font-mono"
-          value={String(values.model ?? '')}
-          onChange={(e) => set('model')(e.target.value)}
-          disabled={locked('model')}
-        />
-      </Field>
+      {info.needsBaseUrl && (
+        <Field
+          label="Base URL"
+          htmlFor="ai-url"
+          error={errors.baseUrl}
+          hint={
+            provider === 'litellm'
+              ? 'The address of your LiteLLM proxy. /v1 is added if missing.'
+              : 'The OpenAI-compatible endpoint, ending in /v1.'
+          }
+        >
+          <Input
+            id="ai-url"
+            className="font-mono"
+            placeholder={info.baseUrlPlaceholder}
+            value={String(values.baseUrl ?? '')}
+            onChange={(e) => set('baseUrl')(e.target.value)}
+            onBlur={refreshModels}
+            disabled={locked('baseUrl')}
+          />
+        </Field>
+      )}
       <Field
-        label="API key"
+        label={info.keyLabel}
         htmlFor="ai-key"
         error={errors.apiKey}
         hint={
@@ -428,6 +474,8 @@ export function AiForm({ wizard, onSaved, onSkip }: FormProps) {
             <LockedHint group="ai" field="apiKey" />
           ) : keySet ? (
             'Saved. Leave empty to keep it.'
+          ) : provider === 'litellm' ? (
+            'A LiteLLM virtual key. Stored encrypted; never shown again.'
           ) : (
             'Stored encrypted; never shown again.'
           )
@@ -440,37 +488,54 @@ export function AiForm({ wizard, onSaved, onSkip }: FormProps) {
           placeholder={keySet ? '••••••••' : ''}
           value={String(values.apiKey ?? '')}
           onChange={(e) => set('apiKey')(e.target.value)}
+          onBlur={refreshModels}
           disabled={locked('apiKey')}
         />
       </Field>
-      {(provider === 'openai-compatible' || !!values.baseUrl) && (
-        <Field label="Base URL" htmlFor="ai-url" error={errors.baseUrl} hint="For OpenAI-compatible servers, e.g. https://host/v1">
-          <Input
-            id="ai-url"
-            className="font-mono"
-            value={String(values.baseUrl ?? '')}
-            onChange={(e) => set('baseUrl')(e.target.value)}
-            disabled={locked('baseUrl')}
-          />
-        </Field>
-      )}
+      <Field label="Model" htmlFor="ai-model" error={errors.model} hint={modelHint}>
+        <Combobox
+          id="ai-model"
+          value={String(values.model ?? '')}
+          onChange={set('model')}
+          options={options}
+          placeholder="Pick a model"
+          allowCustom
+          disabled={locked('model')}
+          invalid={!!errors.model}
+          footer={
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="w-full justify-start"
+              onClick={refreshModels}
+              disabled={models.isPending}
+            >
+              <RefreshCw className={models.isPending ? 'animate-spin' : ''} /> Refresh Models
+            </Button>
+          }
+        />
+      </Field>
       <TestResult result={result} />
       <Actions>
         <Button type="submit" disabled={update.isPending}>
-          {update.isPending && <Spinner className="text-primary-foreground" />} {wizard ? 'Save and continue' : 'Save'}
+          {update.isPending && <Spinner className="text-primary-foreground" />} {wizard ? 'Save and Continue' : 'Save'}
         </Button>
         <Button type="button" variant="outline" onClick={runTest} disabled={test.isPending}>
-          {test.isPending && <Spinner />} Test connection
+          {test.isPending && <Spinner />} Test Connection
         </Button>
         {wizard && onSkip && (
           <Button type="button" variant="ghost" onClick={onSkip}>
-            Skip for now
+            Skip for Now
           </Button>
         )}
         {!wizard && view?.configured && (
-          <Button type="button" variant="ghost" className="ml-auto text-destructive" onClick={() => clear.mutate({ group: 'ai' })}>
-            Turn off
-          </Button>
+          <ConfirmButton
+            label="Turn Off"
+            title="Turn Off the Assistant?"
+            description="The AI provider settings and key are removed. The assistant shows a setup message until a provider is set again."
+            onConfirm={() => clear.mutate({ group: 'ai' })}
+          />
         )}
       </Actions>
     </FormShell>
@@ -519,7 +584,7 @@ export function ErrorTrackingForm({ wizard, onSaved, onSkip }: FormProps) {
       </Field>
       <Actions>
         <Button type="submit" disabled={update.isPending}>
-          {update.isPending && <Spinner className="text-primary-foreground" />} {wizard ? 'Save and finish' : 'Save'}
+          {update.isPending && <Spinner className="text-primary-foreground" />} {wizard ? 'Save and Finish' : 'Save'}
         </Button>
         {wizard && onSkip && (
           <Button type="button" variant="ghost" onClick={onSkip}>
@@ -527,14 +592,12 @@ export function ErrorTrackingForm({ wizard, onSaved, onSkip }: FormProps) {
           </Button>
         )}
         {!wizard && view?.configured && (
-          <Button
-            type="button"
-            variant="ghost"
-            className="ml-auto text-destructive"
-            onClick={() => clear.mutate({ group: 'errorTracking' })}
-          >
-            Turn off
-          </Button>
+          <ConfirmButton
+            label="Turn Off"
+            title="Turn Off Error Tracking?"
+            description="Errors are no longer sent to Bugsink or Sentry."
+            onConfirm={() => clear.mutate({ group: 'errorTracking' })}
+          />
         )}
       </Actions>
     </FormShell>

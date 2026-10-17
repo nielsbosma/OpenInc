@@ -47,12 +47,34 @@ export const emailSettings = z.object({
 /** Secrets are optional on input: left out means keep the stored value. */
 const emailSettingsInput = emailSettings.extend({ password: z.string().max(500).optional() });
 
-export const AI_PROVIDERS = ['anthropic', 'openai', 'openai-compatible'] as const;
+export const AI_PROVIDERS = ['anthropic', 'openai', 'litellm', 'openai-compatible'] as const;
 export type AiProvider = (typeof AI_PROVIDERS)[number];
+
+export const AI_PROVIDER_INFO: Record<AiProvider, { label: string; needsBaseUrl: boolean; baseUrlPlaceholder: string; keyLabel: string }> =
+  {
+    anthropic: { label: 'Anthropic', needsBaseUrl: false, baseUrlPlaceholder: '', keyLabel: 'API Key' },
+    openai: { label: 'OpenAI', needsBaseUrl: false, baseUrlPlaceholder: '', keyLabel: 'API Key' },
+    litellm: { label: 'LiteLLM', needsBaseUrl: true, baseUrlPlaceholder: 'https://litellm.example.com', keyLabel: 'Virtual Key' },
+    'openai-compatible': {
+      label: 'OpenAI-Compatible',
+      needsBaseUrl: true,
+      baseUrlPlaceholder: 'https://host.example.com/v1',
+      keyLabel: 'API Key',
+    },
+  };
+
+/** Shown before a key is entered; with a key, the model list comes from the provider itself. */
+export const AI_CURATED_MODELS: Record<AiProvider, string[]> = {
+  anthropic: ['claude-opus-5-5', 'claude-sonnet-5-5', 'claude-haiku-5-5'],
+  openai: ['gpt-5', 'gpt-5-mini', 'gpt-5-nano'],
+  litellm: [],
+  'openai-compatible': [],
+};
 
 export const AI_DEFAULT_MODELS: Record<AiProvider, string> = {
   anthropic: 'claude-sonnet-5-5',
   openai: 'gpt-5',
+  litellm: '',
   'openai-compatible': '',
 };
 
@@ -63,7 +85,7 @@ const aiFields = {
   baseUrl: z.union([z.literal(''), z.url('Enter a URL like https://host/v1')]).default(''),
 };
 
-const needsBaseUrl = (v: { provider: AiProvider; baseUrl: string }) => v.provider !== 'openai-compatible' || v.baseUrl !== '';
+const needsBaseUrl = (v: { provider: AiProvider; baseUrl: string }) => !AI_PROVIDER_INFO[v.provider].needsBaseUrl || v.baseUrl !== '';
 const baseUrlMessage = { message: 'Enter the base URL', path: ['baseUrl'] };
 
 export const aiSettings = z.object(aiFields).refine(needsBaseUrl, baseUrlMessage);
@@ -86,7 +108,6 @@ export const systemSettings = z.object({
 
 export const onboardingSettings = z.object({
   completedAt: z.string().nullable().default(null),
-  checklistDismissed: z.boolean().default(false),
 });
 
 /** Every settings group: its schema and which of its fields are secrets (encrypted at rest, never sent to the browser). */
@@ -138,4 +159,11 @@ export const testEmailInput = z.object({
 
 export const testAiInput = z.object({
   settings: aiSettingsInput.optional().describe('Unsaved settings to test; saved ones are used when left out'),
+});
+
+export const listAiModelsInput = z.object({
+  settings: z
+    .object({ ...aiFields, model: z.string().max(200).default(''), apiKey: z.string().max(500).optional() })
+    .optional()
+    .describe('Unsaved provider, key and URL from the form; saved ones are used when left out'),
 });

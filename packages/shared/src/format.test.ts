@@ -30,3 +30,16 @@ describe('settings', () => {
     expect(companySettings.safeParse({ name: 'Acme', country: 'SE', currency: 'SEK', timeZone: 'Mars/Base' }).success).toBe(false);
   });
 });
+
+describe('AP title case', () => {
+  it('capitalizes long words and keeps short minor words lowercase', async () => {
+    const { apTitleCase, isApTitleCase } = await import('./title-case.ts');
+    expect(apTitleCase('people with access')).toBe('People With Access');
+    expect(apTitleCase('finish setting up')).toBe('Finish Setting Up');
+    expect(apTitleCase('keep the audit log for (days)')).toBe('Keep the Audit Log for (Days)');
+    expect(apTitleCase('set up two-factor')).toBe('Set Up Two-Factor');
+    expect(apTitleCase('connect an MCP client')).toBe('Connect an MCP Client');
+    expect(isApTitleCase('Cap Table')).toBe(true);
+    expect(isApTitleCase('Cap table')).toBe(false);
+  });
+});
