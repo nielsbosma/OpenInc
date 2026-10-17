@@ -1,6 +1,6 @@
 import { Link } from 'react-router';
 import { PageHeader } from '@/components/common';
-import { MODULES } from '@/components/layout/nav';
+import { BUILT_MODULES, MODULES } from '@/components/layout/nav';
 import { Badge } from '@/components/ui/badge';
 import { useClientConfig, useSession } from '@/lib/session';
 
@@ -18,9 +18,11 @@ export function DashboardPage() {
               <div className="flex items-center gap-2">
                 <m.icon className="size-4 shrink-0 text-primary" />
                 <span className="truncate font-medium">{m.title}</span>
-                <Badge variant="outline" className="ml-auto shrink-0 text-[10px] font-normal text-muted-foreground">
-                  Coming Soon
-                </Badge>
+                {!BUILT_MODULES.has(m.path) && (
+                  <Badge variant="outline" className="ml-auto shrink-0 text-[10px] font-normal text-muted-foreground">
+                    Coming Soon
+                  </Badge>
+                )}
               </div>
               <p className="mt-1.5 text-muted-foreground">{m.description}</p>
             </Link>

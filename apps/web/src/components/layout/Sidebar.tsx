@@ -6,11 +6,11 @@ import { Kbd } from '@/components/ui/kbd';
 import { useCan, useClientConfig } from '@/lib/session';
 import { cn } from '@/lib/utils';
 import { isMac } from './keys';
-import { MAIN_NAV, MODULES, type NavItem, SETTINGS_NAV, SETTINGS_PERMISSIONS } from './nav';
+import { BUILT_MODULES, MAIN_NAV, MODULES, type NavItem, SETTINGS_NAV, SETTINGS_PERMISSIONS } from './nav';
 import { SetupChecklist } from './SetupChecklist';
 
 function Item({ item, onNavigate }: { item: NavItem; onNavigate?: () => void }) {
-  const soon = MODULES.includes(item);
+  const soon = MODULES.includes(item) && !BUILT_MODULES.has(item.path);
   return (
     <NavLink
       to={item.path}

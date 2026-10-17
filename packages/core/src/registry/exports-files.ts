@@ -1,11 +1,11 @@
-import { currencyDigits, formatMoney, HOLDER_KINDS, TRANSACTION_LABELS, TRANSFER_KINDS } from '@openinc/shared';
+import { currencyDigits, formatMoney, type HOLDER_KINDS, TRANSACTION_LABELS, type TRANSFER_KINDS } from '@openinc/shared';
 import * as XLSX from 'xlsx';
 import { audit } from '../audit.ts';
 import type { Ctx } from '../context.ts';
 import { badRequest } from '../errors.ts';
 import { run } from '../service.ts';
-import { getSettings } from '../settings.ts';
 import { getHolder, getRegister, getTransaction, registryHistory, registryStatus } from '../services/registry.ts';
+import { getSettings } from '../settings.ts';
 import { registerCsv, toCsv } from './exports.ts';
 import { PdfWriter } from './pdf.ts';
 
@@ -158,7 +158,12 @@ const SV_TRANSFER: Record<(typeof TRANSFER_KINDS)[number], string> = {
   other: 'övrigt',
 };
 
-const SV_KINDS: Record<(typeof HOLDER_KINDS)[number], string> = { person: 'person', company: 'bolag', estate: 'dödsbo', joint: 'gemensamt' };
+const SV_KINDS: Record<(typeof HOLDER_KINDS)[number], string> = {
+  person: 'person',
+  company: 'bolag',
+  estate: 'dödsbo',
+  joint: 'gemensamt',
+};
 
 function nf(lang: ExportLang) {
   const f = new Intl.NumberFormat(lang === 'sv' ? 'sv-SE' : 'en-GB', { maximumFractionDigits: 10 });
@@ -190,7 +195,10 @@ async function logExport(ctx: Ctx, what: string, details: Record<string, unknown
   await audit(ctx, { action: 'registry.export', entityType: 'registry', after: { what, ...details } });
 }
 
-export async function registerExport(ctx: Ctx, input: { asOf?: string; format: 'pdf' | 'xlsx' | 'csv'; lang: ExportLang }): Promise<ExportFile> {
+export async function registerExport(
+  ctx: Ctx,
+  input: { asOf?: string; format: 'pdf' | 'xlsx' | 'csv'; lang: ExportLang },
+): Promise<ExportFile> {
   const { settings, companyName } = await header(ctx);
   const view = await run(getRegister, ctx, { asOf: input.asOf });
   const t = L[input.lang];
@@ -201,7 +209,8 @@ export async function registerExport(ctx: Ctx, input: { asOf?: string; format: '
   const restrictionText = (r: { consent: boolean; preEmption: boolean; firstRefusal: boolean }) =>
     [r.consent && t.consent, r.preEmption && t.preEmption, r.firstRefusal && t.firstRefusal].filter(Boolean).join(', ') || t.noRestrictions;
 
-  if (input.format === 'csv') return { filename: `${base}.csv`, contentType: 'text/csv; charset=utf-8', body: Buffer.from(`﻿${registerCsv(view)}`) };
+  if (input.format === 'csv')
+    return { filename: `${base}.csv`, contentType: 'text/csv; charset=utf-8', body: Buffer.from(`﻿${registerCsv(view)}`) };
 
   const holderRows = view.holders.flatMap((h) =>
     h.positions.map((p) => ({
@@ -349,10 +358,16 @@ export async function historyExport(ctx: Ctx, input: { format: 'pdf' | 'xlsx' | 
   const names = new Map<string, string>();
   for (const item of history.items) for (const h of item.transaction.holders) names.set(h.holderId, h.name);
   for (const h of register.holders) names.set(h.holderId, h.name);
-  const typeLabel = (type: string) => (input.lang === 'sv' ? (SV_TYPES[type] ?? type) : (TRANSACTION_LABELS[type as keyof typeof TRANSACTION_LABELS] ?? type));
+  const typeLabel = (type: string) =>
+    input.lang === 'sv' ? (SV_TYPES[type] ?? type) : (TRANSACTION_LABELS[type as keyof typeof TRANSACTION_LABELS] ?? type);
   await logExport(ctx, 'history', { format: input.format });
   const rows = history.items.flatMap((item) => {
-    const kind = item.transaction.type === 'transfer' ? (input.lang === 'sv' ? SV_TRANSFER[item.transaction.kind] : item.transaction.kind.replace(/_/g, ' ')) : '';
+    const kind =
+      item.transaction.type === 'transfer'
+        ? input.lang === 'sv'
+          ? SV_TRANSFER[item.transaction.kind]
+          : item.transaction.kind.replace(/_/g, ' ')
+        : '';
     const label = `${typeLabel(item.type)}${kind ? ` (${kind})` : ''}${item.status === 'reversed' ? ' ✕' : ''}`;
     if (!item.movements.length) return [[String(item.seq), item.effectiveDate, label, '', '', '', '', '', item.summary]];
     return item.movements.map((m, i) => [
@@ -368,7 +383,12 @@ export async function historyExport(ctx: Ctx, input: { format: 'pdf' | 'xlsx' | 
     ]);
   });
   const headers = [t.seq, t.date, t.type, t.class, t.from, t.to, t.count, t.numbers, t.consideration];
-  if (input.format === 'csv') return { filename: 'share-register-history.csv', contentType: 'text/csv; charset=utf-8', body: Buffer.from(`﻿${toCsv([headers, ...rows])}`) };
+  if (input.format === 'csv')
+    return {
+      filename: 'share-register-history.csv',
+      contentType: 'text/csv; charset=utf-8',
+      body: Buffer.from(`﻿${toCsv([headers, ...rows])}`),
+    };
   if (input.format === 'xlsx') {
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([headers, ...rows]), t.history.slice(0, 31));
@@ -480,7 +500,12 @@ export async function settlementNote(ctx: Ctx, input: { transactionId: string; l
     ],
     tx.movements.map((m) => {
       total += m.consideration ?? 0n;
-      return [m.classCode, n(m.count), m.rangeFrom !== null ? `${m.rangeFrom}–${m.rangeTo}` : '', m.consideration !== null ? formatMoney(m.consideration, currency) : ''];
+      return [
+        m.classCode,
+        n(m.count),
+        m.rangeFrom !== null ? `${m.rangeFrom}–${m.rangeTo}` : '',
+        m.consideration !== null ? formatMoney(m.consideration, currency) : '',
+      ];
     }),
   );
   pdf.facts([[t.total, formatMoney(total, currency)]]);

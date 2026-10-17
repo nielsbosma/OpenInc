@@ -83,7 +83,11 @@ export class PdfWriter {
       const h = Math.max(...heights) + pad * 2;
       if (this.doc.y + h > this.doc.page.height - MARGIN - 16) {
         this.doc.addPage();
-        if (!header) drawRow(columns.map((c) => c.header), true);
+        if (!header)
+          drawRow(
+            columns.map((c) => c.header),
+            true,
+          );
       }
       const y = this.doc.y;
       let x = MARGIN;
@@ -120,8 +124,17 @@ export class PdfWriter {
     const y = this.doc.y + 24;
     labels.forEach((label, i) => {
       const x = MARGIN + i * (w + 24);
-      this.doc.moveTo(x, y).lineTo(x + w, y).lineWidth(0.5).strokeColor('#999').stroke();
-      this.doc.font(FONT).fontSize(8).fillColor('#555').text(label, x, y + 4, { width: w });
+      this.doc
+        .moveTo(x, y)
+        .lineTo(x + w, y)
+        .lineWidth(0.5)
+        .strokeColor('#999')
+        .stroke();
+      this.doc
+        .font(FONT)
+        .fontSize(8)
+        .fillColor('#555')
+        .text(label, x, y + 4, { width: w });
     });
     this.doc.fillColor('#111');
   }
