@@ -11,11 +11,19 @@ export interface JobPayloads {
   'system.demo': { userId: string; seconds: number };
   'system.dataMigration': { name: string };
   'maintenance.cleanup': Record<string, never>;
+  'registry.verifyChain': Record<string, never>;
 }
 
 export type JobName = keyof JobPayloads;
 
-export const QUEUES: JobName[] = ['email.send', 'notifications.fanout', 'system.demo', 'system.dataMigration', 'maintenance.cleanup'];
+export const QUEUES: JobName[] = [
+  'email.send',
+  'notifications.fanout',
+  'system.demo',
+  'system.dataMigration',
+  'maintenance.cleanup',
+  'registry.verifyChain',
+];
 
 let sender: Promise<PgBoss> | undefined;
 

@@ -40,6 +40,7 @@ function checkWrite(ctx: Ctx, kind: FileKind, contentType: string) {
   if (kind === 'chat-attachment' && !can(ctx, 'ai.chat')) throw forbidden();
   if (kind === 'logo' && !can(ctx, 'settings.manage')) throw forbidden();
   if (kind === 'document' && !can(ctx, 'files.write')) throw forbidden();
+  if ((kind === 'registry-document' || kind === 'registry-import') && !can(ctx, 'registry.draft')) throw forbidden();
   if ((kind === 'avatar' || kind === 'logo') && !IMAGE_TYPES.test(contentType)) throw badRequest('Use a PNG, JPEG, GIF, WebP or SVG image');
 }
 
@@ -50,6 +51,8 @@ function checkRead(ctx: Ctx, row: typeof files.$inferSelect) {
   if (row.kind === 'avatar') return;
   if (row.kind === 'chat-attachment' && row.uploadedBy === ctx.actor.userId) return;
   if (row.kind === 'document' && can(ctx, 'files.read')) return;
+  if (row.kind === 'registry-document' && can(ctx, 'registry.read')) return;
+  if (row.kind === 'registry-import' && can(ctx, 'registry.draft')) return;
   throw forbidden();
 }
 

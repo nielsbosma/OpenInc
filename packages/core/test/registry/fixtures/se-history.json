@@ -1,0 +1,220 @@
+{
+  "description": "A Swedish AB from incorporation through issues, transfers, an inheritance, pledges, a bonus issue and a split.",
+  "transactions": [
+    {
+      "id": "20000000-0000-4000-8000-000000000001",
+      "seq": 1,
+      "tx": {
+        "type": "incorporation",
+        "effectiveDate": "2020-03-02",
+        "shareCapital": "2500000",
+        "holders": [
+          {
+            "holderId": "00000000-0000-4000-8000-00000000000a",
+            "kind": "person",
+            "name": "Anna Andersson",
+            "nationalId": "19811218-9876",
+            "country": "SE",
+            "address": "Storgatan 1, 111 22 Stockholm"
+          },
+          {
+            "holderId": "00000000-0000-4000-8000-00000000000b",
+            "kind": "person",
+            "name": "Björn Berg",
+            "nationalId": "19900101-0017",
+            "country": "SE",
+            "address": "Kungsgatan 2, 411 19 Göteborg"
+          }
+        ],
+        "classes": [
+          {
+            "code": "A",
+            "name": "A shares",
+            "votesPerShare": "10",
+            "restrictions": { "consent": true, "preEmption": true, "firstRefusal": false }
+          },
+          {
+            "code": "B",
+            "name": "B shares",
+            "votesPerShare": "1",
+            "restrictions": { "consent": false, "preEmption": true, "firstRefusal": false }
+          }
+        ],
+        "allocations": [
+          { "holderId": "00000000-0000-4000-8000-00000000000a", "classCode": "A", "count": "5000", "pricePerShare": "1" },
+          { "holderId": "00000000-0000-4000-8000-00000000000b", "classCode": "B", "count": "20000", "pricePerShare": "1" }
+        ]
+      }
+    },
+    {
+      "id": "20000000-0000-4000-8000-000000000002",
+      "seq": 2,
+      "tx": {
+        "type": "new_issue",
+        "effectiveDate": "2021-05-10",
+        "decisionDate": "2021-04-28",
+        "form": "cash",
+        "allocation": "directed",
+        "classCode": "B",
+        "pricePerShare": "120",
+        "subscriptionDate": "2021-05-03",
+        "paymentDate": "2021-05-07",
+        "holders": [
+          {
+            "holderId": "00000000-0000-4000-8000-0000000000d0",
+            "kind": "company",
+            "name": "Invest AB",
+            "nationalId": "556036-0793",
+            "country": "SE"
+          }
+        ],
+        "subscriptions": [{ "holderId": "00000000-0000-4000-8000-0000000000d0", "count": "5000", "paidOn": "2021-05-07" }]
+      }
+    },
+    {
+      "id": "20000000-0000-4000-8000-000000000003",
+      "seq": 3,
+      "tx": {
+        "type": "registration",
+        "effectiveDate": "2021-05-24",
+        "registrationDate": "2021-05-24",
+        "ofTransactionId": "20000000-0000-4000-8000-000000000002"
+      }
+    },
+    {
+      "id": "20000000-0000-4000-8000-000000000004",
+      "seq": 4,
+      "tx": {
+        "type": "transfer",
+        "effectiveDate": "2022-02-01",
+        "kind": "sale",
+        "fromHolderId": "00000000-0000-4000-8000-00000000000b",
+        "toHolderId": "00000000-0000-4000-8000-00000000000c",
+        "holders": [
+          {
+            "holderId": "00000000-0000-4000-8000-00000000000c",
+            "kind": "person",
+            "name": "Cecilia Carlsson",
+            "nationalId": "19850615-2381",
+            "country": "SE"
+          }
+        ],
+        "lines": [{ "classCode": "B", "count": "2500", "ranges": [{ "from": "17501", "to": "20000" }] }],
+        "pricePerShare": "150",
+        "settlement": { "date": "2022-02-01", "reference": "Avräkningsnota 2022-01" },
+        "restrictionSteps": { "preEmption": { "outcome": "not_exercised", "date": "2022-01-25" } }
+      }
+    },
+    {
+      "id": "20000000-0000-4000-8000-000000000005",
+      "seq": 5,
+      "tx": {
+        "type": "pledge",
+        "effectiveDate": "2022-06-15",
+        "holderId": "00000000-0000-4000-8000-00000000000c",
+        "lines": [{ "classCode": "B", "count": "1000" }],
+        "pledgee": { "name": "Nordbank AB", "nationalId": "556677-8899" }
+      }
+    },
+    {
+      "id": "20000000-0000-4000-8000-000000000006",
+      "seq": 6,
+      "tx": {
+        "type": "holder_change",
+        "effectiveDate": "2022-09-01",
+        "holders": [
+          {
+            "holderId": "00000000-0000-4000-8000-00000000000b",
+            "kind": "person",
+            "name": "Björn Berg",
+            "nationalId": "19900101-0017",
+            "country": "SE",
+            "address": "Vasagatan 9, 411 24 Göteborg"
+          }
+        ]
+      }
+    },
+    {
+      "id": "20000000-0000-4000-8000-000000000007",
+      "seq": 7,
+      "tx": {
+        "type": "transfer",
+        "effectiveDate": "2023-01-20",
+        "kind": "inheritance",
+        "fromHolderId": "00000000-0000-4000-8000-00000000000a",
+        "toHolderId": "00000000-0000-4000-8000-0000000000e0",
+        "holders": [
+          {
+            "holderId": "00000000-0000-4000-8000-0000000000e0",
+            "kind": "estate",
+            "name": "Dödsbo efter Anna Andersson",
+            "nationalId": "19811218-9876",
+            "country": "SE",
+            "members": [{ "name": "Erik Andersson", "nationalId": "19770303-1232" }]
+          }
+        ],
+        "lines": [{ "classCode": "A", "count": "5000" }],
+        "restrictionSteps": {
+          "consent": { "obtained": true, "date": "2023-01-18" },
+          "preEmption": { "outcome": "waived", "date": "2023-01-18" }
+        }
+      }
+    },
+    {
+      "id": "20000000-0000-4000-8000-000000000008",
+      "seq": 8,
+      "tx": {
+        "type": "pledge_release",
+        "effectiveDate": "2023-03-01",
+        "pledgeId": "20000000-0000-4000-8000-000000000005"
+      }
+    },
+    {
+      "id": "20000000-0000-4000-8000-000000000009",
+      "seq": 9,
+      "tx": {
+        "type": "bonus_issue",
+        "effectiveDate": "2023-06-01",
+        "registrationDate": "2023-06-01",
+        "decisionDate": "2023-05-15",
+        "mode": "new_shares",
+        "capitalIncrease": "750000",
+        "ratio": { "newShares": "1", "perShares": "10" },
+        "rounding": "down"
+      }
+    },
+    {
+      "id": "20000000-0000-4000-8000-00000000000a",
+      "seq": 10,
+      "tx": {
+        "type": "split",
+        "effectiveDate": "2024-02-01",
+        "registrationDate": "2024-02-01",
+        "decisionDate": "2024-01-10",
+        "ratio": 10
+      }
+    },
+    {
+      "id": "20000000-0000-4000-8000-00000000000b",
+      "seq": 11,
+      "tx": {
+        "type": "transfer",
+        "effectiveDate": "2024-04-01",
+        "kind": "division_of_property",
+        "fromHolderId": "00000000-0000-4000-8000-0000000000e0",
+        "toHolderId": "00000000-0000-4000-8000-00000000000f",
+        "holders": [
+          {
+            "holderId": "00000000-0000-4000-8000-00000000000f",
+            "kind": "person",
+            "name": "Erik Andersson",
+            "nationalId": "19770303-1232",
+            "country": "SE"
+          }
+        ],
+        "lines": [{ "classCode": "A", "count": "55000" }],
+        "restrictionSteps": { "consent": { "obtained": true, "date": "2024-03-20" }, "preEmption": { "outcome": "waived" } }
+      }
+    }
+  ]
+}

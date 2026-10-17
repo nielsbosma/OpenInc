@@ -8,6 +8,10 @@ export const PERMISSIONS = {
   'files.write': 'Upload files',
   'ai.chat': 'Use the AI assistant',
   'system.read': 'See version, migrations, backups and background jobs',
+  'registry.read': 'See the share register, its holders and transactions at any date',
+  'registry.draft': 'Prepare share register transactions and imports',
+  'registry.commit': 'Enter and approve share register transactions',
+  'registry.manage': 'Change share register settings',
 } as const;
 
 export type Permission = keyof typeof PERMISSIONS;
@@ -18,7 +22,7 @@ export function isPermission(value: string): value is Permission {
   return value in PERMISSIONS;
 }
 
-export const ROLES = ['admin', 'member', 'readonly'] as const;
+export const ROLES = ['admin', 'board', 'member', 'auditor', 'readonly'] as const;
 export type Role = (typeof ROLES)[number];
 
 export const ROLE_INFO: Record<Role, { label: string; description: string; permissions: readonly Permission[] }> = {
@@ -27,15 +31,34 @@ export const ROLE_INFO: Record<Role, { label: string; description: string; permi
     description: 'Everything, including users and Admin settings',
     permissions: ALL_PERMISSIONS,
   },
+  board: {
+    label: 'Board / CEO',
+    description: 'Day-to-day work, and enters and approves share register transactions',
+    permissions: [
+      'company.read',
+      'users.read',
+      'files.read',
+      'files.write',
+      'ai.chat',
+      'registry.read',
+      'registry.draft',
+      'registry.commit',
+    ],
+  },
   member: {
     label: 'Member',
-    description: 'Day-to-day work',
-    permissions: ['company.read', 'users.read', 'files.read', 'files.write', 'ai.chat'],
+    description: 'Day-to-day work, and prepares share register transactions',
+    permissions: ['company.read', 'users.read', 'files.read', 'files.write', 'ai.chat', 'registry.read', 'registry.draft'],
+  },
+  auditor: {
+    label: 'Auditor',
+    description: 'Reads everything, including the share register at any date and the audit log',
+    permissions: ['company.read', 'users.read', 'files.read', 'audit.read', 'registry.read'],
   },
   readonly: {
     label: 'Read-only',
     description: 'Can look but not change anything',
-    permissions: ['company.read', 'users.read', 'files.read', 'ai.chat'],
+    permissions: ['company.read', 'users.read', 'files.read', 'ai.chat', 'registry.read'],
   },
 };
 
