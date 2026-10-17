@@ -241,7 +241,8 @@ async function bootOnce(options: BootOptions): Promise<void> {
   }
   if (plan.applied.length === 0) {
     setPhase('needs-install');
-    if (!options.migrate) scheduleRetry(options);
+    // The wizard installs from the web process; any other process (a separate worker) notices by polling.
+    scheduleRetry(options);
     return;
   }
   if (plan.pending.length > 0) {

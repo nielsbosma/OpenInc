@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 export const id = z.uuid();
 
-export const empty = z.object({});
+export const empty = z.object({}).default({});
 
 export const pagination = z.object({
   limit: z.number().int().min(1).max(200).default(50),
