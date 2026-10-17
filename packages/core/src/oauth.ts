@@ -186,7 +186,7 @@ export async function revokeToken(clientId: string, token: string): Promise<void
 
 async function approve(ctx: Ctx, p: PendingAuthorization): Promise<string> {
   const client = await getOAuthClient(p.clientId);
-  if (!client || !client.redirect_uris.includes(p.redirectUri)) throw badRequest('Unknown client or redirect URI');
+  if (!client?.redirect_uris.includes(p.redirectUri)) throw badRequest('Unknown client or redirect URI');
   const code = randomToken();
   await ctx.db.insert(oauthCodes).values({
     id: sha256(code),

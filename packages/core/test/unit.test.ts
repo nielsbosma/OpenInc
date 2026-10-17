@@ -163,3 +163,15 @@ describe('registry', () => {
     expect(tools('admin')).toEqual(expect.arrayContaining(['invites.create', 'settings.update', 'audit.list']));
   });
 });
+
+describe('totp replay', () => {
+  it('refuses a code from a step that was already used', async () => {
+    const { matchTotp } = await import('../src/lib/totp.ts');
+    const secret = base32Encode(Buffer.from('12345678901234567890'));
+    const now = 1_700_000_000_000;
+    const step = matchTotp(secret, totpAt(secret, now), null, now);
+    expect(step).not.toBeNull();
+    expect(matchTotp(secret, totpAt(secret, now), step, now)).toBeNull();
+    expect(matchTotp(secret, totpAt(secret, now + 30_000), step, now)).toBe(step! + 1);
+  });
+});

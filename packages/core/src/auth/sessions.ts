@@ -14,7 +14,7 @@ async function sessionTtlMs(): Promise<number> {
 /** An inactive account resolves to null, so deactivating someone signs them out everywhere at once. */
 export async function loadActor(db: DbOrTx, userId: string): Promise<Actor | null> {
   const [user] = await db.select().from(users).where(eq(users.id, userId)).limit(1);
-  if (!user || !user.active) return null;
+  if (!user?.active) return null;
   const security = await getSettingsOrDefaults('security');
   return {
     userId: user.id,

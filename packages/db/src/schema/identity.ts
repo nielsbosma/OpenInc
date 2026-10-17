@@ -16,6 +16,8 @@ export const users = pgTable(
     totpSecret: text(),
     totpPendingSecret: text(),
     totpEnabledAt: timestamptz(),
+    /** The 30-second step of the last accepted code, so a code cannot be used twice. */
+    totpLastStep: integer(),
     avatarFileId: uuid(),
     failedLoginCount: integer().notNull().default(0),
     lockedUntil: timestamptz(),

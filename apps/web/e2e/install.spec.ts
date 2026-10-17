@@ -1,0 +1,171 @@
+import { createHash, randomBytes } from 'node:crypto';
+import { expect, test } from '@playwright/test';
+import { freshTotp, linkFromLatestEmail, SMTP_HOST, setupCode } from './helpers';
+
+const stamp = Date.now();
+const admin = { name: 'Ada Admin', email: `ada-${stamp}@example.com`, password: 'correct-horse-battery-1' };
+const member = { name: 'Max Member', email: `max-${stamp}@example.com`, password: 'another-long-password-2' };
+let adminSecret = '';
+
+test.describe.configure({ mode: 'serial' });
+
+test('first run: install, admin with two-factor, company, email, extras', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.getByText('Welcome to OpenInc')).toBeVisible();
+  await page.getByLabel('Setup code').fill('WRONG-CODE');
+  await page.getByRole('button', { name: 'Continue' }).click();
+  await expect(page.getByText('That setup code is not right')).toBeVisible();
+  await page.getByLabel('Setup code').fill(setupCode());
+  await page.getByRole('button', { name: 'Continue' }).click();
+
+  await expect(page.getByText('Install the database')).toBeVisible();
+  await page.getByRole('button', { name: 'Install database' }).click();
+  await expect(page.getByText('Create your admin account')).toBeVisible({ timeout: 30_000 });
+
+  await page.getByLabel('Your name').fill(admin.name);
+  await page.getByLabel('Email').fill(admin.email);
+  await page.getByLabel('Password').fill(admin.password);
+  await page.getByRole('button', { name: 'Create account' }).click();
+
+  await page.getByRole('button', { name: 'Set up two-factor' }).click();
+  adminSecret = (await page.getByTestId('totp-secret').textContent())!.trim();
+  await page.getByLabel('Code').fill(await freshTotp(adminSecret));
+  await page.getByRole('button', { name: 'Turn on' }).click();
+  await expect(page.getByTestId('recovery-codes')).toBeVisible();
+  await page.getByRole('button', { name: 'I saved them' }).click();
+
+  await expect(page.getByText('Your company')).toBeVisible();
+  await page.getByLabel('Company name').fill('Acme Robotics AB');
+  await page.getByLabel('Registration number').fill('559000-1234');
+  await page.getByRole('button', { name: 'Continue' }).click();
+
+  await expect(page.getByLabel('SMTP host')).toBeVisible();
+  await page.getByLabel('SMTP host').fill(SMTP_HOST);
+  await page.getByLabel('Port').fill('1025');
+  await page.getByLabel('Security').click();
+  await page.getByRole('option', { name: 'None' }).click();
+  await page.getByLabel('Sender address').fill('noreply@acme.example');
+  await page.getByRole('button', { name: /Send test email/ }).click();
+  await expect(page.getByText(/Sent a test email to/)).toBeVisible({ timeout: 20_000 });
+  await page.getByRole('button', { name: 'Save and continue' }).click();
+
+  await expect(page.getByText('AI assistant')).toBeVisible();
+  await page.getByRole('button', { name: 'Skip for now' }).click();
+  await page.getByRole('button', { name: 'Skip' }).click();
+
+  await expect(page.getByRole('heading', { name: /Welcome, Ada/ })).toBeVisible();
+  await expect(page.getByText('Finish setting up')).toBeVisible();
+  await expect(page.getByText('Acme Robotics AB').first()).toBeVisible();
+});
+
+test('setup is locked once an admin exists', async ({ page, request }) => {
+  const res = await request.post('/api/trpc/setup.createFirstAdmin', {
+    data: { json: { code: setupCode(), name: 'Eve', email: 'eve@example.com', password: 'evil-password-123' } },
+  });
+  expect(res.status()).toBe(403);
+  await page.goto('/');
+  await expect(page).toHaveURL(/\/login/);
+});
+
+test('admin invites a member, who accepts by email and lands on the dashboard', async ({ page, browser }) => {
+  await page.goto('/login');
+  await page.getByLabel('Email').fill(admin.email);
+  await page.getByLabel('Password').fill(admin.password);
+  await page.getByRole('button', { name: 'Sign in' }).click();
+  await page.getByLabel('Code').fill(await freshTotp(adminSecret));
+  await page.getByRole('button', { name: 'Verify' }).click();
+  await expect(page.getByRole('heading', { name: /Welcome/ })).toBeVisible();
+
+  await page.keyboard.press('Control+k');
+  await page.getByPlaceholder('Type a page or action…').fill('Invite');
+  await page.keyboard.press('Enter');
+  await page.getByLabel('Email').fill(member.email);
+  await page.getByRole('button', { name: 'Send invitation' }).click();
+  await expect(page.getByText(`Invitation sent to ${member.email}`)).toBeVisible();
+  await expect(page.getByText('Pending invitations')).toBeVisible();
+
+  const link = new URL(await linkFromLatestEmail(member.email));
+  const context = await browser.newContext();
+  const invitee = await context.newPage();
+  await invitee.goto(link.pathname + link.search);
+  await expect(invitee.getByText(/You were invited as Member/)).toBeVisible();
+  await invitee.getByLabel('Your name').fill(member.name);
+  await invitee.getByLabel('Password').fill(member.password);
+  await invitee.getByRole('button', { name: 'Create account' }).click();
+  await expect(invitee.getByText('Protect your account')).toBeVisible();
+  await invitee.getByRole('button', { name: 'Later' }).click();
+  await expect(invitee.getByRole('heading', { name: /Welcome, Max/ })).toBeVisible();
+  await expect(invitee.getByRole('link', { name: 'Settings' })).toHaveCount(0);
+  await context.close();
+
+  await page.goto('/admin/audit');
+  await expect(page.getByRole('cell', { name: 'invites.accept' })).toBeVisible();
+});
+
+test('an MCP client connects with OAuth and calls tools as the user', async ({ page, request }) => {
+  const redirectUri = 'http://127.0.0.1:9/callback';
+  const registered = await (
+    await request.post('/register', {
+      data: {
+        client_name: 'E2E client',
+        redirect_uris: [redirectUri],
+        token_endpoint_auth_method: 'none',
+        grant_types: ['authorization_code', 'refresh_token'],
+        response_types: ['code'],
+      },
+    })
+  ).json();
+
+  const verifier = randomBytes(32).toString('base64url');
+  const challenge = createHash('sha256').update(verifier).digest('base64url');
+  const authorize = new URLSearchParams({
+    response_type: 'code',
+    client_id: registered.client_id,
+    redirect_uri: redirectUri,
+    code_challenge: challenge,
+    code_challenge_method: 'S256',
+    state: 'xyz',
+  });
+
+  let callback = '';
+  await page.route('http://127.0.0.1:9/**', (route) => {
+    callback = route.request().url();
+    return route.fulfill({ body: 'done' });
+  });
+  await page.goto(`/authorize?${authorize}`);
+  await page.getByLabel('Email').fill(admin.email);
+  await page.getByLabel('Password').fill(admin.password);
+  await page.getByRole('button', { name: 'Sign in' }).click();
+  await page.getByLabel('Code').fill(await freshTotp(adminSecret));
+  await page.getByRole('button', { name: 'Verify' }).click();
+  await expect(page.getByText('E2E client')).toBeVisible();
+  await page.getByRole('button', { name: 'Allow' }).click();
+  await expect.poll(() => callback).toContain('code=');
+  const code = new URL(callback).searchParams.get('code')!;
+  expect(new URL(callback).searchParams.get('state')).toBe('xyz');
+
+  const tokens = await (
+    await request.post('/token', {
+      form: { grant_type: 'authorization_code', code, redirect_uri: redirectUri, client_id: registered.client_id, code_verifier: verifier },
+    })
+  ).json();
+  expect(tokens.access_token).toBeTruthy();
+
+  const rpc = async (method: string, params: object) => {
+    const res = await request.post('/mcp', {
+      headers: { authorization: `Bearer ${tokens.access_token}`, accept: 'application/json, text/event-stream' },
+      data: { jsonrpc: '2.0', id: 1, method, params },
+    });
+    expect(res.status()).toBe(200);
+    return (await res.json()).result;
+  };
+  const list = await rpc('tools/list', {});
+  const names = list.tools.map((t: { name: string }) => t.name);
+  expect(names).toEqual(expect.arrayContaining(['users_list', 'invites_create', 'settings_update', 'audit_list']));
+  expect(names).not.toContain('auth_login');
+  const users = await rpc('tools/call', { name: 'users_list', arguments: {} });
+  expect(users.structuredContent.result.items.map((u: { email: string }) => u.email)).toContain(admin.email);
+
+  await page.goto('/account/mcp');
+  await expect(page.getByText('E2E client')).toBeVisible();
+});

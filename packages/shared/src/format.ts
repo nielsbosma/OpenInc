@@ -50,6 +50,12 @@ export function formatDate(value: Date | string, timeZone?: string, locale?: str
 
 export function formatRelative(value: Date | string, now = new Date()): string {
   const seconds = Math.round((now.getTime() - new Date(value).getTime()) / 1000);
+  if (seconds < -45) {
+    const ahead = -seconds;
+    if (ahead < 3600) return `in ${Math.round(ahead / 60)} min`;
+    if (ahead < 86_400) return `in ${Math.round(ahead / 3600)} h`;
+    return `in ${Math.round(ahead / 86_400)} d`;
+  }
   if (seconds < 45) return 'just now';
   const minutes = Math.round(seconds / 60);
   if (minutes < 60) return `${minutes} min ago`;

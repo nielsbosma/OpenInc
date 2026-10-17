@@ -9,7 +9,7 @@ import { queueEmail } from '../jobs.ts';
 import { decrypt, randomToken, sha256 } from '../lib/crypto.ts';
 import { renderEmail } from '../lib/email.ts';
 import { burnPasswordCheck, hashPassword, verifyPassword } from '../lib/password.ts';
-import { verifyTotp } from '../lib/totp.ts';
+import { matchTotp } from '../lib/totp.ts';
 import { defineService } from '../service.ts';
 import { getSettings } from '../settings.ts';
 
@@ -47,7 +47,7 @@ export const login = defineService({
   input: loginInput,
   async handler(ctx, input): Promise<LoginResult> {
     const [user] = await ctx.db.select().from(users).where(sql`lower(${users.email}) = ${input.email}`).limit(1);
-    if (!user || !user.active) {
+    if (!user?.active) {
       await burnPasswordCheck(input.password);
       throw unauthorized('Wrong email or password');
     }
@@ -104,10 +104,17 @@ export const loginSecondFactor = defineService({
     }
     const [user] = await ctx.db.select().from(users).where(eq(users.id, challenge.userId)).limit(1);
     const isRecovery = input.code.includes('-');
-    const ok =
-      !!user?.active &&
-      !!user.totpSecret &&
-      (isRecovery ? await consumeRecoveryCode(ctx, user.id, input.code) : verifyTotp(decrypt(user.totpSecret), input.code));
+    let ok = false;
+    if (user?.active && user.totpSecret) {
+      if (isRecovery) ok = await consumeRecoveryCode(ctx, user.id, input.code);
+      else {
+        const step = matchTotp(decrypt(user.totpSecret), input.code, user.totpLastStep);
+        if (step !== null) {
+          await ctx.db.update(users).set({ totpLastStep: step }).where(eq(users.id, user.id));
+          ok = true;
+        }
+      }
+    }
     if (!ok) {
       await ctx.db
         .update(loginChallenges)

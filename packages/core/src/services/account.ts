@@ -19,7 +19,7 @@ import { queueEmail } from '../jobs.ts';
 import { decrypt, encrypt, sha256 } from '../lib/crypto.ts';
 import { renderEmail } from '../lib/email.ts';
 import { hashPassword, verifyPassword } from '../lib/password.ts';
-import { generateRecoveryCodes, generateTotpSecret, totpProvisioning, verifyTotp } from '../lib/totp.ts';
+import { generateRecoveryCodes, generateTotpSecret, matchTotp, totpProvisioning } from '../lib/totp.ts';
 import { defineService } from '../service.ts';
 import { getSettingsOrDefaults } from '../settings.ts';
 import { productName } from './auth.ts';
@@ -153,11 +153,11 @@ export const enableTotp = defineService({
   async handler(ctx, input) {
     const user = await currentUser(ctx);
     if (!user.totpPendingSecret) throw badRequest('Start the setup first');
-    if (!verifyTotp(decrypt(user.totpPendingSecret), input.code))
-      throw badRequest('That code is not right. Check that the time on your phone is correct.');
+    const step = matchTotp(decrypt(user.totpPendingSecret), input.code);
+    if (step === null) throw badRequest('That code is not right. Check that the time on your phone is correct.');
     await ctx.db
       .update(users)
-      .set({ totpSecret: user.totpPendingSecret, totpPendingSecret: null, totpEnabledAt: new Date() })
+      .set({ totpSecret: user.totpPendingSecret, totpPendingSecret: null, totpEnabledAt: new Date(), totpLastStep: step })
       .where(eq(users.id, user.id));
     const codes = await replaceRecoveryCodes(ctx, user.id);
     await audit(ctx, { action: 'account.enable_totp', entityType: 'user', entityId: user.id });
@@ -177,7 +177,10 @@ export const disableTotp = defineService({
     if ((await getSettingsOrDefaults('security')).enforceTwoFactor)
       throw badRequest('Your administrator requires two-factor authentication');
     const user = await requirePassword(ctx, input.currentPassword);
-    await ctx.db.update(users).set({ totpSecret: null, totpPendingSecret: null, totpEnabledAt: null }).where(eq(users.id, user.id));
+    await ctx.db
+      .update(users)
+      .set({ totpSecret: null, totpPendingSecret: null, totpEnabledAt: null, totpLastStep: null })
+      .where(eq(users.id, user.id));
     await ctx.db.delete(recoveryCodes).where(eq(recoveryCodes.userId, user.id));
     await audit(ctx, { action: 'account.disable_totp', entityType: 'user', entityId: user.id });
     await securityNotice(user, 'Two-factor authentication was turned off');

@@ -53,9 +53,22 @@ export function totpAt(secret: string, time = Date.now()): string {
   return code.toString().padStart(6, '0');
 }
 
-/** Accepts the previous, current and next code to allow for clock drift. */
+/**
+ * Accepts the previous, current and next code to allow for clock drift. Returns the matching
+ * time step, or null. Pass the last accepted step to refuse a code that was already used.
+ */
+export function matchTotp(secret: string, code: string, lastStep: number | null = null, time = Date.now()): number | null {
+  const current = Math.floor(time / 1000 / STEP);
+  for (const drift of [-1, 0, 1]) {
+    const step = current + drift;
+    if (lastStep !== null && step <= lastStep) continue;
+    if (totpAt(secret, step * STEP * 1000) === code.trim()) return step;
+  }
+  return null;
+}
+
 export function verifyTotp(secret: string, code: string, time = Date.now()): boolean {
-  return [-1, 0, 1].some((drift) => totpAt(secret, time + drift * STEP * 1000) === code.trim());
+  return matchTotp(secret, code, null, time) !== null;
 }
 
 export async function totpProvisioning(secret: string, account: string, issuer: string): Promise<{ uri: string; qrDataUrl: string }> {

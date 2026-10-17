@@ -1,0 +1,105 @@
+import { Check, Copy, Loader2 } from 'lucide-react';
+import { type ReactNode, useState } from 'react';
+import type { z } from 'zod';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { cn } from '@/lib/utils';
+
+export function Spinner({ className }: { className?: string }) {
+  return <Loader2 className={cn('size-4 animate-spin text-muted-foreground', className)} aria-label="Loading" />;
+}
+
+export function Logo({ className, src, name }: { className?: string; src?: string | null; name?: string | null }) {
+  if (src) return <img src={src} alt={name ?? 'Logo'} className={cn('size-7 rounded-md object-contain', className)} />;
+  return (
+    <svg viewBox="0 0 32 32" className={cn('size-7', className)} aria-hidden>
+      <rect width="32" height="32" rx="8" className="fill-primary" />
+      <path d="M9 21.5V10.5h3.2l7.6 7.2v-7.2H23v11h-3.2l-7.6-7.2v7.2z" fill="#fff" />
+    </svg>
+  );
+}
+
+export function PageHeader({ title, description, actions }: { title: string; description?: ReactNode; actions?: ReactNode }) {
+  return (
+    <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+      <div className="min-w-0">
+        <h1 className="text-xl font-semibold tracking-tight">{title}</h1>
+        {description && <p className="mt-1 text-muted-foreground">{description}</p>}
+      </div>
+      {actions && <div className="flex shrink-0 gap-2">{actions}</div>}
+    </div>
+  );
+}
+
+export function Field({
+  label,
+  htmlFor,
+  error,
+  hint,
+  children,
+  className,
+}: {
+  label: ReactNode;
+  htmlFor?: string;
+  error?: string;
+  hint?: ReactNode;
+  children: ReactNode;
+  className?: string;
+}) {
+  return (
+    <div className={cn('grid gap-1.5', className)}>
+      <Label htmlFor={htmlFor}>{label}</Label>
+      {children}
+      {error ? <p className="text-xs text-destructive">{error}</p> : hint ? <p className="text-xs text-muted-foreground">{hint}</p> : null}
+    </div>
+  );
+}
+
+export function EmptyState({ icon, title, children }: { icon?: ReactNode; title: string; children?: ReactNode }) {
+  return (
+    <div className="flex flex-col items-center justify-center gap-2 rounded-lg border border-dashed px-6 py-12 text-center">
+      {icon && <div className="text-muted-foreground [&_svg]:size-6">{icon}</div>}
+      <p className="font-medium">{title}</p>
+      {children && <div className="max-w-sm text-muted-foreground">{children}</div>}
+    </div>
+  );
+}
+
+export function CopyButton({ value, label = 'Copy' }: { value: string; label?: string }) {
+  const [copied, setCopied] = useState(false);
+  return (
+    <Button
+      type="button"
+      variant="outline"
+      size="sm"
+      onClick={async () => {
+        await navigator.clipboard.writeText(value);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 1500);
+      }}
+    >
+      {copied ? <Check /> : <Copy />}
+      {copied ? 'Copied' : label}
+    </Button>
+  );
+}
+
+/** Validates form values with the shared Zod schema; returns the parsed data or the first error per field. */
+export function validate<S extends z.ZodType>(
+  schema: S,
+  values: unknown,
+): { data: z.output<S>; errors: null } | { data: null; errors: Record<string, string> } {
+  const parsed = schema.safeParse(values);
+  if (parsed.success) return { data: parsed.data, errors: null };
+  const errors: Record<string, string> = {};
+  for (const issue of parsed.error.issues) {
+    const key = issue.path.join('.') || '_';
+    errors[key] ??= issue.message;
+  }
+  return { data: null, errors };
+}
+
+export function StatusDot({ tone }: { tone: 'ok' | 'warn' | 'error' | 'off' }) {
+  const color = { ok: 'bg-success', warn: 'bg-warning', error: 'bg-destructive', off: 'bg-muted-foreground/40' }[tone];
+  return <span className={cn('inline-block size-2 rounded-full', color)} />;
+}
