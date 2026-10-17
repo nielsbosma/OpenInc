@@ -69,7 +69,7 @@ services:
   app:
     profiles: [prod]
     build: .
-    image: openinc:local
+    image: ${OPENINC_IMAGE:-openinc:local}
     environment:
       DATABASE_URL: postgres://openinc:openinc@postgres:5432/openinc_prod
       S3_ENDPOINT: http://minio:9000
@@ -79,6 +79,7 @@ services:
       S3_REGION: us-east-1
       APP_SECRET: local-prod-profile-secret-change-me-0123456789
       APP_URL: http://localhost:8080
+      ROLE: ${OPENINC_ROLE:-all}
     ports:
       - "8080:3000"
     depends_on:

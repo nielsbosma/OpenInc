@@ -2,12 +2,13 @@ import { createHash, randomBytes } from 'node:crypto';
 import { expect, test } from '@playwright/test';
 import { freshTotp, linkFromLatestEmail, SMTP_HOST, setupCode } from './helpers';
 
-const stamp = Date.now();
+const stamp = process.env.E2E_STAMP ?? Date.now();
 const admin = { name: 'Ada Admin', email: `ada-${stamp}@example.com`, password: 'correct-horse-battery-1' };
 const member = { name: 'Max Member', email: `max-${stamp}@example.com`, password: 'another-long-password-2' };
 let adminSecret = '';
 
 test.describe.configure({ mode: 'serial' });
+test.skip(!!process.env.E2E_UPGRADE, 'The upgrade check runs upgrade.spec.ts against an install this file made earlier');
 
 test('first run: install, admin with two-factor, company, email, extras', async ({ page }) => {
   await page.goto('/');

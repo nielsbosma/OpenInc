@@ -60,8 +60,7 @@ export async function run<TInput extends z.ZodType, TOutput>(
   input: z.output<TInput>,
 ): Promise<TOutput> {
   authorize(def, ctx);
-  const inTransaction = 'rollback' in ctx.db;
-  if (def.kind === 'mutation' && def.transaction !== false && !inTransaction) {
+  if (def.kind === 'mutation' && def.transaction !== false && !('rollback' in ctx.db)) {
     return ctx.db.transaction((tx) => def.handler({ ...ctx, db: tx }, input));
   }
   return def.handler(ctx, input);

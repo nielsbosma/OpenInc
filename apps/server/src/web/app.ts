@@ -38,9 +38,16 @@ export function createApp() {
     next();
   });
 
+  // Liveness: the process answers, even while it waits for setup. Hosts must not restart it for that.
   app.get('/api/health', (_req, res) => {
     const status = getSystemStatus();
-    res.status(status.phase === 'ready' ? 200 : 503).json({ ok: status.phase === 'ready', phase: status.phase, version: status.version });
+    res.json({ ok: true, phase: status.phase, version: status.version });
+  });
+
+  // Readiness: the database is installed and up to date.
+  app.get('/api/ready', (_req, res) => {
+    const status = getSystemStatus();
+    res.status(status.phase === 'ready' ? 200 : 503).json({ ready: status.phase === 'ready', phase: status.phase });
   });
 
   app.post('/api/system/retry', (_req, res) => {
