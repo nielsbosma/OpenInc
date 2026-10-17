@@ -1,0 +1,34 @@
+{
+  "name": "@openinc/server",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./router": "./src/web/router.ts"
+  },
+  "scripts": {
+    "dev": "tsx watch --clear-screen=false --include \"../../packages/db/migrations/**/*\" src/main.ts",
+    "start": "tsx src/main.ts",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.32.1",
+    "@openinc/core": "workspace:^",
+    "@openinc/db": "workspace:^",
+    "@openinc/shared": "workspace:^",
+    "@trpc/server": "^11.19.0",
+    "ai": "^7.0.143",
+    "express": "^5.3.0",
+    "pg-boss": "^12.38.0",
+    "superjson": "^2.2.6",
+    "tsx": "^4.23.15",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/supertest": "^7.2.1",
+    "supertest": "^7.3.1",
+    "vitest": "^5.0.5"
+  }
+}

@@ -1,0 +1,30 @@
+name: Bug report
+description: Something does not work as it should
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What did you do, what did you expect, and what happened instead?
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: Shown in the sidebar and under Admin settings → System.
+      placeholder: v0.1.0
+    validations:
+      required: true
+  - type: dropdown
+    id: hosting
+    attributes:
+      label: Where it runs
+      options: [Sliplane, Other container host, docker compose, Local development]
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: Relevant container log lines. Remove secrets.
+      render: text

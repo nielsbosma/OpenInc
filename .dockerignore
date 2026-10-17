@@ -1,0 +1,17 @@
+**/node_modules
+**/dist
+**/.turbo
+**/storybook-static
+**/test-results
+**/playwright-report
+.git
+.github
+.env
+.env.local
+*.log
+**/e2e
+**/scripts/screenshots.mjs
+**/*.test.ts
+**/*.stories.tsx
+**/.storybook
+docker-compose.yml
