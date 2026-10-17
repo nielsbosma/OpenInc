@@ -7,6 +7,7 @@ import * as chat from './services/chat.ts';
 import * as filesServices from './services/files.ts';
 import * as help from './services/help.ts';
 import * as notifications from './services/notifications.ts';
+import * as registry from './services/registry.ts';
 import * as settings from './services/settings.ts';
 import * as setup from './services/setup.ts';
 import * as system from './services/system.ts';
@@ -101,6 +102,29 @@ export const services = {
   },
   help: {
     ui: help.helpUi,
+  },
+  registry: {
+    status: registry.registryStatus,
+    legalForms: registry.registryLegalForms,
+    setup: registry.setupRegistry,
+    getRegister: registry.getRegister,
+    searchHolders: registry.searchHolders,
+    getHolder: registry.getHolder,
+    listTransactions: registry.listTransactions,
+    getTransaction: registry.getTransaction,
+    validate: registry.validateTransaction,
+    draftTransaction: registry.createDraft,
+    updateDraft: registry.updateDraft,
+    parkTransaction: registry.parkDraft,
+    deleteDraft: registry.deleteDraft,
+    submitForApproval: registry.submitDraft,
+    commit: registry.commitTransaction,
+    reverse: registry.reverseTransaction,
+    attachDocument: registry.attachDocument,
+    detachDocument: registry.detachDocument,
+    verifyChain: registry.verifyRegistryChain,
+    rebuild: registry.rebuildRegistry,
+    history: registry.registryHistory,
   },
   oauth: {
     describe: describeAuthorization,

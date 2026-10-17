@@ -8,6 +8,7 @@ import {
   type JobPayloads,
   notify,
   runDataMigrations,
+  runRegistryChainCheck,
   systemCtx,
 } from '@openinc/core';
 import { auditLog, loginChallenges, lt, oauthCodes, passwordResetTokens } from '@openinc/db';
@@ -58,6 +59,11 @@ export const handlers: Handlers = {
     }
     return { sessions: sessions.length, audit };
   },
+
+  'registry.verifyChain': () => runRegistryChainCheck(systemCtx('worker')),
 };
 
-export const schedules: { name: JobName; cron: string }[] = [{ name: 'maintenance.cleanup', cron: '15 3 * * *' }];
+export const schedules: { name: JobName; cron: string }[] = [
+  { name: 'maintenance.cleanup', cron: '15 3 * * *' },
+  { name: 'registry.verifyChain', cron: '45 2 * * *' },
+];

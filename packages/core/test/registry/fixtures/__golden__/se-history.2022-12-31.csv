@@ -1,0 +1,5 @@
+Holder,Kind,National ID,Country,Address,Class,Shares,Share Numbers,Interim,Pledged,Votes,Capital %,Votes %
+Anna Andersson,person,19811218-9876,SE,"Storgatan 1, 111 22 Stockholm",A,5000,1-5000,,,50000,16.666667,66.666667
+Björn Berg,person,19900101-0017,SE,"Vasagatan 9, 411 24 Göteborg",B,17500,5001-17500 20001-25000,,,17500,58.333333,23.333333
+Cecilia Carlsson,person,19850615-2381,SE,,B,2500,17501-20000,,1000,2500,8.333333,3.333333
+Invest AB,company,556036-0793,SE,,B,5000,25001-30000,,,5000,16.666667,6.666667

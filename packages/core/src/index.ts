@@ -12,6 +12,7 @@ export { deliverEmail, type Email, EmailNotConfiguredError } from './lib/email.t
 export { initErrorTracking, reportError } from './lib/sentry.ts';
 export { getObjectBuffer, getObjectStream } from './lib/storage.ts';
 export * from './oauth.ts';
+export { runRegistryChainCheck } from './registry/jobs.ts';
 export * from './registry.ts';
 export * from './service.ts';
 export type { LoginResult } from './services/auth.ts';

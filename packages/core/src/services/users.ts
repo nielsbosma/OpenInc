@@ -82,7 +82,7 @@ export const getUser = defineService({
 export const updateUser = defineService({
   name: 'users.update',
   description:
-    "Change someone's name or role (admin, member, readonly), or deactivate/reactivate them. Deactivating signs them out everywhere.",
+    "Change someone's name or role (admin, board, member, auditor, readonly), or deactivate/reactivate them. Deactivating signs them out everywhere.",
   kind: 'mutation',
   access: 'users.manage',
   input: updateUserInput,
@@ -193,7 +193,8 @@ export const listInvites = defineService({
 
 export const createInvite = defineService({
   name: 'invites.create',
-  description: 'Invite someone by email with a role (admin, member or readonly). They get an email with a link to choose a password.',
+  description:
+    'Invite someone by email with a role (admin, board, member, auditor or readonly). They get an email with a link to choose a password.',
   kind: 'mutation',
   access: 'users.manage',
   input: createInviteInput,

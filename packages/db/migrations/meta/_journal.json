@@ -15,6 +15,20 @@
       "when": 1792240848611,
       "tag": "0001_checklist_per_user",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1792243786641,
+      "tag": "0002_shareholder_registry",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1792243789783,
+      "tag": "0003_registry_immutable",
+      "breakpoints": true
     }
   ]
 }

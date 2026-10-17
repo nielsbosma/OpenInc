@@ -18,7 +18,7 @@ export const listNotificationsInput = pagination.extend({
 
 export const notificationIdInput = z.object({ notificationId: id });
 
-export const FILE_KINDS = ['chat-attachment', 'avatar', 'logo', 'document'] as const;
+export const FILE_KINDS = ['chat-attachment', 'avatar', 'logo', 'document', 'registry-document', 'registry-import'] as const;
 export type FileKind = (typeof FILE_KINDS)[number];
 
 export const MAX_UPLOAD_BYTES = 25 * 1024 * 1024;
