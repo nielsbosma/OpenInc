@@ -50,6 +50,13 @@
       "when": 1792311743615,
       "tag": "0006_drop_commit_over_mcp",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1792337050699,
+      "tag": "0007_dataroom",
+      "breakpoints": true
     }
   ]
 }

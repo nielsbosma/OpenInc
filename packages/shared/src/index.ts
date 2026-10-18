@@ -6,6 +6,7 @@ export * from './registry/ids.ts';
 export * from './registry/rule-packs.ts';
 export * from './schemas/auth.ts';
 export * from './schemas/common.ts';
+export * from './schemas/dataroom.ts';
 export * from './schemas/documents.ts';
 export * from './schemas/platform.ts';
 export * from './schemas/registry.ts';

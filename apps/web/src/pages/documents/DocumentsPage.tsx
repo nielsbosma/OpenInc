@@ -6,6 +6,7 @@ import { Link, useParams } from 'react-router';
 import { toast } from 'sonner';
 import { Combobox } from '@/components/Combobox';
 import { EmptyState, Field, PageHeader, Spinner } from '@/components/common';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -21,6 +22,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { useCan, useFormat } from '@/lib/session';
 import { useTRPC } from '@/lib/trpc';
 import { uploadFile } from '@/lib/upload';
+import { AddToDataroomDialog } from './AddToDataroomDialog';
 
 const TOP = '__top';
 
@@ -33,6 +35,7 @@ export function DocumentsPage() {
   const format = useFormat();
   const can = useCan();
   const canWrite = can('files.write');
+  const canShare = can('dataroom.manage');
   const input = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(0);
   const [dragging, setDragging] = useState(false);
@@ -40,6 +43,11 @@ export function DocumentsPage() {
   const [rename, setRename] = useState<Rename | null>(null);
   const [moving, setMoving] = useState<{ id: string; name: string; folderId: string | null } | null>(null);
   const [deleting, setDeleting] = useState<{ id: string; name: string } | null>(null);
+  const [sharing, setSharing] = useState<{ id: string; name: string } | null>(null);
+  const deletingRooms = useQuery({
+    ...trpc.dataroom.roomsForDocument.queryOptions({ documentId: deleting?.id ?? '' }),
+    enabled: !!deleting && canShare,
+  });
 
   const list = useQuery(trpc.documents.list.queryOptions({ folderId }));
   const refresh = () => queryClient.invalidateQueries({ queryKey: trpc.documents.pathKey() });
@@ -193,6 +201,11 @@ export function DocumentsPage() {
                     <a href={d.url} target="_blank" rel="noreferrer" className="flex items-center gap-2.5 hover:underline">
                       <FileText className="size-4 shrink-0 text-muted-foreground" />
                       <span className="truncate">{d.name}</span>
+                      {d.dataroomCount > 0 && (
+                        <Badge variant="secondary" className="shrink-0">
+                          {d.dataroomCount === 1 ? 'In 1 Dataroom' : `In ${d.dataroomCount} Datarooms`}
+                        </Badge>
+                      )}
                     </a>
                   </TableCell>
                   <TableCell className="hidden font-mono text-xs text-muted-foreground sm:table-cell">{formatBytes(d.sizeBytes)}</TableCell>
@@ -203,6 +216,9 @@ export function DocumentsPage() {
                       <DropdownMenuItem asChild>
                         <a href={`${d.url}?download`}>Download</a>
                       </DropdownMenuItem>
+                      {canShare && (
+                        <DropdownMenuItem onSelect={() => setSharing({ id: d.id, name: d.name })}>Add to Dataroom</DropdownMenuItem>
+                      )}
                       {canWrite && (
                         <>
                           <DropdownMenuItem onSelect={() => setRename({ kind: 'document', id: d.id, name: d.name })}>
@@ -237,11 +253,16 @@ export function DocumentsPage() {
       <NewFolderDialog open={newFolder} onOpenChange={setNewFolder} parentId={folderId} onDone={refresh} />
       <RenameDialog item={rename} onClose={() => setRename(null)} onDone={refresh} />
       <MoveDialog item={moving} onClose={() => setMoving(null)} onDone={refresh} />
+      <AddToDataroomDialog document={sharing} onClose={() => setSharing(null)} />
       <Dialog open={!!deleting} onOpenChange={(o) => !o && setDeleting(null)}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Delete Document</DialogTitle>
-            <DialogDescription>{deleting?.name} will be removed from Documents and can no longer be downloaded.</DialogDescription>
+            <DialogDescription>
+              {deleting?.name} will be removed from Documents and can no longer be downloaded.
+              {!!deletingRooms.data?.length &&
+                ` It is also removed from ${deletingRooms.data.map((r) => r.name).join(', ')}, so visitors there lose it.`}
+            </DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDeleting(null)}>

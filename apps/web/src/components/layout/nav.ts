@@ -48,6 +48,7 @@ export const MODULES: NavItem[] = [
         title: 'Dataroom',
         path: '/documents/dataroom',
         icon: FolderLock,
+        permission: 'dataroom.read',
         description: 'Share documents with investors and see who viewed what.',
       },
       {
@@ -82,7 +83,7 @@ export const MODULES: NavItem[] = [
   },
 ];
 
-export const BUILT_MODULES = new Set(['/registry', '/documents']);
+export const BUILT_MODULES = new Set(['/registry', '/documents', '/documents/dataroom']);
 
 export const MAIN_NAV: NavItem[] = [{ title: 'Dashboard', path: '/', icon: LayoutDashboard }, ...MODULES];
 

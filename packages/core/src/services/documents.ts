@@ -1,4 +1,4 @@
-import { and, asc, documentFolders, documents, eq, files, ilike, isNull, or, users } from '@openinc/db';
+import { and, asc, count, dataRoomItems, documentFolders, documents, eq, files, ilike, inArray, isNull, or, users } from '@openinc/db';
 import {
   addDocumentInput,
   createFolderInput,
@@ -69,7 +69,21 @@ function documentRows(ctx: Ctx) {
     .leftJoin(users, eq(users.id, documents.createdBy));
 }
 
-function toDocumentDto(row: { document: typeof documents.$inferSelect; file: typeof files.$inferSelect; uploadedByName: string | null }) {
+/** How many datarooms each document is in, for the badge in the list. */
+async function roomCounts(ctx: Ctx, documentIds: string[]) {
+  if (!documentIds.length) return new Map<string, number>();
+  const rows = await ctx.db
+    .select({ documentId: dataRoomItems.documentId, value: count() })
+    .from(dataRoomItems)
+    .where(inArray(dataRoomItems.documentId, documentIds))
+    .groupBy(dataRoomItems.documentId);
+  return new Map(rows.map((r) => [r.documentId, r.value]));
+}
+
+function toDocumentDto(
+  row: { document: typeof documents.$inferSelect; file: typeof files.$inferSelect; uploadedByName: string | null },
+  rooms = new Map<string, number>(),
+) {
   const file = toFileDto(row.file);
   return {
     id: row.document.id,
@@ -82,6 +96,7 @@ function toDocumentDto(row: { document: typeof documents.$inferSelect; file: typ
     previewable: file.previewable,
     uploadedBy: row.uploadedByName,
     createdAt: row.document.createdAt,
+    dataroomCount: rooms.get(row.document.id) ?? 0,
   };
 }
 
@@ -104,6 +119,10 @@ export const listDocuments = defineService({
     const docCount = new Map<string | null, number>();
     for (const d of allDocs) docCount.set(d.folderId, (docCount.get(d.folderId) ?? 0) + 1);
     const children = [...map.values()].filter((f) => f.parentId === folderId).sort((a, b) => a.name.localeCompare(b.name));
+    const rooms = await roomCounts(
+      ctx,
+      docs.map((d) => d.document.id),
+    );
     const hints = folderId && docs.length === 0 ? (templateFolderAt(path.map((f) => f.name))?.documents ?? []) : [];
     return {
       folder: folderId ? { id: folderId, name: map.get(folderId)!.name, description: map.get(folderId)!.description } : null,
@@ -115,7 +134,7 @@ export const listDocuments = defineService({
         documentCount: docCount.get(f.id) ?? 0,
         folderCount: [...map.values()].filter((c) => c.parentId === f.id).length,
       })),
-      documents: docs.map(toDocumentDto),
+      documents: docs.map((d) => toDocumentDto(d, rooms)),
       hints,
       suggestTemplate: map.size === 0 && allDocs.length === 0,
     };
@@ -315,7 +334,8 @@ export const moveDocument = defineService({
 
 export const deleteDocument = defineService({
   name: 'documents.delete',
-  description: 'Delete a document from Documents. The file is marked deleted and can no longer be downloaded.',
+  description:
+    'Delete a document from Documents. The file is marked deleted and can no longer be downloaded, and it leaves every dataroom it was in (see dataroom.roomsForDocument).',
   kind: 'mutation',
   access: 'files.write',
   input: documentIdInput,
@@ -348,7 +368,11 @@ export const searchDocuments = defineService({
       .where(or(ilike(documents.name, pattern), ilike(documentFolders.name, pattern)))
       .orderBy(asc(documents.name))
       .limit(50);
-    return rows.map((r) => ({ ...toDocumentDto(r), folderPath: pathText(pathOf(map, r.document.folderId)) }));
+    const rooms = await roomCounts(
+      ctx,
+      rows.map((r) => r.document.id),
+    );
+    return rows.map((r) => ({ ...toDocumentDto(r, rooms), folderPath: pathText(pathOf(map, r.document.folderId)) }));
   },
 });
 

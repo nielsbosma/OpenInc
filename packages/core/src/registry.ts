@@ -4,6 +4,8 @@ import * as account from './services/account.ts';
 import * as auditServices from './services/audit.ts';
 import * as auth from './services/auth.ts';
 import * as chat from './services/chat.ts';
+import * as dataroom from './services/dataroom.ts';
+import * as portal from './services/dataroom-portal.ts';
 import * as documents from './services/documents.ts';
 import * as filesServices from './services/files.ts';
 import * as help from './services/help.ts';
@@ -99,6 +101,41 @@ export const services = {
     move: documents.moveDocument,
     delete: documents.deleteDocument,
     downloadZip: documents.downloadZip,
+  },
+  dataroom: {
+    list: dataroom.listRooms,
+    get: dataroom.getRoom,
+    templates: dataroom.listRoomTemplates,
+    roomsForDocument: dataroom.roomsForDocument,
+    create: dataroom.createRoom,
+    update: dataroom.updateRoom,
+    open: dataroom.openRoom,
+    close: dataroom.closeRoom,
+    delete: dataroom.deleteRoom,
+    createFolder: dataroom.createRoomFolder,
+    renameFolder: dataroom.renameRoomFolder,
+    deleteFolder: dataroom.deleteRoomFolder,
+    addDocuments: dataroom.addRoomDocuments,
+    removeItem: dataroom.removeRoomItem,
+    moveItem: dataroom.moveRoomItem,
+    links: dataroom.listLinks,
+    createLink: dataroom.createLink,
+    updateLink: dataroom.updateLink,
+    revokeLink: dataroom.revokeLink,
+    visitors: dataroom.listVisitors,
+    visitor: dataroom.getVisitor,
+    stats: dataroom.roomStats,
+    documentStats: dataroom.roomDocumentStats,
+  },
+  portal: {
+    start: portal.portalStart,
+    identify: portal.portalIdentify,
+    resendCode: portal.portalResendCode,
+    verify: portal.portalVerify,
+    unlock: portal.portalUnlock,
+    acceptNda: portal.portalAcceptNda,
+    room: portal.portalRoom,
+    heartbeat: portal.portalHeartbeat,
   },
   notifications: {
     list: notifications.listNotifications,

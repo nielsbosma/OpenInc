@@ -12,6 +12,8 @@ export const PERMISSIONS = {
   'registry.draft': 'Prepare share register transactions and imports',
   'registry.commit': 'Enter and approve share register transactions',
   'registry.manage': 'Change share register settings',
+  'dataroom.read': 'See datarooms, their links, visitors and statistics',
+  'dataroom.manage': 'Create and change datarooms, add documents, and create and revoke share links',
 } as const;
 
 export type Permission = keyof typeof PERMISSIONS;
@@ -43,22 +45,34 @@ export const ROLE_INFO: Record<Role, { label: string; description: string; permi
       'registry.read',
       'registry.draft',
       'registry.commit',
+      'dataroom.read',
+      'dataroom.manage',
     ],
   },
   member: {
     label: 'Member',
     description: 'Day-to-day work, and prepares share register transactions',
-    permissions: ['company.read', 'users.read', 'files.read', 'files.write', 'ai.chat', 'registry.read', 'registry.draft'],
+    permissions: [
+      'company.read',
+      'users.read',
+      'files.read',
+      'files.write',
+      'ai.chat',
+      'registry.read',
+      'registry.draft',
+      'dataroom.read',
+      'dataroom.manage',
+    ],
   },
   auditor: {
     label: 'Auditor',
     description: 'Reads everything, including the share register at any date and the audit log',
-    permissions: ['company.read', 'users.read', 'files.read', 'audit.read', 'registry.read'],
+    permissions: ['company.read', 'users.read', 'files.read', 'audit.read', 'registry.read', 'dataroom.read'],
   },
   readonly: {
     label: 'Read-only',
     description: 'Can look but not change anything',
-    permissions: ['company.read', 'users.read', 'files.read', 'ai.chat', 'registry.read'],
+    permissions: ['company.read', 'users.read', 'files.read', 'ai.chat', 'registry.read', 'dataroom.read'],
   },
 };
 
