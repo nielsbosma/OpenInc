@@ -43,10 +43,22 @@ export const MODULES: NavItem[] = [
     icon: FileText,
     permission: 'files.read',
     description: 'Company documents in folders, stored in your bucket, with a suggested structure to start from.',
+    children: [
+      {
+        title: 'Dataroom',
+        path: '/documents/dataroom',
+        icon: FolderLock,
+        description: 'Share documents with investors and see who viewed what.',
+      },
+      {
+        title: 'Signing',
+        path: '/documents/signing',
+        icon: FileSignature,
+        description: 'Send documents for signature and track who has signed.',
+      },
+    ],
   },
   { title: 'Cap Table', path: '/cap-table', icon: BarChart3, description: 'Share classes, options and fully diluted ownership.' },
-  { title: 'Signing', path: '/signing', icon: FileSignature, description: 'Send documents for signature and track who has signed.' },
-  { title: 'Dataroom', path: '/dataroom', icon: FolderLock, description: 'Share documents with investors and see who viewed what.' },
   {
     title: 'Fundraising',
     path: '/fundraising',

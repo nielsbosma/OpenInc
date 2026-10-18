@@ -213,8 +213,20 @@ export const uiGuide: GuideEntry[] = [
     ],
   },
   { title: 'Cap Table', path: '/cap-table', where: 'Sidebar → **Cap Table**', summary: 'Coming soon: the cap table.', tasks: [] },
-  { title: 'Signing', path: '/signing', where: 'Sidebar → **Signing**', summary: 'Coming soon: document signing.', tasks: [] },
-  { title: 'Dataroom', path: '/dataroom', where: 'Sidebar → **Dataroom**', summary: 'Coming soon: the dataroom.', tasks: [] },
+  {
+    title: 'Dataroom',
+    path: '/documents/dataroom',
+    where: 'Sidebar → **Documents** → **Dataroom** (the arrow next to Documents shows its pages)',
+    summary: 'Coming soon: the dataroom.',
+    tasks: [],
+  },
+  {
+    title: 'Signing',
+    path: '/documents/signing',
+    where: 'Sidebar → **Documents** → **Signing** (the arrow next to Documents shows its pages)',
+    summary: 'Coming soon: document signing.',
+    tasks: [],
+  },
   {
     title: 'Fundraising',
     path: '/fundraising',

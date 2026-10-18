@@ -88,6 +88,8 @@ export function App() {
         )}
         <Route path="/registry/*" element={<RegistryRoutes />} />
         <Route path="/documents/:folderId?" element={<DocumentsPage />} />
+        <Route path="/signing" element={<Navigate to="/documents/signing" replace />} />
+        <Route path="/dataroom" element={<Navigate to="/documents/dataroom" replace />} />
         <Route path="/settings/:tab?" element={<SettingsPage />} />
         <Route
           path="/account/:tab?"

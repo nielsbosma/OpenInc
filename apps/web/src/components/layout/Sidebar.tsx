@@ -39,7 +39,10 @@ function Item({ item, onNavigate }: { item: NavItem; onNavigate?: () => void }) 
 
 const groupKey = (path: string) => `openinc-nav-open:${path}`;
 
-/** A module with sub-pages: the parent toggles the group, which opens by itself when one of its pages is active. */
+/**
+ * A module with sub-pages: the parent toggles the group, which opens by itself when one of its pages is active.
+ * A built parent is a page of its own, so its name links there and only the chevron toggles.
+ */
 function Group({ item, onNavigate }: { item: NavItem; onNavigate?: () => void }) {
   const { pathname } = useLocation();
   const active = pathname === item.path || pathname.startsWith(`${item.path}/`);
@@ -57,24 +60,53 @@ function Group({ item, onNavigate }: { item: NavItem; onNavigate?: () => void })
     } catch {}
   };
   const expanded = open || active;
+  const built = BUILT_MODULES.has(item.path);
+  const onChild = item.children!.some((c) => pathname === c.path || pathname.startsWith(`${c.path}/`));
+  const chevron = <ChevronRight className={cn('size-3.5 shrink-0 opacity-60 transition-transform', expanded && 'rotate-90')} />;
   return (
     <div>
-      <button
-        type="button"
-        onClick={() => setOpen(!expanded)}
-        aria-expanded={expanded}
-        className={cn(linkClass(false), 'w-full', active && 'text-sidebar-foreground')}
-      >
-        <item.icon className="size-4 shrink-0 opacity-80" />
-        <span className="truncate">{item.title}</span>
-        <ChevronRight className={cn('size-3.5 shrink-0 opacity-60 transition-transform', expanded && 'rotate-90')} />
-        <SoonBadge />
-      </button>
+      {built ? (
+        <div className="flex items-center gap-0.5">
+          <NavLink
+            to={item.path}
+            onClick={() => {
+              setOpen(true);
+              onNavigate?.();
+            }}
+            className={cn(linkClass(active && !onChild), 'min-w-0 flex-1')}
+          >
+            <item.icon className="size-4 shrink-0 opacity-80" />
+            <span className="truncate">{item.title}</span>
+          </NavLink>
+          <button
+            type="button"
+            onClick={() => setOpen(!expanded)}
+            aria-expanded={expanded}
+            aria-label={`${expanded ? 'Hide' : 'Show'} ${item.title} Pages`}
+            className="flex size-8 shrink-0 items-center justify-center rounded-md text-sidebar-foreground/75 hover:bg-sidebar-accent"
+          >
+            {chevron}
+          </button>
+        </div>
+      ) : (
+        <button
+          type="button"
+          onClick={() => setOpen(!expanded)}
+          aria-expanded={expanded}
+          className={cn(linkClass(false), 'w-full', active && 'text-sidebar-foreground')}
+        >
+          <item.icon className="size-4 shrink-0 opacity-80" />
+          <span className="truncate">{item.title}</span>
+          {chevron}
+          <SoonBadge />
+        </button>
+      )}
       {expanded && (
         <div className="mt-0.5 ml-[18px] grid gap-0.5 border-l border-sidebar-border pl-2">
           {item.children!.map((child) => (
             <NavLink key={child.path} to={child.path} onClick={onNavigate} className={({ isActive }) => cn(linkClass(isActive), 'h-7')}>
               <span className="truncate">{child.title}</span>
+              {built && !BUILT_MODULES.has(child.path) && <SoonBadge />}
             </NavLink>
           ))}
         </div>
