@@ -49,7 +49,7 @@ export function CompanyIdentityFields({
         <Combobox
           id={id('country')}
           value={values.country}
-          onChange={(country) => onChange({ country })}
+          onChange={(country) => onChange({ country, legalForm: legalFormsFor(country)[0]?.code ?? '' })}
           options={countryOptions()}
           invalid={!!errors.country}
           disabled={locked.includes('country')}
