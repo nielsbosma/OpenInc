@@ -117,6 +117,7 @@ export const systemSettings = z.object({
 
 export const onboardingSettings = z.object({
   completedAt: z.string().nullable().default(null),
+  documentsTemplateSkippedAt: z.string().nullable().default(null),
 });
 
 /** Every settings group: its schema and which of its fields are secrets (encrypted at rest, never sent to the browser). */

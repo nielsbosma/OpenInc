@@ -178,11 +178,17 @@ export const uiGuide: GuideEntry[] = [
     where: 'Sidebar → **Documents**',
     permission: 'files.read',
     summary:
-      'Company documents in folders, stored in the S3 bucket. While it is empty it shows a **Suggested Folder Structure** (corporate, governance, ownership, finance, legal, people, intellectual property, fundraising); an empty folder lists the documents that usually go there. The suggestion lives in packages/core/src/documents/folder-template.yaml.',
+      'Company documents in folders, stored in the S3 bucket. While it is empty it shows a **Suggested Folder Structure** until someone creates or skips it (corporate, governance, ownership, finance, legal, people, intellectual property, fundraising); an empty folder lists the documents that usually go there. The suggestion lives in packages/core/src/documents/folder-template.yaml.',
     tasks: [
       {
         task: 'Start from the suggested structure',
         steps: 'Open **Documents** while it is empty and click **Create These Folders**. Folders that already exist are kept.',
+        permission: 'files.write',
+      },
+      {
+        task: 'Skip the suggested structure',
+        steps:
+          'Open **Documents** while it is empty and click **Skip**. The suggestion is hidden for everyone and you start with your own folders.',
         permission: 'files.write',
       },
       {
@@ -209,6 +215,7 @@ export const uiGuide: GuideEntry[] = [
       'documents.folders',
       'documents.template',
       'documents.applyTemplate',
+      'documents.skipTemplate',
       'documents.move',
     ],
   },
