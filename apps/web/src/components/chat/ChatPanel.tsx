@@ -249,7 +249,7 @@ function NotConfigured({ onClose }: { onClose: () => void }) {
         <p className="text-muted-foreground">
           {allowed === false
             ? 'Your role does not include the assistant.'
-            : 'It can answer questions about the app and do things for you, once an AI provider (Anthropic, OpenAI or LiteLLM) is set up.'}
+            : 'It can answer questions about the app and do things for you, once an AI provider (Anthropic, OpenAI, Opper, Berget AI or LiteLLM) is set up.'}
         </p>
         {allowed !== false &&
           (can('settings.manage') ? (

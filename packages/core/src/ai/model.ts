@@ -20,6 +20,10 @@ function apiBase(c: AiConnection): string {
       return (c.baseUrl || 'https://api.anthropic.com/v1').replace(/\/+$/, '');
     case 'openai':
       return (c.baseUrl || 'https://api.openai.com/v1').replace(/\/+$/, '');
+    case 'opper':
+      return 'https://api.opper.ai/v3/compat';
+    case 'berget':
+      return 'https://api.berget.ai/v1';
     case 'litellm':
       return litellmBaseUrl(c.baseUrl);
     case 'openai-compatible':
@@ -27,13 +31,18 @@ function apiBase(c: AiConnection): string {
   }
 }
 
-/** The provider, model and key come from Admin settings. LiteLLM is a proxy the Admin runs; OpenInc only points at it. */
+/**
+ * The provider, model and key come from Admin settings. LiteLLM is a proxy the Admin runs; OpenInc only points at it.
+ * Opper and Berget AI speak the OpenAI chat API at fixed addresses.
+ */
 export function modelFor(settings: AiSettings): LanguageModel {
   switch (settings.provider) {
     case 'anthropic':
       return createAnthropic({ apiKey: settings.apiKey, baseURL: settings.baseUrl || undefined })(settings.model);
     case 'openai':
       return createOpenAI({ apiKey: settings.apiKey, baseURL: settings.baseUrl || undefined })(settings.model);
+    case 'opper':
+    case 'berget':
     case 'litellm':
     case 'openai-compatible':
       return createOpenAICompatible({
@@ -85,13 +94,29 @@ export async function testModel(settings: AiSettings): Promise<{ ok: true; reply
   }
 }
 
+interface ListedModel {
+  id?: string;
+  model_name?: string;
+  /** Opper: embeddings share the list, and only some models can call tools. */
+  opper?: { type?: string; capabilities?: string[] };
+  /** Berget AI: the list includes embedding, rerank and speech models. */
+  model_type?: string;
+}
+
+/** The assistant needs chat models that can call tools; Opper and Berget AI list other kinds too. */
+const isChatModel = (provider: AiProvider) => (m: ListedModel) => {
+  if (provider === 'opper') return (m.opper?.type ?? 'llm') === 'llm' && (!m.opper?.capabilities || m.opper.capabilities.includes('tools'));
+  if (provider === 'berget') return (m.model_type ?? 'text') === 'text';
+  return true;
+};
+
 /**
  * The models the provider offers, fetched server-side so the key never reaches the browser. Without a
  * key (or when the call fails) the short built-in list for the provider is returned instead.
  */
 export async function listModels(c: AiConnection): Promise<{ models: string[]; source: 'provider' | 'built-in'; error: string | null }> {
   const builtIn = { models: AI_CURATED_MODELS[c.provider as AiProvider], source: 'built-in' as const };
-  const needsKey = c.provider === 'anthropic' || c.provider === 'openai';
+  const needsKey = c.provider === 'anthropic' || c.provider === 'openai' || c.provider === 'opper';
   if ((needsKey && !c.apiKey) || ((c.provider === 'litellm' || c.provider === 'openai-compatible') && !c.baseUrl)) {
     return { ...builtIn, error: null };
   }
@@ -107,8 +132,9 @@ export async function listModels(c: AiConnection): Promise<{ models: string[]; s
       signal: AbortSignal.timeout(15_000),
     });
     if (!res.ok) return { ...builtIn, error: describeAiError({ status: res.status, message: `HTTP ${res.status}` }, c) };
-    const body = (await res.json()) as { data?: { id?: string; model_name?: string }[] };
-    const ids = [...new Set((body.data ?? []).map((m) => m.id ?? m.model_name).filter((id): id is string => !!id))];
+    const body = (await res.json()) as { data?: ListedModel[] };
+    const chat = (body.data ?? []).filter(isChatModel(c.provider));
+    const ids = [...new Set(chat.map((m) => m.id ?? m.model_name).filter((id): id is string => !!id))];
     const relevant =
       c.provider === 'openai'
         ? ids.filter((id) => /^(gpt|o\d|chatgpt)/.test(id) && !/(audio|realtime|transcribe|tts|image|search)/.test(id))
