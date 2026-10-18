@@ -56,26 +56,46 @@ export const emailSettings = z.object({
 /** Secrets are optional on input: left out means keep the stored value. */
 const emailSettingsInput = emailSettings.extend({ password: z.string().max(500).optional() });
 
-export const AI_PROVIDERS = ['anthropic', 'openai', 'litellm', 'openai-compatible'] as const;
+export const AI_PROVIDERS = ['anthropic', 'openai', 'opper', 'berget', 'litellm', 'openai-compatible'] as const;
 export type AiProvider = (typeof AI_PROVIDERS)[number];
 
-export const AI_PROVIDER_INFO: Record<AiProvider, { label: string; needsBaseUrl: boolean; baseUrlPlaceholder: string; keyLabel: string }> =
-  {
-    anthropic: { label: 'Anthropic', needsBaseUrl: false, baseUrlPlaceholder: '', keyLabel: 'API Key' },
-    openai: { label: 'OpenAI', needsBaseUrl: false, baseUrlPlaceholder: '', keyLabel: 'API Key' },
-    litellm: { label: 'LiteLLM', needsBaseUrl: true, baseUrlPlaceholder: 'https://litellm.example.com', keyLabel: 'Virtual Key' },
-    'openai-compatible': {
-      label: 'OpenAI-Compatible',
-      needsBaseUrl: true,
-      baseUrlPlaceholder: 'https://host.example.com/v1',
-      keyLabel: 'API Key',
-    },
-  };
+export const AI_PROVIDER_INFO: Record<
+  AiProvider,
+  { label: string; needsBaseUrl: boolean; baseUrlPlaceholder: string; keyLabel: string; description?: string }
+> = {
+  anthropic: { label: 'Anthropic', needsBaseUrl: false, baseUrlPlaceholder: '', keyLabel: 'API Key' },
+  openai: { label: 'OpenAI', needsBaseUrl: false, baseUrlPlaceholder: '', keyLabel: 'API Key' },
+  opper: {
+    label: 'Opper',
+    needsBaseUrl: false,
+    baseUrlPlaceholder: '',
+    keyLabel: 'API Key',
+    description:
+      'A gateway to models from many vendors through one key, served from the EU (Stockholm). Where a model itself runs depends on its route. Create a key at platform.opper.ai.',
+  },
+  berget: {
+    label: 'Berget AI',
+    needsBaseUrl: false,
+    baseUrlPlaceholder: '',
+    keyLabel: 'API Key',
+    description:
+      "Open models on Berget AI's own servers in Stockholm: data stays in the EU and is not used for training. Create a key at console.berget.ai.",
+  },
+  litellm: { label: 'LiteLLM', needsBaseUrl: true, baseUrlPlaceholder: 'https://litellm.example.com', keyLabel: 'Virtual Key' },
+  'openai-compatible': {
+    label: 'OpenAI-Compatible',
+    needsBaseUrl: true,
+    baseUrlPlaceholder: 'https://host.example.com/v1',
+    keyLabel: 'API Key',
+  },
+};
 
 /** Shown before a key is entered; with a key, the model list comes from the provider itself. */
 export const AI_CURATED_MODELS: Record<AiProvider, string[]> = {
   anthropic: ['claude-opus-5-5', 'claude-sonnet-5-5', 'claude-haiku-5-5'],
   openai: ['gpt-5', 'gpt-5-mini', 'gpt-5-nano'],
+  opper: ['anthropic/claude-sonnet-4-6', 'openai/gpt-5.5', 'openai/gpt-5-mini', 'gemini/gemini-3.5-flash'],
+  berget: ['moonshotai/Kimi-K3', 'zai-org/GLM-5.3-Flash', 'mistralai/Mistral-Small-3.2-24B-Instruct-2506', 'google/gemma-4-31B-it'],
   litellm: [],
   'openai-compatible': [],
 };
@@ -83,6 +103,8 @@ export const AI_CURATED_MODELS: Record<AiProvider, string[]> = {
 export const AI_DEFAULT_MODELS: Record<AiProvider, string> = {
   anthropic: 'claude-sonnet-5-5',
   openai: 'gpt-5',
+  opper: 'anthropic/claude-sonnet-4-6',
+  berget: 'moonshotai/Kimi-K3',
   litellm: '',
   'openai-compatible': '',
 };

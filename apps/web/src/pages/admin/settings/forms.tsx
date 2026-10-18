@@ -430,7 +430,7 @@ export function AiForm({ wizard, onSaved, onSkip }: FormProps) {
 
   return (
     <FormShell isLoading={isLoading} onSubmit={submit}>
-      <Field label="Provider" htmlFor="ai-provider">
+      <Field label="Provider" htmlFor="ai-provider" hint={info.description}>
         <Select
           value={provider}
           onValueChange={(p) => {

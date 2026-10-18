@@ -343,7 +343,7 @@ export const uiGuide: GuideEntry[] = [
     'AI',
     'ai',
     'settings.manage',
-    'The provider behind the assistant: Anthropic, OpenAI, LiteLLM or any OpenAI-compatible server.',
+    'The provider behind the assistant: Anthropic, OpenAI, Opper (a gateway to many vendors, served from the EU), Berget AI (open models hosted in Sweden, data stays in the EU), LiteLLM or any OpenAI-compatible server.',
     [
       {
         task: 'Turn on the AI assistant',

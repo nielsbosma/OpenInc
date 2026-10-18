@@ -83,3 +83,48 @@ describe('model lists', () => {
     expect(result.source).toBe('provider');
   });
 });
+
+describe('Opper and Berget AI', () => {
+  const realFetch = globalThis.fetch;
+  const calls: { url: string; auth: string | null }[] = [];
+  const respond = (body: unknown) => {
+    globalThis.fetch = (async (url: string, init?: RequestInit) => {
+      calls.push({ url: String(url), auth: new Headers(init?.headers).get('authorization') });
+      return new Response(JSON.stringify(body), { status: 200, headers: { 'content-type': 'application/json' } });
+    }) as typeof fetch;
+  };
+  afterAll(() => {
+    globalThis.fetch = realFetch;
+  });
+
+  it('lists only Opper chat models that can call tools, from its fixed address', async () => {
+    respond({
+      data: [
+        { id: 'anthropic/claude-sonnet-4-6', opper: { type: 'llm', capabilities: ['text', 'tools'] } },
+        { id: 'openai/text-embedding-3-small', opper: { type: 'embedding', capabilities: ['text'] } },
+        { id: 'some/no-tools', opper: { type: 'llm', capabilities: ['text'] } },
+      ],
+    });
+    const result = await listModels({ provider: 'opper', baseUrl: '', apiKey: 'op-key' });
+    expect(result).toEqual({ models: ['anthropic/claude-sonnet-4-6'], source: 'provider', error: null });
+    expect(calls.at(-1)).toEqual({ url: 'https://api.opper.ai/v3/compat/models', auth: 'Bearer op-key' });
+  });
+
+  it('needs a key before asking Opper', async () => {
+    const result = await listModels({ provider: 'opper', baseUrl: '', apiKey: '' });
+    expect(result.source).toBe('built-in');
+  });
+
+  it('lists only Berget AI text models', async () => {
+    respond({
+      data: [
+        { id: 'moonshotai/Kimi-K3', model_type: 'text' },
+        { id: 'intfloat/multilingual-e5-large', model_type: 'embedding' },
+        { id: 'KBLab/kb-whisper-large', model_type: 'speech-to-text' },
+      ],
+    });
+    const result = await listModels({ provider: 'berget', baseUrl: '', apiKey: 'bg-key' });
+    expect(result).toEqual({ models: ['moonshotai/Kimi-K3'], source: 'provider', error: null });
+    expect(calls.at(-1)).toEqual({ url: 'https://api.berget.ai/v1/models', auth: 'Bearer bg-key' });
+  });
+});
