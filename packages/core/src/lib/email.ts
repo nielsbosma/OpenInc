@@ -72,7 +72,7 @@ export function renderEmail(input: {
     .filter(Boolean)
     .join('\n\n');
   const p = (s: string) => `<p style="margin:0 0 16px;line-height:1.55">${escapeHtml(s)}</p>`;
-  const html = `<!doctype html><html><body style="margin:0;background:#f6f6f7;font-family:Inter,Segoe UI,Helvetica,Arial,sans-serif;color:#18181b;font-size:15px">
+  const html = `<!doctype html><html><body style="margin:0;background:#f6f6f7;font-family:Open Runde,Inter,Segoe UI,Helvetica,Arial,sans-serif;color:#18181b;font-size:15px">
 <div style="max-width:520px;margin:32px auto;background:#fff;border:1px solid #e4e4e7;border-radius:10px;padding:32px">
 ${input.greeting ? p(input.greeting) : ''}${input.paragraphs.map(p).join('')}
 ${input.action ? `<p style="margin:24px 0"><a href="${escapeHtml(input.action.url)}" style="background:#4f46e5;color:#fff;text-decoration:none;padding:10px 18px;border-radius:6px;display:inline-block;font-weight:500">${escapeHtml(input.action.label)}</a></p><p style="margin:0 0 16px;font-size:13px;color:#71717a;word-break:break-all">${escapeHtml(input.action.url)}</p>` : ''}
