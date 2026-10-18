@@ -135,6 +135,7 @@ export const securitySettings = z.object({
 export const systemSettings = z.object({
   auditRetentionDays: z.coerce.number().int().min(0).max(36500).default(0).describe('0 keeps the audit log forever'),
   updateCheck: z.boolean().default(true),
+  dataroomEventRetentionDays: z.coerce.number().int().min(0).max(36500).default(0).describe('0 keeps dataroom visitor activity forever'),
 });
 
 export const onboardingSettings = z.object({

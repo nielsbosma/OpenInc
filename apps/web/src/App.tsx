@@ -15,8 +15,11 @@ import { ComingSoonPage } from '@/pages/ComingSoonPage';
 import { ConsentPage } from '@/pages/ConsentPage';
 import { CapTableRoutes } from '@/pages/cap-table/CapTableRoutes';
 import { DashboardPage } from '@/pages/DashboardPage';
+import { DataroomsPage } from '@/pages/dataroom/DataroomsPage';
+import { RoomPage } from '@/pages/dataroom/RoomPage';
 import { DocumentsPage } from '@/pages/documents/DocumentsPage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
+import { PortalPage } from '@/pages/portal/PortalPage';
 import { RegistryRoutes } from '@/pages/registry/RegistryRoutes';
 import { SetupWizard } from '@/pages/setup/SetupWizard';
 import { SystemStatusPage } from '@/pages/setup/SystemStatusPage';
@@ -72,6 +75,7 @@ export function App() {
       <Route path="/invite" element={<InvitePage />} />
       <Route path="/setup" element={<SetupWizard status={status.data} />} />
       <Route path="/oauth/consent" element={<ConsentPage />} />
+      <Route path="/r/:token" element={<PortalPage />} />
       <Route
         element={
           <RequireAuth>
@@ -89,6 +93,8 @@ export function App() {
         )}
         <Route path="/registry/*" element={<RegistryRoutes />} />
         <Route path="/cap-table/*" element={<CapTableRoutes />} />
+        <Route path="/documents/dataroom" element={<DataroomsPage />} />
+        <Route path="/documents/dataroom/:roomId" element={<RoomPage />} />
         <Route path="/documents/:folderId?" element={<DocumentsPage />} />
         <Route path="/signing" element={<Navigate to="/documents/signing" replace />} />
         <Route path="/dataroom" element={<Navigate to="/documents/dataroom" replace />} />

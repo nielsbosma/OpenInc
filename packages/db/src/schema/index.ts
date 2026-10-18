@@ -1,5 +1,6 @@
 export * from './captable.ts';
 export * from './columns.ts';
+export * from './dataroom.ts';
 export * from './documents.ts';
 export * from './identity.ts';
 export * from './oauth.ts';

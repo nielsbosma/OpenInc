@@ -197,6 +197,12 @@ export const uiGuide: GuideEntry[] = [
         permission: 'files.write',
       },
       {
+        task: 'Share a document in a dataroom',
+        steps:
+          'Click the **⋯** on its row and choose **Add to Dataroom**, then pick the room and its folder. Rows show **In N Datarooms** when they are shared.',
+        permission: 'dataroom.manage',
+      },
+      {
         task: 'Rename or delete a folder',
         steps: 'Click the **⋯** on the folder row and choose **Rename** or **Delete Folder**. Only empty folders can be deleted.',
         permission: 'files.write',
@@ -215,6 +221,7 @@ export const uiGuide: GuideEntry[] = [
       'documents.template',
       'documents.applyTemplate',
       'documents.move',
+      'dataroom.roomsForDocument',
     ],
   },
   {
@@ -311,8 +318,61 @@ export const uiGuide: GuideEntry[] = [
     title: 'Dataroom',
     path: '/documents/dataroom',
     where: 'Sidebar → **Documents** → **Dataroom** (the arrow next to Documents shows its pages)',
-    summary: 'Coming soon: the dataroom.',
-    tasks: [],
+    permission: 'dataroom.read',
+    summary:
+      'Datarooms share a chosen set of documents with outside people (investors, buyers, the bank) through a password-protected portal, and show what each visitor opened and for how long. A room links to the live documents, so a new version in Documents shows in the room at once. A room is **Draft** until you open it, then **Open**, then **Closed**; only links of an open room work. Each room has the tabs **Content**, **Links**, **Visitors**, **Activity** and **Settings**.',
+    tasks: [
+      {
+        task: 'Create a dataroom',
+        steps:
+          'Click **New Dataroom**, give it a name and optionally pick a template (Seed Round, Series A Due Diligence, Bank). A template creates the folders and adds the matching documents from Documents.',
+        permission: 'dataroom.manage',
+      },
+      {
+        task: 'Add documents to a room',
+        steps:
+          'Open the room, **Content** tab, **Add Documents**: pick a Documents folder or search, tick the documents and choose the room folder. Or, in **Documents**, **⋯** on a document → **Add to Dataroom**.',
+        permission: 'dataroom.manage',
+      },
+      {
+        task: 'Organize a room',
+        steps:
+          'On **Content**, **New Folder** adds a folder; **⋯** on a folder renames or deletes it. Drag documents to reorder them, or **⋯** → **Move to Folder** / **Remove From Room**. Removing never deletes the document.',
+        permission: 'dataroom.manage',
+      },
+      {
+        task: 'Share a room',
+        steps:
+          'On **Links**, click **New Link**. Set a password, who may enter (any email, listed emails or domains), whether downloads and the watermark are on, which folders it shows and when it expires. **Copy Link** and send it with the password separately. Then click **Open Room**.',
+        permission: 'dataroom.manage',
+      },
+      {
+        task: 'Stop someone getting in',
+        steps: 'On **Links**, **⋯** → **Revoke** ends a link at once. **Close Room** stops every link of the room; statistics are kept.',
+        permission: 'dataroom.manage',
+      },
+      {
+        task: 'See who read what',
+        steps:
+          '**Visitors** lists everyone with their time spent; click an email for time per document and a timeline. **Activity** shows visits per day and per document; click a document for time per page. Both have **Export CSV**.',
+      },
+      {
+        task: 'Require an NDA or a closing date',
+        steps: 'On **Settings**, fill in **NDA Text** (visitors accept it once) or **Closes On**, and choose the alerts the owner gets.',
+        permission: 'dataroom.manage',
+      },
+    ],
+    services: [
+      'dataroom.list',
+      'dataroom.get',
+      'dataroom.create',
+      'dataroom.addDocuments',
+      'dataroom.links',
+      'dataroom.createLink',
+      'dataroom.revokeLink',
+      'dataroom.visitors',
+      'dataroom.stats',
+    ],
   },
   {
     title: 'Signing',

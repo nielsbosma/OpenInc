@@ -176,7 +176,7 @@ function SystemTab() {
   const [recheck, setRecheck] = useState(false);
   const info = useQuery(trpc.system.info.queryOptions({ recheck }));
   const view = useQuery(trpc.settings.get.queryOptions({ group: 'system' }));
-  const [values, setValues] = useState({ auditRetentionDays: 0, updateCheck: true });
+  const [values, setValues] = useState({ auditRetentionDays: 0, updateCheck: true, dataroomEventRetentionDays: 0 });
   const update = useMutation(
     trpc.settings.update.mutationOptions({
       onSuccess: () => {
@@ -305,6 +305,19 @@ function SystemTab() {
               className="w-28 font-mono"
               value={values.auditRetentionDays}
               onChange={(e) => setValues((v) => ({ ...v, auditRetentionDays: Number(e.target.value.replace(/\D/g, '')) }))}
+            />
+          </Field>
+          <Field
+            label="Keep Dataroom Activity for (Days)"
+            htmlFor="dataroom-retention"
+            hint="What visitors opened and read in datarooms. 0 keeps it forever."
+          >
+            <Input
+              id="dataroom-retention"
+              inputMode="numeric"
+              className="w-28 font-mono"
+              value={values.dataroomEventRetentionDays}
+              onChange={(e) => setValues((v) => ({ ...v, dataroomEventRetentionDays: Number(e.target.value.replace(/\D/g, '')) }))}
             />
           </Field>
           <Button type="submit" className="justify-self-start" disabled={update.isPending}>

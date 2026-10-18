@@ -15,6 +15,8 @@ export const PERMISSIONS = {
   'captable.read': 'See the cap table: fully diluted ownership, equity plans, convertibles and valuations',
   'captable.model': 'Model rounds and exits in scenarios',
   'captable.manage': 'Manage equity plans, grants, convertibles, valuations, groups and cap table settings',
+  'dataroom.read': 'See datarooms, their links, visitors and statistics',
+  'dataroom.manage': 'Create and change datarooms, add documents, and create and revoke share links',
 } as const;
 
 export type Permission = keyof typeof PERMISSIONS;
@@ -49,6 +51,8 @@ export const ROLE_INFO: Record<Role, { label: string; description: string; permi
       'captable.read',
       'captable.model',
       'captable.manage',
+      'dataroom.read',
+      'dataroom.manage',
     ],
   },
   member: {
@@ -64,17 +68,19 @@ export const ROLE_INFO: Record<Role, { label: string; description: string; permi
       'registry.draft',
       'captable.read',
       'captable.model',
+      'dataroom.read',
+      'dataroom.manage',
     ],
   },
   auditor: {
     label: 'Auditor',
     description: 'Reads everything, including the share register at any date and the audit log',
-    permissions: ['company.read', 'users.read', 'files.read', 'audit.read', 'registry.read', 'captable.read'],
+    permissions: ['company.read', 'users.read', 'files.read', 'audit.read', 'registry.read', 'captable.read', 'dataroom.read'],
   },
   readonly: {
     label: 'Read-only',
     description: 'Can look but not change anything',
-    permissions: ['company.read', 'users.read', 'files.read', 'ai.chat', 'registry.read', 'captable.read'],
+    permissions: ['company.read', 'users.read', 'files.read', 'ai.chat', 'registry.read', 'captable.read', 'dataroom.read'],
   },
 };
 

@@ -1,0 +1,47 @@
+# Starting structures for a new dataroom. Each room folder lists the Documents folders (by path) whose
+# documents are added to it when the room is created; the room keeps pointing at them, it copies nothing.
+templates:
+  - key: seed-round
+    name: Seed Round
+    description: What early investors ask for before a term sheet.
+    folders:
+      - name: Pitch and Updates
+        from: [Fundraising / Pitch Deck, Fundraising / Investor Updates]
+      - name: Company
+        from: [Corporate / Formation, Corporate / Articles of Association, Corporate / Registrations]
+      - name: Ownership
+        from: [Ownership / Share Register, Ownership / Shareholder Agreements]
+      - name: Financials
+        from: [Finance / Annual Reports, Finance / Management Accounts]
+
+  - key: due-diligence
+    name: Series A Due Diligence
+    description: The full set a lead investor's lawyers and accountants go through.
+    folders:
+      - name: 1. Corporate
+        from: [Corporate / Formation, Corporate / Articles of Association, Corporate / Registrations]
+      - name: 2. Governance
+        from: [Governance / Board Meetings, Governance / General Meetings, Governance / Policies]
+      - name: 3. Ownership
+        from: [Ownership / Share Register, Ownership / Shareholder Agreements, Ownership / Share Issues, Ownership / Incentive Programs]
+      - name: 4. Finance
+        from: [Finance / Annual Reports, Finance / Management Accounts, Finance / Tax, Finance / Banking and Loans]
+      - name: 5. Commercial Agreements
+        from: [Legal / Customer Agreements, Legal / Supplier Agreements, Legal / Leases, Legal / Insurance]
+      - name: 6. People
+        from: [People / Employment Agreements, People / Consultants, People / Benefits and Pensions]
+      - name: 7. Intellectual Property
+        from: [Intellectual Property / Trademarks and Patents, Intellectual Property / IP Assignments, Intellectual Property / Domains and Software]
+      - name: 8. Disputes
+        from: [Legal / Disputes]
+
+  - key: bank
+    name: Bank
+    description: What a bank needs to open an account or grant a loan.
+    folders:
+      - name: Company
+        from: [Corporate / Registrations, Corporate / Articles of Association]
+      - name: Ownership
+        from: [Ownership / Share Register]
+      - name: Financials
+        from: [Finance / Annual Reports, Finance / Management Accounts, Finance / Banking and Loans]

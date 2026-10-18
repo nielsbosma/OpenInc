@@ -1,6 +1,7 @@
-import { type LoginResult, services as s } from '@openinc/core';
+import { type LoginResult, portalCookieName, type ServiceDefinition, services as s } from '@openinc/core';
 import { acceptInviteInput, createFirstAdminInput, empty, loginInput, loginSecondFactorInput } from '@openinc/shared';
-import { clearSessionCookie, setSessionCookie } from './http-context.ts';
+import type { z } from 'zod';
+import { clearSessionCookie, readCookie, setPortalCookie, setSessionCookie } from './http-context.ts';
 import { call, mutation, procedure, query, router, type TrpcContext } from './trpc.ts';
 
 /** Turns a successful sign-in into the session cookie; the token never reaches the browser's JavaScript. */
@@ -11,6 +12,26 @@ function finishLogin(ctx: TrpcContext, result: LoginResult) {
   }
   return result;
 }
+
+/**
+ * Portal calls carry the visitor cookie of the link they name. A call that starts a visit gets the
+ * cookie set here; the session token never reaches the visitor's JavaScript.
+ */
+function portalResolver<I extends z.ZodType, O>(def: ServiceDefinition<I, O>) {
+  return async ({ ctx, input }: { ctx: TrpcContext; input: unknown }) => {
+    const name = portalCookieName((input as { token: string }).token);
+    const portalSession = readCookie(ctx.req, name);
+    const result = await call(def, { ...ctx.app, portalSession }, input as z.output<I>);
+    if (result && typeof result === 'object' && 'sessionToken' in result) {
+      const { sessionToken, ...rest } = result as { sessionToken?: string };
+      if (sessionToken) setPortalCookie(ctx.req, ctx.res, name, sessionToken);
+      return rest as Omit<O, 'sessionToken'>;
+    }
+    return result as Omit<O, 'sessionToken'>;
+  };
+}
+const portalQuery = <I extends z.ZodType, O>(def: ServiceDefinition<I, O>) => procedure.input(def.input).query(portalResolver(def));
+const portalMutation = <I extends z.ZodType, O>(def: ServiceDefinition<I, O>) => procedure.input(def.input).mutation(portalResolver(def));
 
 export const appRouter = router({
   setup: router({
@@ -102,6 +123,41 @@ export const appRouter = router({
     move: mutation(s.documents.move),
     delete: mutation(s.documents.delete),
     downloadZip: mutation(s.documents.downloadZip),
+  }),
+  dataroom: router({
+    list: query(s.dataroom.list),
+    get: query(s.dataroom.get),
+    templates: query(s.dataroom.templates),
+    roomsForDocument: query(s.dataroom.roomsForDocument),
+    create: mutation(s.dataroom.create),
+    update: mutation(s.dataroom.update),
+    open: mutation(s.dataroom.open),
+    close: mutation(s.dataroom.close),
+    delete: mutation(s.dataroom.delete),
+    createFolder: mutation(s.dataroom.createFolder),
+    renameFolder: mutation(s.dataroom.renameFolder),
+    deleteFolder: mutation(s.dataroom.deleteFolder),
+    addDocuments: mutation(s.dataroom.addDocuments),
+    removeItem: mutation(s.dataroom.removeItem),
+    moveItem: mutation(s.dataroom.moveItem),
+    links: query(s.dataroom.links),
+    createLink: mutation(s.dataroom.createLink),
+    updateLink: mutation(s.dataroom.updateLink),
+    revokeLink: mutation(s.dataroom.revokeLink),
+    visitors: query(s.dataroom.visitors),
+    visitor: query(s.dataroom.visitor),
+    stats: query(s.dataroom.stats),
+    documentStats: query(s.dataroom.documentStats),
+  }),
+  portal: router({
+    start: portalMutation(s.portal.start),
+    identify: portalMutation(s.portal.identify),
+    resendCode: portalMutation(s.portal.resendCode),
+    verify: portalMutation(s.portal.verify),
+    unlock: portalMutation(s.portal.unlock),
+    acceptNda: portalMutation(s.portal.acceptNda),
+    room: portalQuery(s.portal.room),
+    heartbeat: portalMutation(s.portal.heartbeat),
   }),
   notifications: router({
     list: query(s.notifications.list),

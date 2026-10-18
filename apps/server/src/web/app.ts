@@ -10,6 +10,7 @@ import { chatHandler } from './chat.ts';
 import { backupHandler, filesRouter, logoHandler } from './files.ts';
 import { ctxFromRequest } from './http-context.ts';
 import { mcpRouter } from './mcp.ts';
+import { portalRouter } from './portal.ts';
 import { registryExportHandler } from './registry-exports.ts';
 import { appRouter } from './router.ts';
 import { INTERNAL_ERROR_MESSAGE } from './trpc.ts';
@@ -97,6 +98,7 @@ export function createApp() {
     chatHandler(req, res).catch(next);
   });
   app.use('/api/files', requireReady, filesRouter());
+  app.use('/api/portal', requireReady, portalRouter());
   app.get('/api/backups/:name', requireReady, (req, res, next) => {
     backupHandler(req, res).catch(next);
   });
