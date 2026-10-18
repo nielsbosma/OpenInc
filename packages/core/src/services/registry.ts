@@ -77,7 +77,7 @@ import { defineService } from '../service.ts';
 import { getSettings } from '../settings.ts';
 import { notify } from './notifications.ts';
 
-async function today(): Promise<string> {
+export async function today(): Promise<string> {
   const timeZone = (await getSettings('company'))?.timeZone ?? 'UTC';
   return new Intl.DateTimeFormat('en-CA', { timeZone, year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
 }

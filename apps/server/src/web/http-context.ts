@@ -1,4 +1,4 @@
-import { type Ctx, createCtx, getEnv, resolveSession, SESSION_COOKIE, type Surface } from '@openinc/core';
+import { type Ctx, createCtx, getEnv, PORTAL_SESSION_HOURS, resolveSession, SESSION_COOKIE, type Surface } from '@openinc/core';
 import type { Request, Response } from 'express';
 
 export function readCookie(req: Request, name: string): string | undefined {
@@ -33,4 +33,15 @@ export function setSessionCookie(req: Request, res: Response, token: string, exp
 
 export function clearSessionCookie(res: Response) {
   res.clearCookie(SESSION_COOKIE, { path: '/' });
+}
+
+/** A dataroom visitor's cookie: strict, since the portal never needs it on a request from another site. */
+export function setPortalCookie(req: Request, res: Response, name: string, token: string) {
+  res.cookie(name, token, {
+    httpOnly: true,
+    sameSite: 'strict',
+    secure: secureCookies(req),
+    path: '/',
+    maxAge: PORTAL_SESSION_HOURS * 3600_000,
+  });
 }

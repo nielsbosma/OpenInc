@@ -22,6 +22,8 @@ export interface Ctx {
   ip?: string;
   userAgent?: string;
   sessionId?: string;
+  /** The dataroom portal's visitor cookie, for the link named in the call. Never a staff session. */
+  portalSession?: string;
 }
 
 let db: Database | undefined;

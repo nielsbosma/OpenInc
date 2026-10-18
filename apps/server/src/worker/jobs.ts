@@ -1,4 +1,5 @@
 import {
+  cleanupDataroom,
   deleteExpiredSessions,
   deleteOldDocumentZips,
   deliverEmail,
@@ -62,7 +63,8 @@ export const handlers: Handlers = {
       audit = (await db.delete(auditLog).where(lt(auditLog.occurredAt, cutoff)).returning({ id: auditLog.id })).length;
     }
     const documentZips = await deleteOldDocumentZips(systemCtx('worker'), now);
-    return { sessions: sessions.length, audit, documentZips };
+    const dataroom = await cleanupDataroom(systemCtx('worker'), now);
+    return { sessions: sessions.length, audit, documentZips, dataroomEvents: dataroom.events };
   },
 
   'registry.verifyChain': () => runRegistryChainCheck(systemCtx('worker')),

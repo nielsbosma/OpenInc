@@ -197,6 +197,12 @@ export const uiGuide: GuideEntry[] = [
         permission: 'files.write',
       },
       {
+        task: 'Share a document in a dataroom',
+        steps:
+          'Click the **⋯** on its row and choose **Add to Dataroom**, then pick the room and its folder. Rows show **In N Datarooms** when they are shared.',
+        permission: 'dataroom.manage',
+      },
+      {
         task: 'Rename or delete a folder',
         steps: 'Click the **⋯** on the folder row and choose **Rename** or **Delete Folder**. Only empty folders can be deleted.',
         permission: 'files.write',
@@ -215,15 +221,158 @@ export const uiGuide: GuideEntry[] = [
       'documents.template',
       'documents.applyTemplate',
       'documents.move',
+      'dataroom.roomsForDocument',
     ],
   },
-  { title: 'Cap Table', path: '/cap-table', where: 'Sidebar → **Cap Table**', summary: 'Coming soon: the cap table.', tasks: [] },
+  {
+    title: 'Cap Table',
+    path: '/cap-table',
+    where: 'Sidebar → **Cap Table**',
+    permission: 'captable.read',
+    summary:
+      'Fully diluted ownership built from the share register for any date, with what the register does not hold: equity plans and grants (options, warrants, virtual shares and country profiles such as Swedish warrants and KPO, German VSOP, French BSPCE, UK EMI), unpriced instruments (SAFEs, convertible loans, BSA AIR, ASA), valuations and scenarios. Tabs: **Overview**, **Ownership Over Time**, **Equity Plans**, **Convertibles**, **Valuations**, **Scenarios**, **Settings**. The cap table never changes the register: exercises and promoted scenarios become register drafts that a person commits.',
+    tasks: [
+      {
+        task: 'See the cap table on a date',
+        steps:
+          'On **Overview**, change **As of Date**. Switch **Count** between **Fully Diluted** and **Issued Shares**, and **Rows** to **By Group**.',
+      },
+      {
+        task: 'Download the cap table',
+        steps: 'On **Overview**, click **Export** and pick **PDF**, **Excel (XLSX)**, **CSV** or **JSON**.',
+      },
+      {
+        task: 'See one holder',
+        steps: 'Click a name on **Overview**: shares, grants with vesting, convertibles and value at the last price.',
+      },
+      {
+        task: 'Group stakeholders',
+        steps:
+          "On **Settings**, under **Stakeholder Groups**, add a group (for example Founders, Employees, Investors) and pick each stakeholder's group.",
+        permission: 'captable.manage',
+      },
+      {
+        task: 'Create an option or warrant plan',
+        steps:
+          'On **Equity Plans**, click **New Equity Plan**, choose the **Profile**, the share class an exercise delivers and the pool size. Change the size later with **Change Pool**.',
+        permission: 'captable.manage',
+      },
+      {
+        task: 'Grant options, warrants or virtual shares',
+        steps:
+          'On **Equity Plans**, click **New Grant**, pick the stakeholder (or add one), the units, strike price, dates and vesting schedule. Add schedules with **New Vesting Schedule**.',
+        permission: 'captable.manage',
+      },
+      {
+        task: 'Record a leaver',
+        steps:
+          "On **Equity Plans**, open the grant's menu and click **Mark as Leaver**. A good leaver keeps what has vested; a bad leaver forfeits what is not exercised.",
+        permission: 'captable.manage',
+      },
+      {
+        task: 'Exercise options or warrants',
+        steps:
+          'On **Equity Plans**, click **Exercise** on the grant. It drafts a new issue in the share register; commit it there and the cap table counts the shares.',
+        permission: 'captable.manage',
+      },
+      {
+        task: 'Add a SAFE or convertible loan',
+        steps:
+          'On **Convertibles**, click **Add Instrument**, pick the **Profile**, the holder, amount, cap, discount and interest. It converts in a priced round in a scenario.',
+        permission: 'captable.manage',
+      },
+      {
+        task: 'Record a valuation or price an incentive',
+        steps:
+          'On **Valuations**, click **Record Valuation**, or use the **Fair Value Helper** (Black-Scholes, an estimate, not a formal valuation) and **Save to Valuation Log**.',
+        permission: 'captable.manage',
+      },
+      {
+        task: 'Model a round or an exit',
+        steps:
+          'On **Scenarios**, click **New Scenario**, then **Add Step**: **Priced Round**, **Pool Change**, **Grant Batch**, **Secondary Sale**, **Exercise** or **Exit**. Results update as you type; click **Save**. **Quick Exit Waterfall** on **Scenarios** shows payouts on the real cap table.',
+        permission: 'captable.model',
+      },
+      { task: 'Compare two scenarios', steps: 'On **Scenarios**, click **Compare** and pick two.', permission: 'captable.model' },
+      {
+        task: 'Turn a scenario into real transactions',
+        steps:
+          'Open the scenario and click **Promote to Register**. It creates share register drafts (new class, new issue, conversions by set-off, transfers) and records pool changes and grants; commit the drafts in the register. If the register changed since, click **Rebase on Today** first.',
+        permission: 'captable.manage',
+      },
+    ],
+    services: [
+      'captable.get',
+      'captable.history',
+      'captable.stakeholder',
+      'captable.listPlans',
+      'captable.listUnpriced',
+      'captable.listValuations',
+      'captable.modelRound',
+      'captable.waterfall',
+      'captable.saveScenario',
+      'captable.promoteScenario',
+    ],
+  },
   {
     title: 'Dataroom',
     path: '/documents/dataroom',
     where: 'Sidebar → **Documents** → **Dataroom** (the arrow next to Documents shows its pages)',
-    summary: 'Coming soon: the dataroom.',
-    tasks: [],
+    permission: 'dataroom.read',
+    summary:
+      'Datarooms share a chosen set of documents with outside people (investors, buyers, the bank) through a password-protected portal, and show what each visitor opened and for how long. A room links to the live documents, so a new version in Documents shows in the room at once. A room is **Draft** until you open it, then **Open**, then **Closed**; only links of an open room work. Each room has the tabs **Content**, **Links**, **Visitors**, **Activity** and **Settings**.',
+    tasks: [
+      {
+        task: 'Create a dataroom',
+        steps:
+          'Click **New Dataroom**, give it a name and optionally pick a template (Seed Round, Series A Due Diligence, Bank). A template creates the folders and adds the matching documents from Documents.',
+        permission: 'dataroom.manage',
+      },
+      {
+        task: 'Add documents to a room',
+        steps:
+          'Open the room, **Content** tab, **Add Documents**: pick a Documents folder or search, tick the documents and choose the room folder. Or, in **Documents**, **⋯** on a document → **Add to Dataroom**.',
+        permission: 'dataroom.manage',
+      },
+      {
+        task: 'Organize a room',
+        steps:
+          'On **Content**, **New Folder** adds a folder; **⋯** on a folder renames or deletes it. Drag documents to reorder them, or **⋯** → **Move to Folder** / **Remove From Room**. Removing never deletes the document.',
+        permission: 'dataroom.manage',
+      },
+      {
+        task: 'Share a room',
+        steps:
+          'On **Links**, click **New Link**. Set a password, who may enter (any email, listed emails or domains), whether downloads and the watermark are on, which folders it shows and when it expires. **Copy Link** and send it with the password separately. Then click **Open Room**.',
+        permission: 'dataroom.manage',
+      },
+      {
+        task: 'Stop someone getting in',
+        steps: 'On **Links**, **⋯** → **Revoke** ends a link at once. **Close Room** stops every link of the room; statistics are kept.',
+        permission: 'dataroom.manage',
+      },
+      {
+        task: 'See who read what',
+        steps:
+          '**Visitors** lists everyone with their time spent; click an email for time per document and a timeline. **Activity** shows visits per day and per document; click a document for time per page. Both have **Export CSV**.',
+      },
+      {
+        task: 'Require an NDA or a closing date',
+        steps: 'On **Settings**, fill in **NDA Text** (visitors accept it once) or **Closes On**, and choose the alerts the owner gets.',
+        permission: 'dataroom.manage',
+      },
+    ],
+    services: [
+      'dataroom.list',
+      'dataroom.get',
+      'dataroom.create',
+      'dataroom.addDocuments',
+      'dataroom.links',
+      'dataroom.createLink',
+      'dataroom.revokeLink',
+      'dataroom.visitors',
+      'dataroom.stats',
+    ],
   },
   {
     title: 'Signing',

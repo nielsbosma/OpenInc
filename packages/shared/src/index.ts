@@ -1,3 +1,4 @@
+export * from './captable/profiles.ts';
 export * from './countries.ts';
 export * from './format.ts';
 export * from './permissions.ts';
@@ -5,7 +6,9 @@ export * from './registry/article-limits.ts';
 export * from './registry/ids.ts';
 export * from './registry/rule-packs.ts';
 export * from './schemas/auth.ts';
+export * from './schemas/captable.ts';
 export * from './schemas/common.ts';
+export * from './schemas/dataroom.ts';
 export * from './schemas/documents.ts';
 export * from './schemas/platform.ts';
 export * from './schemas/registry.ts';
