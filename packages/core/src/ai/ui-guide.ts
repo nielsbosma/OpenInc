@@ -172,6 +172,46 @@ export const uiGuide: GuideEntry[] = [
       'registry.reverse',
     ],
   },
+  {
+    title: 'Documents',
+    path: '/documents',
+    where: 'Sidebar → **Documents**',
+    permission: 'files.read',
+    summary:
+      'Company documents in folders, stored in the S3 bucket. While it is empty it shows a **Suggested Folder Structure** (corporate, governance, ownership, finance, legal, people, intellectual property, fundraising); an empty folder lists the documents that usually go there. The suggestion lives in packages/core/src/documents/folder-template.yaml.',
+    tasks: [
+      {
+        task: 'Start from the suggested structure',
+        steps: 'Open **Documents** while it is empty and click **Create These Folders**. Folders that already exist are kept.',
+        permission: 'files.write',
+      },
+      {
+        task: 'Upload documents',
+        steps: 'Open a folder and click **Upload**, or drop files anywhere on the page. They go into the folder you are in.',
+        permission: 'files.write',
+      },
+      { task: 'Create a folder', steps: 'Click **New Folder**. It is created inside the folder you are in.', permission: 'files.write' },
+      {
+        task: 'Rename, move or delete a document',
+        steps: 'Click the **⋯** at the end of its row and choose **Rename**, **Move** (pick a folder) or **Delete**.',
+        permission: 'files.write',
+      },
+      {
+        task: 'Rename or delete a folder',
+        steps: 'Click the **⋯** on the folder row and choose **Rename** or **Delete Folder**. Only empty folders can be deleted.',
+        permission: 'files.write',
+      },
+      { task: 'Download a document', steps: 'Click its name to open it, or **⋯** → **Download**.' },
+    ],
+    services: [
+      'documents.list',
+      'documents.search',
+      'documents.folders',
+      'documents.template',
+      'documents.applyTemplate',
+      'documents.move',
+    ],
+  },
   { title: 'Cap Table', path: '/cap-table', where: 'Sidebar → **Cap Table**', summary: 'Coming soon: the cap table.', tasks: [] },
   { title: 'Signing', path: '/signing', where: 'Sidebar → **Signing**', summary: 'Coming soon: document signing.', tasks: [] },
   { title: 'Dataroom', path: '/dataroom', where: 'Sidebar → **Dataroom**', summary: 'Coming soon: the dataroom.', tasks: [] },

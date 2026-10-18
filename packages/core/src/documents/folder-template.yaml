@@ -1,0 +1,159 @@
+# The folder structure Documents suggests while it is empty.
+#
+# Each folder has a name (AP-style Title Case), an optional description, the documents that
+# usually live there (shown as hints while the folder is empty) and optional subfolders.
+# Edit this file to change the suggestion; folders that already exist are never touched.
+
+folders:
+  - name: Corporate
+    description: Formation, governing documents and company registrations.
+    folders:
+      - name: Formation
+        documents:
+          - Certificate of Incorporation
+          - Founding Deed or Memorandum of Association
+          - Registration Certificate (Current Extract)
+      - name: Articles of Association
+        documents:
+          - Current Articles of Association
+          - Previous Versions of the Articles
+      - name: Registrations
+        documents:
+          - Tax and VAT Registrations
+          - Beneficial Ownership Register Filings
+          - Trade and Brand Registrations
+
+  - name: Governance
+    description: Decisions by the board and the shareholders.
+    folders:
+      - name: Board Meetings
+        documents:
+          - Board Minutes, Signed
+          - Board Resolutions per Capsulam
+          - Board Rules of Procedure
+          - Instructions to the CEO
+      - name: General Meetings
+        documents:
+          - Notices of Meeting
+          - Annual General Meeting Minutes
+          - Extraordinary General Meeting Minutes
+      - name: Policies
+        documents:
+          - Signatory and Delegation Rules
+          - Data Protection Policy
+          - Code of Conduct
+
+  - name: Ownership
+    description: The share register, shareholder agreements and incentive programs.
+    folders:
+      - name: Share Register
+        documents:
+          - Share Register Exports
+          - Share Certificates
+      - name: Shareholder Agreements
+        documents:
+          - Shareholders' Agreement
+          - Deeds of Adherence
+      - name: Share Issues
+        documents:
+          - Investment Agreements
+          - Subscription Lists
+          - Proof of Payment
+          - Registration Confirmations
+      - name: Incentive Programs
+        documents:
+          - Option or Warrant Plan Terms
+          - Grant Letters
+          - Vesting Schedules
+
+  - name: Finance
+    description: Accounts, audit, tax, banking and budgets.
+    folders:
+      - name: Annual Reports
+        documents:
+          - Annual Reports
+          - Auditor's Reports
+      - name: Management Accounts
+        documents:
+          - Monthly Reports
+          - Budgets and Forecasts
+      - name: Tax
+        documents:
+          - Tax Returns
+          - Tax Assessments
+      - name: Banking and Loans
+        documents:
+          - Bank Account Agreements
+          - Loan and Credit Agreements
+          - Grants and Subsidies
+
+  - name: Legal
+    description: Commercial contracts, disputes and insurance.
+    folders:
+      - name: Customer Agreements
+        documents:
+          - Master Service Agreements
+          - Terms of Service
+      - name: Supplier Agreements
+        documents:
+          - Supplier and License Agreements
+          - Data Processing Agreements
+      - name: Leases
+        documents:
+          - Office Lease
+      - name: Insurance
+        documents:
+          - Insurance Policies
+          - D&O Insurance
+      - name: Disputes
+        documents:
+          - Claims and Correspondence
+
+  - name: People
+    description: Employment, consultants and benefits.
+    folders:
+      - name: Employment Agreements
+        documents:
+          - Employment Contracts
+          - Founder Agreements
+          - Non-Compete and Confidentiality Undertakings
+      - name: Consultants
+        documents:
+          - Consultancy Agreements
+      - name: Benefits and Pensions
+        documents:
+          - Pension Plan
+          - Collective Agreements
+      - name: Handbook
+        documents:
+          - Employee Handbook
+
+  - name: Intellectual Property
+    description: Patents, trademarks, domains and IP assignments.
+    folders:
+      - name: Trademarks and Patents
+        documents:
+          - Registration Certificates
+          - Applications
+      - name: IP Assignments
+        documents:
+          - Founder IP Assignments
+          - Employee and Consultant IP Assignments
+      - name: Domains and Software
+        documents:
+          - Domain Registrations
+          - Open Source License Inventory
+
+  - name: Fundraising
+    description: Pitch material and closed rounds.
+    folders:
+      - name: Pitch Deck
+        documents:
+          - Current Pitch Deck
+          - One-Pager
+      - name: Term Sheets
+        documents:
+          - Signed Term Sheets
+      - name: Investor Updates
+        documents:
+          - Monthly or Quarterly Updates

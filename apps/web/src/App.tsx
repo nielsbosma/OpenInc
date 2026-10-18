@@ -14,6 +14,7 @@ import { TwoFactorRequiredPage } from '@/pages/auth/TwoFactorRequiredPage';
 import { ComingSoonPage } from '@/pages/ComingSoonPage';
 import { ConsentPage } from '@/pages/ConsentPage';
 import { DashboardPage } from '@/pages/DashboardPage';
+import { DocumentsPage } from '@/pages/documents/DocumentsPage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
 import { RegistryRoutes } from '@/pages/registry/RegistryRoutes';
 import { SetupWizard } from '@/pages/setup/SetupWizard';
@@ -86,6 +87,7 @@ export function App() {
           ),
         )}
         <Route path="/registry/*" element={<RegistryRoutes />} />
+        <Route path="/documents/:folderId?" element={<DocumentsPage />} />
         <Route path="/settings/:tab?" element={<SettingsPage />} />
         <Route
           path="/account/:tab?"
