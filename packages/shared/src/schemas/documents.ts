@@ -32,3 +32,5 @@ export const renameDocumentInput = z.object({ documentId: id, name: documentName
 
 /** A null folder moves the document to the top level. */
 export const moveDocumentInput = z.object({ documentId: id, folderId: id.nullable() });
+
+export const downloadZipInput = z.object({ folderId: id.optional() });

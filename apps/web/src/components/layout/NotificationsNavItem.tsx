@@ -72,7 +72,8 @@ export function NotificationsNavItem() {
                     className="flex w-full gap-2.5 border-b px-3 py-2.5 text-left last:border-0 hover:bg-accent"
                     onClick={() => {
                       if (!n.readAt) markRead.mutate({ notificationId: n.id });
-                      if (n.link) navigate(n.link);
+                      if (n.link?.startsWith('/api/')) window.location.assign(n.link);
+                      else if (n.link) navigate(n.link);
                     }}
                   >
                     <span className={cn('mt-1.5 size-1.5 shrink-0 rounded-full', n.readAt ? 'bg-transparent' : 'bg-primary')} />

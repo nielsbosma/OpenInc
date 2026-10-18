@@ -13,6 +13,7 @@ export interface JobPayloads {
   'maintenance.cleanup': Record<string, never>;
   'registry.verifyChain': Record<string, never>;
   'registry.import': { importId: string };
+  'documents.zip': { userId: string; folderId: string | null };
 }
 
 export type JobName = keyof JobPayloads;
@@ -25,6 +26,7 @@ export const QUEUES: JobName[] = [
   'maintenance.cleanup',
   'registry.verifyChain',
   'registry.import',
+  'documents.zip',
 ];
 
 let sender: Promise<PgBoss> | undefined;

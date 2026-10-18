@@ -5,6 +5,7 @@ export * from './audit.ts';
 export { deleteExpiredSessions, loadActor, resolveSession, SESSION_COOKIE } from './auth/sessions.ts';
 export * as captableExports from './captable/exports.ts';
 export * from './context.ts';
+export { deleteOldDocumentZips, runDocumentsZip } from './documents/zip.ts';
 export * from './env.ts';
 export * from './errors.ts';
 export * from './jobs.ts';
