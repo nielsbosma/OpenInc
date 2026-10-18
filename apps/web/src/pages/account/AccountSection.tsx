@@ -17,6 +17,7 @@ import { useSession } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
 import { useTRPC } from '@/lib/trpc';
 import { uploadFile } from '@/lib/upload';
+import { McpClientGuides } from './McpClientGuides';
 
 function Section({ title, description, children }: { title: string; description?: ReactNode; children: ReactNode }) {
   return (
@@ -308,7 +309,7 @@ function McpTab() {
   return (
     <div className="grid gap-6">
       <Section
-        title="Connect Claude or Another MCP Client"
+        title="Connect an AI Client"
         description="Everything you can do here, an MCP client can do for you: with your permissions, and every change in the audit log."
       >
         <div className="grid gap-4">
@@ -318,20 +319,10 @@ function McpTab() {
             </code>
             <CopyButton value={url} label="Copy URL" />
           </div>
-          <ol className="grid list-decimal gap-2 pl-5 text-muted-foreground">
-            <li>
-              In Claude Desktop or claude.ai, open <b className="text-foreground">Settings → Connectors</b> and choose{' '}
-              <b className="text-foreground">Add Custom Connector</b>.
-            </li>
-            <li>
-              Give it a name (e.g. <span className="text-foreground">{connection.data?.name ?? 'OpenInc'}</span>) and paste the URL above.
-            </li>
-            <li>Click Connect. A browser window opens: sign in here (with two-factor if it is on) and click Allow.</li>
-            <li>The client appears below. Disconnect it here at any time; its access stops at once.</li>
-          </ol>
+          <McpClientGuides url={url} name={connection.data?.name ?? 'OpenInc'} />
           <p className="text-xs text-muted-foreground">
-            Other clients that support remote MCP with OAuth (Streamable HTTP) connect the same way. Only HTTPS addresses work outside your
-            own computer.
+            Other clients that support remote MCP with OAuth (Streamable HTTP) connect the same way. Sign-in always happens in the browser,
+            and only HTTPS addresses work outside your own computer. Every connected client appears below; disconnect it here at any time.
           </p>
         </div>
       </Section>

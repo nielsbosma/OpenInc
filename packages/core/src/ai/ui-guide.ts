@@ -226,8 +226,9 @@ export const uiGuide: GuideEntry[] = [
       },
       { task: 'Get new recovery codes', steps: 'In **Two-Factor Authentication**, click **New Recovery Codes** and enter your password.' },
       {
-        task: 'Connect Claude Desktop or another MCP client',
-        steps: 'Scroll to **Connect Claude or Another MCP Client**, click **Copy URL**, and follow the steps shown there.',
+        task: 'Connect Claude, ChatGPT, Claude Code, Cursor, VS Code or another MCP client',
+        steps:
+          'Scroll to **Connect an AI Client**, pick the client tab (**Claude**, **ChatGPT**, **Claude Code**, **Cursor** or **VS Code**) and follow its steps. **Copy URL** copies the server address; config snippets have their own **Copy** button.',
       },
       { task: 'Disconnect an MCP client', steps: 'Under **Connected Clients**, click **Disconnect** next to it.' },
     ],
