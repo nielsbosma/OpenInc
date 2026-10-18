@@ -48,6 +48,11 @@ for (const scheme of ['light', 'dark']) {
   await page.waitForTimeout(300);
   await page.screenshot({ path: `${out}/${scheme}-palette.png` });
   await page.keyboard.press('Escape');
+  await page.getByRole('button', { name: 'Close Sidebar' }).click();
+  await page.waitForTimeout(400);
+  await page.screenshot({ path: `${out}/${scheme}-rail.png` });
+  await page.getByRole('button', { name: 'Open Sidebar' }).click();
+  await page.waitForTimeout(400);
   await page.setViewportSize({ width: 390, height: 844 });
   await page.screenshot({ path: `${out}/${scheme}-mobile-dashboard.png` });
   await page.getByRole('button', { name: 'Open Sidebar' }).click();

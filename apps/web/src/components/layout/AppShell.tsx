@@ -13,7 +13,10 @@ import { isMac } from './keys';
 import { Sidebar } from './Sidebar';
 
 function usePerUserFlag(name: string, userId: string | undefined, fallback: boolean) {
-  const key = `openinc-${name}:${userId ?? 'anonymous'}`;
+  return useStoredFlag(`openinc-${name}:${userId ?? 'anonymous'}`, fallback);
+}
+
+function useStoredFlag(key: string, fallback: boolean) {
   const [value, setState] = useState(() => {
     try {
       const stored = localStorage.getItem(key);
@@ -39,10 +42,9 @@ export function AppShell() {
   // From 1024px the sidebar and the assistant are docked columns; below that they are sheets over the content.
   const docked = useMediaQuery('(min-width: 1024px)');
   const [chatOpen, setChatOpen] = usePerUserFlag('chat-open', user?.id, false);
-  const [sidebarOpen, setSidebarOpen] = usePerUserFlag('sidebar-open', user?.id, true);
-  const showSidebar = docked && sidebarOpen;
+  const [collapsed, setCollapsed] = useStoredFlag('openinc-sidebar-collapsed', false);
 
-  const toggleSidebar = () => (docked ? setSidebarOpen(!sidebarOpen) : setDrawerOpen(!drawerOpen));
+  const toggleSidebar = () => (docked ? setCollapsed(!collapsed) : setDrawerOpen(!drawerOpen));
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key.toLowerCase() === 'b' && (e.metaKey || e.ctrlKey) && !e.altKey && !e.shiftKey) {
@@ -56,9 +58,22 @@ export function AppShell() {
 
   return (
     <div className="flex h-svh overflow-hidden">
-      {showSidebar && (
-        <aside className="w-60 shrink-0 border-r border-sidebar-border">
-          <Sidebar onSearch={() => setPaletteOpen(true)} onClose={() => setSidebarOpen(false)} />
+      {docked && (
+        <aside
+          className={cn(
+            'shrink-0 overflow-hidden border-r border-sidebar-border transition-[width] duration-200 ease-out motion-reduce:transition-none',
+            collapsed ? 'w-13' : 'w-60',
+          )}
+          data-collapsed={collapsed || undefined}
+        >
+          <div className="h-full w-60">
+            <Sidebar
+              collapsed={collapsed}
+              onSearch={() => setPaletteOpen(true)}
+              onClose={() => setCollapsed(true)}
+              onExpand={() => setCollapsed(false)}
+            />
+          </div>
         </aside>
       )}
       {!docked && (
@@ -71,7 +86,7 @@ export function AppShell() {
       )}
 
       <main className="relative min-w-0 flex-1 overflow-y-auto">
-        {!showSidebar && (
+        {!docked && (
           <div className="absolute top-2.5 left-3 z-10">
             <Tooltip>
               <TooltipTrigger asChild>
@@ -106,7 +121,7 @@ export function AppShell() {
           className={cn(
             'mx-auto w-full max-w-6xl pt-3.5 pb-6',
             chatOpen ? 'pr-4 sm:pr-6 lg:pr-8' : 'pr-14 sm:pr-16',
-            showSidebar ? 'pl-4 sm:pl-6 lg:pl-8' : 'pl-14 sm:pl-16',
+            docked ? 'pl-4 sm:pl-6 lg:pl-8' : 'pl-14 sm:pl-16',
           )}
         >
           <Outlet />
