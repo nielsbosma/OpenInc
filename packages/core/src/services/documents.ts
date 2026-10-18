@@ -356,7 +356,7 @@ export const deleteDocument = defineService({
 export const searchDocuments = defineService({
   name: 'documents.search',
   description:
-    'Find documents in Documents whose name or folder name contains the query. Returns each with its folder path and download URL.',
+    'Find documents in Documents whose name or folder name contains the query, optionally only of one content type. Returns each with its folder path and download URL.',
   kind: 'query',
   access: 'files.read',
   input: searchDocumentsInput,
@@ -365,7 +365,12 @@ export const searchDocuments = defineService({
     const pattern = `%${input.query.replace(/[\\%_]/g, '\\$&')}%`;
     const rows = await documentRows(ctx)
       .leftJoin(documentFolders, eq(documentFolders.id, documents.folderId))
-      .where(or(ilike(documents.name, pattern), ilike(documentFolders.name, pattern)))
+      .where(
+        and(
+          or(ilike(documents.name, pattern), ilike(documentFolders.name, pattern)),
+          input.contentType ? eq(files.contentType, input.contentType) : undefined,
+        ),
+      )
       .orderBy(asc(documents.name))
       .limit(50);
     const rooms = await roomCounts(

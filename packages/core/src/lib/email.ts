@@ -7,6 +7,8 @@ export interface Email {
   subject: string;
   text: string;
   html?: string;
+  /** Base64 content, so the email stays JSON for the job queue. */
+  attachments?: { filename: string; content: string; encoding: 'base64'; contentType: string }[];
 }
 
 export class EmailNotConfiguredError extends Error {

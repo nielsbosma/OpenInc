@@ -14,6 +14,7 @@ export interface JobPayloads {
   'registry.verifyChain': Record<string, never>;
   'registry.import': { importId: string };
   'documents.zip': { userId: string; folderId: string | null };
+  'signing.seal': { envelopeId: string };
 }
 
 export type JobName = keyof JobPayloads;
@@ -27,6 +28,7 @@ export const QUEUES: JobName[] = [
   'registry.verifyChain',
   'registry.import',
   'documents.zip',
+  'signing.seal',
 ];
 
 let sender: Promise<PgBoss> | undefined;

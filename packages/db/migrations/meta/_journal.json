@@ -64,6 +64,20 @@
       "when": 1792345455997,
       "tag": "0008_dataroom",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1792346027392,
+      "tag": "0009_signing",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1792346033362,
+      "tag": "0010_signing_events_immutable",
+      "breakpoints": true
     }
   ]
 }

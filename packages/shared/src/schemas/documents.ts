@@ -12,7 +12,10 @@ const documentName = z.string().trim().min(1, 'Enter a name').max(255);
 
 export const listDocumentsInput = z.object({ folderId: id.optional() });
 
-export const searchDocumentsInput = z.object({ query: z.string().trim().min(1).max(200) });
+export const searchDocumentsInput = z.object({
+  query: z.string().trim().max(200).describe('Empty matches every document'),
+  contentType: z.string().max(100).optional().describe('Only documents of this type, e.g. application/pdf'),
+});
 
 export const createFolderInput = z.object({
   parentId: id.optional(),

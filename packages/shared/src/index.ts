@@ -13,5 +13,6 @@ export * from './schemas/documents.ts';
 export * from './schemas/platform.ts';
 export * from './schemas/registry.ts';
 export * from './schemas/settings.ts';
+export * from './schemas/signing.ts';
 export * from './system.ts';
 export * from './title-case.ts';

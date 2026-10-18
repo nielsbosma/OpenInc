@@ -13,6 +13,7 @@ import { mcpRouter } from './mcp.ts';
 import { portalRouter } from './portal.ts';
 import { registryExportHandler } from './registry-exports.ts';
 import { appRouter } from './router.ts';
+import { signingRouter } from './signing.ts';
 import { INTERNAL_ERROR_MESSAGE } from './trpc.ts';
 
 const webDist = resolve(dirname(fileURLToPath(import.meta.url)), '../../../web/dist');
@@ -98,6 +99,7 @@ export function createApp() {
     chatHandler(req, res).catch(next);
   });
   app.use('/api/files', requireReady, filesRouter());
+  app.use('/api/signing', requireReady, signingRouter());
   app.use('/api/portal', requireReady, portalRouter());
   app.get('/api/backups/:name', requireReady, (req, res, next) => {
     backupHandler(req, res).catch(next);

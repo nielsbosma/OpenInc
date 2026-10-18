@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { lazy, Suspense } from 'react';
 import { Navigate, Route, Routes, useLocation, useParams } from 'react-router';
 import { Spinner } from '@/components/common';
 import { AppShell } from '@/components/layout/AppShell';
@@ -23,6 +24,11 @@ import { PortalPage } from '@/pages/portal/PortalPage';
 import { RegistryRoutes } from '@/pages/registry/RegistryRoutes';
 import { SetupWizard } from '@/pages/setup/SetupWizard';
 import { SystemStatusPage } from '@/pages/setup/SystemStatusPage';
+
+// pdf.js is large, so the signing pages load on first use.
+const SignPage = lazy(() => import('@/pages/signing/SignPage').then((m) => ({ default: m.SignPage })));
+const SigningRoutes = lazy(() => import('@/pages/signing/SigningRoutes').then((m) => ({ default: m.SigningRoutes })));
+const VerifyPage = lazy(() => import('@/pages/signing/VerifyPage').then((m) => ({ default: m.VerifyPage })));
 
 function FullPageSpinner() {
   return (
@@ -77,6 +83,22 @@ export function App() {
       <Route path="/oauth/consent" element={<ConsentPage />} />
       <Route path="/r/:token" element={<PortalPage />} />
       <Route
+        path="/sign/:token"
+        element={
+          <Suspense fallback={<FullPageSpinner />}>
+            <SignPage />
+          </Suspense>
+        }
+      />
+      <Route
+        path="/verify"
+        element={
+          <Suspense fallback={<FullPageSpinner />}>
+            <VerifyPage />
+          </Suspense>
+        }
+      />
+      <Route
         element={
           <RequireAuth>
             <AppShell />
@@ -95,6 +117,14 @@ export function App() {
         <Route path="/cap-table/*" element={<CapTableRoutes />} />
         <Route path="/documents/dataroom" element={<DataroomsPage />} />
         <Route path="/documents/dataroom/:roomId" element={<RoomPage />} />
+        <Route
+          path="/documents/signing/*"
+          element={
+            <Suspense fallback={<Spinner />}>
+              <SigningRoutes />
+            </Suspense>
+          }
+        />
         <Route path="/documents/:folderId?" element={<DocumentsPage />} />
         <Route path="/signing" element={<Navigate to="/documents/signing" replace />} />
         <Route path="/dataroom" element={<Navigate to="/documents/dataroom" replace />} />
