@@ -5,7 +5,7 @@ import { type FormEvent, useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { toast } from 'sonner';
 import { Field, Spinner, validate } from '@/components/common';
-import { UserAvatar } from '@/components/layout/UserMenu';
+import { UserAvatar } from '@/components/layout/user';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';

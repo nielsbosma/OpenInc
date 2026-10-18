@@ -91,7 +91,7 @@ if (!pending) {
     type: 'welcome',
     title: 'Welcome to OpenInc',
     body: 'Turn on two-factor authentication under Account → Security.',
-    link: '/account/security',
+    link: '/settings/account#security',
   });
 }
 

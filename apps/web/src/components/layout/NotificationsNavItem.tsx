@@ -8,7 +8,8 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useTRPC } from '@/lib/trpc';
 import { cn } from '@/lib/utils';
 
-export function NotificationBell() {
+/** Sidebar item with the unread count; opens the latest notifications beside it. */
+export function NotificationsNavItem() {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
@@ -21,16 +22,21 @@ export function NotificationBell() {
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative" aria-label={unread ? `Notifications, ${unread} unread` : 'Notifications'}>
-          <Bell />
+        <button
+          type="button"
+          className="flex h-8 w-full items-center gap-2.5 rounded-md px-2.5 text-[13px] font-medium text-sidebar-foreground/75 transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground data-[state=open]:bg-sidebar-accent"
+          aria-label={unread ? `Notifications, ${unread} unread` : 'Notifications'}
+        >
+          <Bell className="size-4 shrink-0 opacity-80" />
+          <span className="truncate">Notifications</span>
           {unread > 0 && (
-            <span className="absolute top-1 right-1 flex min-w-4 items-center justify-center rounded-full bg-primary px-1 font-mono text-[10px] leading-4 text-primary-foreground">
-              {unread > 9 ? '9+' : unread}
+            <span className="ml-auto flex min-w-5 items-center justify-center rounded-full bg-primary px-1.5 font-mono text-[10px] leading-5 text-primary-foreground">
+              {unread > 99 ? '99+' : unread}
             </span>
           )}
-        </Button>
+        </button>
       </PopoverTrigger>
-      <PopoverContent align="end" className="w-80 p-0">
+      <PopoverContent side="right" align="end" sideOffset={8} className="w-80 p-0">
         <div className="flex items-center justify-between border-b px-3 py-2">
           <span className="font-medium">Notifications</span>
           <Button variant="ghost" size="xs" disabled={!unread} onClick={() => markAll.mutate({})}>

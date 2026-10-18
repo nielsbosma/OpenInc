@@ -91,6 +91,17 @@ test('admin invites a member, who accepts by email and lands on the dashboard', 
   await page.getByRole('button', { name: 'Close Assistant' }).click();
   await expect(page.getByTestId('chat-panel')).toHaveCount(0);
 
+  await page
+    .getByRole('navigation', { name: 'Main' })
+    .getByRole('button', { name: /Fundraising/ })
+    .click();
+  await page.getByRole('link', { name: 'Pipeline' }).click();
+  await expect(page).toHaveURL(/\/fundraising\/pipeline/);
+  await page.getByRole('button', { name: 'Close Sidebar' }).click();
+  await expect(page.getByRole('navigation', { name: 'Main' })).toHaveCount(0);
+  await page.getByRole('button', { name: 'Open Sidebar' }).click();
+  await expect(page.getByRole('navigation', { name: 'Main' })).toBeVisible();
+
   await page.keyboard.press('Control+k');
   await page.getByPlaceholder('Type a page or action…').fill('Invite');
   await page.keyboard.press('Enter');
@@ -111,11 +122,11 @@ test('admin invites a member, who accepts by email and lands on the dashboard', 
   await invitee.getByRole('button', { name: 'Later' }).click();
   await expect(invitee.getByRole('heading', { name: /Welcome, Max/ })).toBeVisible();
   await invitee.getByRole('link', { name: 'Settings' }).click();
-  await expect(invitee.getByRole('navigation', { name: 'Settings' }).getByRole('button')).toHaveText(['Users']);
+  await expect(invitee.getByRole('navigation', { name: 'Settings' }).getByRole('button')).toHaveText(['Account', 'Users', 'Sign Out']);
   await context.close();
 
   await page.goto('/admin/audit');
-  await expect(page).toHaveURL(/\/admin\/settings\/audit-log/);
+  await expect(page).toHaveURL(/\/settings\/audit-log/);
   await expect(page.getByRole('cell', { name: 'invites.accept' })).toBeVisible();
 });
 
@@ -183,6 +194,6 @@ test('an MCP client connects with OAuth and calls tools as the user', async ({ p
   const users = await rpc('tools/call', { name: 'users_list', arguments: {} });
   expect(users.structuredContent.result.items.map((u: { email: string }) => u.email)).toContain(admin.email);
 
-  await page.goto('/account/mcp');
+  await page.goto('/settings/account#mcp');
   await expect(page.getByText('E2E client')).toBeVisible();
 });

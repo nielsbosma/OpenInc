@@ -1,4 +1,4 @@
-import { KeyRound, ListChecks, LogOut, Moon, Sparkles, Sun, User, UserPlus } from 'lucide-react';
+import { KeyRound, ListChecks, LogOut, Moon, PanelLeft, Sparkles, Sun, UserPlus } from 'lucide-react';
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import {
@@ -14,17 +14,19 @@ import { useCan } from '@/lib/session';
 import { useTheme } from '@/lib/theme';
 import { MAIN_NAV, SETTINGS_SECTIONS } from './nav';
 import { useChecklist } from './SetupChecklist';
-import { useLogout } from './UserMenu';
+import { useLogout } from './user';
 
 /** Cmd/Ctrl+K: jump to any page or run a common action. */
 export function CommandPalette({
   open,
   onOpenChange,
   onOpenChat,
+  onToggleSidebar,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onOpenChat: () => void;
+  onToggleSidebar: () => void;
 }) {
   const navigate = useNavigate();
   const can = useCan();
@@ -54,24 +56,26 @@ export function CommandPalette({
       <CommandList>
         <CommandEmpty>No results.</CommandEmpty>
         <CommandGroup heading="Go To">
-          {MAIN_NAV.map((item) => (
-            <CommandItem key={item.path} onSelect={run(() => navigate(item.path))}>
+          {MAIN_NAV.flatMap((item) => [
+            <CommandItem key={item.path} onSelect={run(() => navigate(item.children?.[0]?.path ?? item.path))}>
               <item.icon /> {item.title}
-            </CommandItem>
-          ))}
+            </CommandItem>,
+            ...(item.children ?? []).map((child) => (
+              <CommandItem key={child.path} value={`${item.title} ${child.title}`} onSelect={run(() => navigate(child.path))}>
+                <child.icon /> {item.title}: {child.title}
+              </CommandItem>
+            )),
+          ])}
           {SETTINGS_SECTIONS.filter((s) => !s.permission || can(s.permission)).map((s) => (
             <CommandItem key={s.path} value={`Settings ${s.title}`} onSelect={run(() => navigate(s.path))}>
-              <s.icon /> {s.title === 'Users' || s.title === 'Audit Log' ? s.title : `Settings: ${s.title}`}
+              <s.icon /> {s.title === 'Users' || s.title === 'Audit Log' || s.title === 'Account' ? s.title : `Settings: ${s.title}`}
             </CommandItem>
           ))}
-          <CommandItem onSelect={run(() => navigate('/account'))}>
-            <User /> Account
-          </CommandItem>
         </CommandGroup>
         <CommandSeparator />
         <CommandGroup heading="Actions">
           {can('users.manage') && (
-            <CommandItem onSelect={run(() => navigate('/admin/settings/users?invite=1'))}>
+            <CommandItem onSelect={run(() => navigate('/settings/users?invite=1'))}>
               <UserPlus /> Invite Someone
             </CommandItem>
           )}
@@ -83,8 +87,11 @@ export function CommandPalette({
               <ListChecks /> Show Setup Checklist
             </CommandItem>
           )}
-          <CommandItem onSelect={run(() => navigate('/account/security'))}>
+          <CommandItem onSelect={run(() => navigate('/settings/account#security'))}>
             <KeyRound /> Two-Factor and Password
+          </CommandItem>
+          <CommandItem onSelect={run(onToggleSidebar)}>
+            <PanelLeft /> Toggle Sidebar
           </CommandItem>
           <CommandItem onSelect={run(toggle)}>
             {theme === 'dark' ? <Sun /> : <Moon />} {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}

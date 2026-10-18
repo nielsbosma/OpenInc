@@ -24,7 +24,7 @@ const settings = (
   services?: string[],
 ): GuideEntry => ({
   title,
-  path: `/admin/settings/${key}`,
+  path: `/settings/${key}`,
   where: `Sidebar → **Settings** → **${title}**`,
   permission,
   summary,
@@ -36,7 +36,8 @@ export const uiGuide: GuideEntry[] = [
   {
     title: 'App Layout',
     where: 'Every page after signing in',
-    summary: 'Navigation on the left, content in the middle, the assistant in a column on the right.',
+    summary:
+      'Navigation on the left, content in the middle, the assistant in a column on the right. There is no top bar: the sparkle icon floats at the top right of the page.',
     tasks: [
       {
         task: 'Jump to a page or run an action',
@@ -45,19 +46,32 @@ export const uiGuide: GuideEntry[] = [
       {
         task: 'Open the assistant',
         steps:
-          'Click the **sparkle icon** (Assistant) in the top bar, or choose **Open Assistant** in Ctrl+K. Until an Admin sets up an AI provider it explains how to turn it on.',
+          'Click the **sparkle icon** (Assistant) at the top right of the page, or choose **Open Assistant** in Ctrl+K. Until an Admin sets up an AI provider it explains how to turn it on.',
       },
-      { task: 'See notifications', steps: 'Click the **bell** in the top bar. **Mark All Read** clears the count.' },
+      {
+        task: 'See notifications',
+        steps:
+          'Click **Notifications** near the bottom of the sidebar; the badge shows how many are unread. **Mark All Read** clears the count.',
+      },
+      {
+        task: 'Hide or show the sidebar',
+        steps:
+          'Click the **panel icon** next to the company name (**Close Sidebar**), or press **Ctrl+B** (**⌘B** on a Mac). The panel icon at the top left of the page (**Open Sidebar**) brings it back. **Toggle Sidebar** in Ctrl+K does the same.',
+      },
       {
         task: 'Switch between light and dark mode',
-        steps: 'Open the **user menu** (your avatar, top right) and flip **Dark Mode**, or choose **Dark Mode**/**Light Mode** in Ctrl+K.',
+        steps:
+          'Open **Settings** → **Account** and flip **Dark Mode** under **Appearance**, or choose **Dark Mode**/**Light Mode** in Ctrl+K.',
       },
       {
         task: 'Finish setting up',
         steps:
           'Admins see **Finish Setting Up** near the bottom of the sidebar. Click it to see the remaining steps. The **X** hides it; **Show Setup Checklist** in Ctrl+K brings it back.',
       },
-      { task: 'Sign out', steps: 'Open the **user menu** and click **Sign Out**.' },
+      {
+        task: 'Sign out',
+        steps: 'Open **Settings** and click **Sign Out** at the bottom of the section list, or choose **Sign Out** in Ctrl+K.',
+      },
     ],
     services: ['setup.checklist'],
   },
@@ -164,45 +178,67 @@ export const uiGuide: GuideEntry[] = [
   {
     title: 'Fundraising',
     path: '/fundraising',
-    where: 'Sidebar → **Fundraising**',
-    summary: 'Coming soon: investor CRM and tracked links.',
+    where: 'Sidebar → **Fundraising** (click it to show its pages)',
+    summary: 'Coming soon: investor CRM and tracked links. It has three pages: Investors, Pipeline and Decks.',
+    tasks: [],
+  },
+  {
+    title: 'Investors',
+    path: '/fundraising/investors',
+    where: 'Sidebar → **Fundraising** → **Investors**',
+    summary: 'Coming soon: everyone you raise from, with contacts and history.',
+    tasks: [],
+  },
+  {
+    title: 'Pipeline',
+    path: '/fundraising/pipeline',
+    where: 'Sidebar → **Fundraising** → **Pipeline**',
+    summary: 'Coming soon: where each investor conversation stands.',
+    tasks: [],
+  },
+  {
+    title: 'Decks',
+    path: '/fundraising/decks',
+    where: 'Sidebar → **Fundraising** → **Decks**',
+    summary: 'Coming soon: pitch decks shared through tracked links, and who viewed them.',
     tasks: [],
   },
   {
     title: 'Account',
-    path: '/account',
-    where: 'User menu → **Account**',
-    summary: 'Your name, email, password, profile image, two-factor authentication and connected MCP clients.',
+    path: '/settings/account',
+    where: 'Sidebar → **Settings** → **Account** (the first section, open to everyone)',
+    summary:
+      'Your name, email, profile image, Dark Mode, password, two-factor authentication and connected MCP clients, as cards on one page.',
     tasks: [
-      { task: 'Change my name or profile image', steps: 'On **Profile**, edit **Name** and click **Save**, or click **Upload Image**.' },
+      { task: 'Change my name or profile image', steps: 'In **Profile**, edit **Name** and click **Save**, or click **Upload Image**.' },
       {
         task: 'Change my email',
-        steps: 'On **Profile**, under **Email**, fill in **New Email** and **Current Password**, then **Change Email**.',
+        steps: 'In **Profile**, under **Email**, fill in **New Email** and **Current Password**, then **Change Email**.',
       },
       {
         task: 'Change my password',
-        steps: 'Open **Security**, fill in **Current Password** and **New Password**, click **Change Password**.',
+        steps: 'In **Password**, fill in **Current Password** and **New Password**, click **Change Password**.',
       },
       {
         task: 'Turn on two-factor authentication',
         steps:
-          'Open **Security**, click **Set Up Two-Factor**, scan the QR code with an authenticator app, enter the 6-digit code and click **Turn On**. Save the recovery codes.',
+          'In **Two-Factor Authentication**, click **Set Up Two-Factor**, scan the QR code with an authenticator app, enter the 6-digit code and click **Turn On**. Save the recovery codes.',
       },
-      { task: 'Get new recovery codes', steps: 'Open **Security**, click **New Recovery Codes** and enter your password.' },
+      { task: 'Get new recovery codes', steps: 'In **Two-Factor Authentication**, click **New Recovery Codes** and enter your password.' },
       {
         task: 'Connect Claude Desktop or another MCP client',
-        steps: 'Open **MCP**, click **Copy URL**, and follow the steps shown there.',
+        steps: 'Scroll to **Connect Claude or Another MCP Client**, click **Copy URL**, and follow the steps shown there.',
       },
-      { task: 'Disconnect an MCP client', steps: 'Open **MCP** and click **Disconnect** next to it.' },
+      { task: 'Disconnect an MCP client', steps: 'Under **Connected Clients**, click **Disconnect** next to it.' },
     ],
     services: ['account.updateProfile', 'account.listMcpClients', 'account.revokeMcpClient', 'account.mcpConnection'],
   },
   {
-    title: 'Admin Settings',
-    path: '/admin/settings',
+    title: 'Settings',
+    path: '/settings',
     where: 'Sidebar → **Settings** (bottom of the sidebar)',
     summary:
-      'Company, Users, Email, AI, Error Tracking, Storage, Security, Audit Log and System, each a section in the left list. Changes apply at once.',
+      'Account for everyone; for Admins also Company, Users, Email, AI, Error Tracking, Storage, Security, Audit Log and System, each a section in the left list, with **Sign Out** at the bottom. Changes apply at once.',
     tasks: [],
   },
   settings(

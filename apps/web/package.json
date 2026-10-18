@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "screenshots": "node scripts/screenshots.mjs",
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",

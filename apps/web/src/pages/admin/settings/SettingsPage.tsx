@@ -1,11 +1,12 @@
 import { formatBytes, formatRelative, securitySettings, systemSettings } from '@openinc/shared';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { CheckCircle2, Download, ExternalLink, RefreshCw, XCircle } from 'lucide-react';
-import { type ReactNode, useEffect, useState } from 'react';
+import { CheckCircle2, Download, ExternalLink, LogOut, RefreshCw, XCircle } from 'lucide-react';
+import { Fragment, type ReactNode, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { toast } from 'sonner';
 import { EmptyState, Field, PageHeader, Spinner, StatusDot, validate } from '@/components/common';
 import { SETTINGS_SECTIONS } from '@/components/layout/nav';
+import { useLogout } from '@/components/layout/user';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -16,6 +17,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { useCan, useFormat } from '@/lib/session';
 import { type RouterOutputs, useTRPC } from '@/lib/trpc';
 import { cn } from '@/lib/utils';
+import { AccountSection } from '@/pages/account/AccountSection';
 import { AuditSection } from '../AuditPage';
 import { UsersSection } from '../UsersPage';
 import { AiForm, CompanyForm, EmailForm, ErrorTrackingForm } from './forms';
@@ -331,6 +333,7 @@ export function SettingsPage() {
   const navigate = useNavigate();
   const trpc = useTRPC();
   const can = useCan();
+  const logout = useLogout();
   const sections = SETTINGS_SECTIONS.filter((s) => !s.permission || can(s.permission));
   const overview = useQuery({ ...trpc.settings.overview.queryOptions(), enabled: can('settings.manage') });
   const current = sections.find((s) => s.key === tab) ?? sections[0];
@@ -343,30 +346,45 @@ export function SettingsPage() {
 
   return (
     <>
-      <PageHeader title="Admin Settings" description="Changes apply at once, without a restart, and are recorded in the audit log." />
+      <PageHeader
+        title="Settings"
+        description="Your account, and for admins, the whole install. Changes apply at once and are recorded in the audit log."
+      />
       <div className="grid gap-6 md:grid-cols-[180px_minmax(0,1fr)]">
         <nav className="flex gap-1 overflow-x-auto md:flex-col" aria-label="Settings">
-          {sections.map((s) => (
-            <button
-              key={s.key}
-              type="button"
-              onClick={() => navigate(s.path)}
-              aria-current={current.key === s.key ? 'page' : undefined}
-              className={cn(
-                'flex shrink-0 items-center gap-2 rounded-md px-2.5 py-1.5 text-left text-[13px] font-medium text-muted-foreground hover:bg-accent hover:text-foreground',
-                current.key === s.key && 'bg-accent text-foreground',
-              )}
-            >
-              {s.title}
-              {s.key in configured && overview.data && <StatusDot tone={configured[s.key] ? 'ok' : 'off'} />}
-            </button>
+          {sections.map((s, i) => (
+            <Fragment key={s.key}>
+              {i === 1 && <div className="mx-1 my-1 hidden border-t md:block" />}
+              <button
+                type="button"
+                onClick={() => navigate(s.path)}
+                aria-current={current.key === s.key ? 'page' : undefined}
+                className={cn(
+                  'flex shrink-0 items-center gap-2 rounded-md px-2.5 py-1.5 text-left text-[13px] font-medium text-muted-foreground hover:bg-accent hover:text-foreground',
+                  current.key === s.key && 'bg-accent text-foreground',
+                )}
+              >
+                {s.title}
+                {s.key in configured && overview.data && <StatusDot tone={configured[s.key] ? 'ok' : 'off'} />}
+              </button>
+            </Fragment>
           ))}
+          <div className="mx-1 my-1 hidden border-t md:block" />
+          <button
+            type="button"
+            onClick={() => logout.mutate({})}
+            disabled={logout.isPending}
+            className="flex shrink-0 items-center gap-2 rounded-md px-2.5 py-1.5 text-left text-[13px] font-medium text-muted-foreground hover:bg-accent hover:text-foreground"
+          >
+            <LogOut className="size-4" /> Sign Out
+          </button>
         </nav>
         <div className="min-w-0">
           <div className="mb-4">
             <h2 className="font-medium">{current.title}</h2>
             <p className="text-muted-foreground">{current.description}</p>
           </div>
+          {current.key === 'account' && <AccountSection />}
           {current.key === 'company' && <CompanyForm />}
           {current.key === 'users' && <UsersSection />}
           {current.key === 'email' && <EmailForm />}

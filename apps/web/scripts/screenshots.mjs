@@ -10,15 +10,17 @@ mkdirSync(out, { recursive: true });
 
 const pages = [
   ['dashboard', '/'],
-  ['settings-company', '/admin/settings/company'],
-  ['settings-users', '/admin/settings/users'],
-  ['settings-email', '/admin/settings/email'],
-  ['settings-ai', '/admin/settings/ai'],
-  ['settings-system', '/admin/settings/system'],
-  ['settings-audit', '/admin/settings/audit-log'],
-  ['account-security', '/account/security'],
-  ['account-mcp', '/account/mcp'],
+  ['settings-company', '/settings/company'],
+  ['settings-users', '/settings/users'],
+  ['settings-email', '/settings/email'],
+  ['settings-ai', '/settings/ai'],
+  ['settings-system', '/settings/system'],
+  ['settings-audit', '/settings/audit-log'],
+  ['settings-account', '/settings/account'],
+  ['account-security', '/settings/account#security'],
+  ['account-mcp', '/settings/account#mcp'],
   ['cap-table', '/cap-table'],
+  ['fundraising-pipeline', '/fundraising/pipeline'],
 ];
 
 const browser = await chromium.launch();
@@ -47,12 +49,12 @@ for (const scheme of ['light', 'dark']) {
   await page.keyboard.press('Escape');
   await page.setViewportSize({ width: 390, height: 844 });
   await page.screenshot({ path: `${out}/${scheme}-mobile-dashboard.png` });
-  await page.getByRole('button', { name: 'Open Navigation' }).click();
+  await page.getByRole('button', { name: 'Open Sidebar' }).click();
   await page.waitForTimeout(400);
   await page.screenshot({ path: `${out}/${scheme}-mobile-nav.png` });
   await page.keyboard.press('Escape');
   await page.setViewportSize({ width: 1024, height: 768 });
-  await page.goto(`${base}/admin/settings/company`);
+  await page.goto(`${base}/settings/company`);
   await page.waitForLoadState('networkidle');
   await page.screenshot({ path: `${out}/${scheme}-1024-company.png` });
   await context.close();

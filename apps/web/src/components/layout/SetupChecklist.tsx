@@ -7,10 +7,10 @@ import { useTRPC } from '@/lib/trpc';
 import { cn } from '@/lib/utils';
 
 export const CHECKLIST: Record<SetupChecklistItem, { title: string; to: string }> = {
-  email: { title: 'Set Up Real Email', to: '/admin/settings/email' },
-  invite: { title: 'Invite the Team', to: '/admin/settings/users?invite=1' },
-  twoFactor: { title: 'Turn On Two-Factor', to: '/account/security' },
-  ai: { title: 'Add an AI Provider', to: '/admin/settings/ai' },
+  email: { title: 'Set Up Real Email', to: '/settings/email' },
+  invite: { title: 'Invite the Team', to: '/settings/users?invite=1' },
+  twoFactor: { title: 'Turn On Two-Factor', to: '/settings/account#security' },
+  ai: { title: 'Add an AI Provider', to: '/settings/ai' },
 };
 
 export function useChecklist() {

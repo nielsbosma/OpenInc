@@ -7,9 +7,12 @@ import {
   FileSignature,
   FolderLock,
   Handshake,
+  KanbanSquare,
   LayoutDashboard,
   type LucideIcon,
+  Presentation,
   Settings,
+  User,
   Users,
 } from 'lucide-react';
 
@@ -20,6 +23,8 @@ export interface NavItem {
   icon: LucideIcon;
   permission?: Permission;
   description?: string;
+  /** Sub-pages, shown as an indented, collapsible group under the item. */
+  children?: NavItem[];
 }
 
 /** The company modules. Those not in BUILT_MODULES are placeholders until their own spec is built. */
@@ -34,24 +39,49 @@ export const MODULES: NavItem[] = [
   { title: 'Cap Table', path: '/cap-table', icon: BarChart3, description: 'Share classes, options and fully diluted ownership.' },
   { title: 'Signing', path: '/signing', icon: FileSignature, description: 'Send documents for signature and track who has signed.' },
   { title: 'Dataroom', path: '/dataroom', icon: FolderLock, description: 'Share documents with investors and see who viewed what.' },
-  { title: 'Fundraising', path: '/fundraising', icon: Handshake, description: 'Investor CRM and tracked document links.' },
+  {
+    title: 'Fundraising',
+    path: '/fundraising',
+    icon: Handshake,
+    description: 'Investor CRM and tracked document links.',
+    children: [
+      {
+        title: 'Investors',
+        path: '/fundraising/investors',
+        icon: Users,
+        description: 'Everyone you raise from, with contacts and history.',
+      },
+      { title: 'Pipeline', path: '/fundraising/pipeline', icon: KanbanSquare, description: 'Where each investor conversation stands.' },
+      {
+        title: 'Decks',
+        path: '/fundraising/decks',
+        icon: Presentation,
+        description: 'Pitch decks shared through tracked links, and who viewed them.',
+      },
+    ],
+  },
 ];
 
 export const BUILT_MODULES = new Set(['/registry']);
 
 export const MAIN_NAV: NavItem[] = [{ title: 'Dashboard', path: '/', icon: LayoutDashboard }, ...MODULES];
 
-/** Settings holds Users and the Audit Log too, so members who may only see Users still find it. */
-export const SETTINGS_NAV: NavItem = { title: 'Settings', path: '/admin/settings', icon: Settings };
+/** Everyone has Settings: their own Account first, then the sections their role may see. */
+export const SETTINGS_NAV: NavItem = { title: 'Settings', path: '/settings', icon: Settings };
 
-export const SETTINGS_PERMISSIONS: Permission[] = ['settings.manage', 'users.read', 'audit.read'];
-
-/** Admin Settings sections, in the order of its left nav. */
+/** Settings sections, in the order of its left nav. Account is personal; the rest are the company's. */
 export const SETTINGS_SECTIONS: (NavItem & { key: string })[] = [
+  {
+    key: 'account',
+    title: 'Account',
+    path: '/settings/account',
+    icon: User,
+    description: 'Your profile, appearance, password, two-factor and MCP clients.',
+  },
   {
     key: 'company',
     title: 'Company',
-    path: '/admin/settings/company',
+    path: '/settings/company',
     icon: Building2,
     permission: 'settings.manage',
     description: 'Name, registration number, address, currency, time zone and logo.',
@@ -59,7 +89,7 @@ export const SETTINGS_SECTIONS: (NavItem & { key: string })[] = [
   {
     key: 'users',
     title: 'Users',
-    path: '/admin/settings/users',
+    path: '/settings/users',
     icon: Users,
     permission: 'users.read',
     description: 'Everyone with an account, pending invitations and roles.',
@@ -67,7 +97,7 @@ export const SETTINGS_SECTIONS: (NavItem & { key: string })[] = [
   {
     key: 'email',
     title: 'Email',
-    path: '/admin/settings/email',
+    path: '/settings/email',
     icon: Settings,
     permission: 'settings.manage',
     description: 'The SMTP server for invitations, password resets and notifications.',
@@ -75,7 +105,7 @@ export const SETTINGS_SECTIONS: (NavItem & { key: string })[] = [
   {
     key: 'ai',
     title: 'AI',
-    path: '/admin/settings/ai',
+    path: '/settings/ai',
     icon: Settings,
     permission: 'settings.manage',
     description: 'The provider behind the assistant.',
@@ -83,7 +113,7 @@ export const SETTINGS_SECTIONS: (NavItem & { key: string })[] = [
   {
     key: 'errors',
     title: 'Error Tracking',
-    path: '/admin/settings/errors',
+    path: '/settings/errors',
     icon: Settings,
     permission: 'settings.manage',
     description: 'Send server and browser errors to Bugsink or Sentry.',
@@ -91,7 +121,7 @@ export const SETTINGS_SECTIONS: (NavItem & { key: string })[] = [
   {
     key: 'storage',
     title: 'Storage',
-    path: '/admin/settings/storage',
+    path: '/settings/storage',
     icon: Settings,
     permission: 'settings.manage',
     description: 'The S3 bucket for files and database backups. Set with environment variables.',
@@ -99,7 +129,7 @@ export const SETTINGS_SECTIONS: (NavItem & { key: string })[] = [
   {
     key: 'security',
     title: 'Security',
-    path: '/admin/settings/security',
+    path: '/settings/security',
     icon: Settings,
     permission: 'settings.manage',
     description: 'Two-factor rules and how long sessions last.',
@@ -107,7 +137,7 @@ export const SETTINGS_SECTIONS: (NavItem & { key: string })[] = [
   {
     key: 'audit-log',
     title: 'Audit Log',
-    path: '/admin/settings/audit-log',
+    path: '/settings/audit-log',
     icon: Activity,
     permission: 'audit.read',
     description: 'Every change: who, what, when, from where, with before and after values.',
@@ -115,9 +145,12 @@ export const SETTINGS_SECTIONS: (NavItem & { key: string })[] = [
   {
     key: 'system',
     title: 'System',
-    path: '/admin/settings/system',
+    path: '/settings/system',
     icon: Settings,
     permission: 'system.read',
     description: 'Version, updates, database migrations, backups and background jobs.',
   },
 ];
+
+/** Every module page, sub-pages included, for routes and the command palette. */
+export const MODULE_PAGES: NavItem[] = MODULES.flatMap((m) => [m, ...(m.children ?? [])]);

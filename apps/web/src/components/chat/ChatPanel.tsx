@@ -256,7 +256,7 @@ function NotConfigured({ onClose }: { onClose: () => void }) {
             <Button
               onClick={() => {
                 onClose();
-                navigate('/admin/settings/ai');
+                navigate('/settings/ai');
               }}
             >
               Set Up AI Provider

@@ -1,12 +1,11 @@
 import { useQuery } from '@tanstack/react-query';
-import { Navigate, Route, Routes, useLocation } from 'react-router';
+import { Navigate, Route, Routes, useLocation, useParams } from 'react-router';
 import { Spinner } from '@/components/common';
 import { AppShell } from '@/components/layout/AppShell';
-import { BUILT_MODULES, MODULES } from '@/components/layout/nav';
+import { BUILT_MODULES, MODULE_PAGES } from '@/components/layout/nav';
 import { useErrorTracking } from '@/lib/error-tracking';
 import { useSession } from '@/lib/session';
 import { useTRPC } from '@/lib/trpc';
-import { AccountPage } from '@/pages/account/AccountPage';
 import { SettingsPage } from '@/pages/admin/settings/SettingsPage';
 import { InvitePage } from '@/pages/auth/InvitePage';
 import { LoginPage } from '@/pages/auth/LoginPage';
@@ -41,6 +40,12 @@ function RequireAuth({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+/** Old addresses from before Settings held the account and admin pages; links in emails still use them. */
+function LegacyRedirect({ to }: { to: (tab?: string) => string }) {
+  const { tab } = useParams();
+  return <Navigate to={to(tab)} replace />;
+}
+
 export function App() {
   const trpc = useTRPC();
   const status = useQuery(
@@ -73,14 +78,22 @@ export function App() {
         }
       >
         <Route index element={<DashboardPage />} />
-        {MODULES.filter((m) => !BUILT_MODULES.has(m.path)).map((m) => (
-          <Route key={m.path} path={m.path} element={<ComingSoonPage module={m} />} />
-        ))}
+        {MODULE_PAGES.filter((m) => !BUILT_MODULES.has(m.path)).map((m) =>
+          m.children?.length ? (
+            <Route key={m.path} path={m.path} element={<Navigate to={m.children[0]!.path} replace />} />
+          ) : (
+            <Route key={m.path} path={m.path} element={<ComingSoonPage module={m} />} />
+          ),
+        )}
         <Route path="/registry/*" element={<RegistryRoutes />} />
-        <Route path="/account/:tab?" element={<AccountPage />} />
-        <Route path="/admin/users" element={<Navigate to="/admin/settings/users" replace />} />
-        <Route path="/admin/audit" element={<Navigate to="/admin/settings/audit-log" replace />} />
-        <Route path="/admin/settings/:tab?" element={<SettingsPage />} />
+        <Route path="/settings/:tab?" element={<SettingsPage />} />
+        <Route
+          path="/account/:tab?"
+          element={<LegacyRedirect to={(tab) => `/settings/account${tab && tab !== 'profile' ? `#${tab}` : ''}`} />}
+        />
+        <Route path="/admin/users" element={<Navigate to="/settings/users" replace />} />
+        <Route path="/admin/audit" element={<Navigate to="/settings/audit-log" replace />} />
+        <Route path="/admin/settings/:tab?" element={<LegacyRedirect to={(tab) => `/settings${tab ? `/${tab}` : ''}`} />} />
         <Route path="*" element={<NotFoundPage />} />
       </Route>
     </Routes>
