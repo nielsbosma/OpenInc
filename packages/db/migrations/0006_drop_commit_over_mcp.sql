@@ -1,0 +1,1 @@
+ALTER TABLE "registry"."settings" DROP COLUMN "commit_over_mcp";

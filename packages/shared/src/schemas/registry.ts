@@ -393,7 +393,6 @@ export const registrySetupInput = z.object({
   maxShares: integerString.nullable().default(null),
   fourEyes: z.boolean().default(false),
   drafterCanCommit: z.boolean().default(false),
-  commitOverMcp: z.boolean().default(false),
   tokenizeImportIds: z.boolean().default(true),
 });
 export type RegistrySetupInput = z.input<typeof registrySetupInput>;

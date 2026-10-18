@@ -43,6 +43,13 @@
       "when": 1792306270422,
       "tag": "0005_documents",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1792311743615,
+      "tag": "0006_drop_commit_over_mcp",
+      "breakpoints": true
     }
   ]
 }

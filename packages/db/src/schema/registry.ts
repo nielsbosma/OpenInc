@@ -29,7 +29,6 @@ export const registrySettings = registry.table(
     maxShares: shareCount(),
     fourEyes: boolean().notNull().default(false),
     drafterCanCommit: boolean().notNull().default(false),
-    commitOverMcp: boolean().notNull().default(false),
     tokenizeImportIds: boolean().notNull().default(true),
     updatedBy: uuid().references(() => users.id, { onDelete: 'set null' }),
     createdAt: createdAt(),

@@ -187,7 +187,7 @@ describe.runIf(await reachable())('share register (database)', () => {
     expect(after).toEqual(before);
   });
 
-  it('needs a second person under four-eyes approval and refuses commits over MCP', async () => {
+  it('needs a second person under four-eyes approval, over MCP too', async () => {
     await invoke(services.registry.setup, admin, { ...LIMITS, fourEyes: true });
     const d = await draft(board, {
       type: 'pledge',
@@ -197,9 +197,8 @@ describe.runIf(await reachable())('share register (database)', () => {
       pledgee: { name: 'Nordbank AB' },
     });
     await expect(commit(board, d.id)).rejects.toThrow(/someone other than/);
-    const mcpAdmin = { ...admin, surface: 'mcp' as const };
-    await expect(commit(mcpAdmin, d.id)).rejects.toThrow(/turned off/);
-    const c = await commit(admin, d.id);
+    await expect(commit({ ...board, surface: 'mcp' as const }, d.id)).rejects.toThrow(/someone other than/);
+    const c = await commit({ ...admin, surface: 'mcp' as const }, d.id);
     expect(c.approvedBy).toBe(admin.actor!.userId);
   });
 
