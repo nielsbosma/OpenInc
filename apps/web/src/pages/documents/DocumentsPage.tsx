@@ -303,6 +303,7 @@ function SuggestedStructure({ canWrite, onApplied }: { canWrite: boolean; onAppl
       },
     }),
   );
+  const skip = useMutation(trpc.documents.skipTemplate.mutationOptions({ onSuccess: onApplied }));
   return (
     <Card>
       <CardHeader>
@@ -312,7 +313,7 @@ function SuggestedStructure({ canWrite, onApplied }: { canWrite: boolean; onAppl
         <CardDescription>
           Documents is empty. This is a structure for the documents most companies need to keep, from formation and board minutes to
           shareholder agreements and annual reports.
-          {canWrite ? ' Create it in one go, or start with your own folders.' : ' Someone who may upload files can create it.'}
+          {canWrite ? ' Create it in one go, or skip it and start with your own folders.' : ' Someone who may upload files can create it.'}
         </CardDescription>
       </CardHeader>
       <CardContent className="grid gap-4">
@@ -341,9 +342,12 @@ function SuggestedStructure({ canWrite, onApplied }: { canWrite: boolean; onAppl
           </div>
         )}
         {canWrite && (
-          <div>
-            <Button onClick={() => apply.mutate({})} disabled={apply.isPending || !template.data}>
+          <div className="flex gap-2">
+            <Button onClick={() => apply.mutate({})} disabled={apply.isPending || skip.isPending || !template.data}>
               <FolderTree /> {apply.isPending ? 'Creating…' : 'Create These Folders'}
+            </Button>
+            <Button variant="outline" onClick={() => skip.mutate({})} disabled={apply.isPending || skip.isPending}>
+              Skip
             </Button>
           </div>
         )}

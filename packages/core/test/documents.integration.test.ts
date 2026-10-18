@@ -4,6 +4,7 @@ import { stopJobs } from '../src/jobs.ts';
 import { services } from '../src/registry.ts';
 import { invoke } from '../src/service.ts';
 import { storeFile } from '../src/services/files.ts';
+import { getSettingsOrDefaults, saveSettings } from '../src/settings.ts';
 import { freshInstall, reachable, userCtx } from './registry/db.ts';
 
 describe.runIf(await reachable())('documents (database)', () => {
@@ -22,6 +23,13 @@ describe.runIf(await reachable())('documents (database)', () => {
 
   const upload = (name: string) =>
     storeFile(admin, { name, contentType: 'application/pdf', kind: 'document', data: Buffer.from(`%PDF ${name}`) });
+
+  it('stops suggesting the template once someone skips it', async () => {
+    await expect(invoke(services.documents.skipTemplate, auditor, {})).rejects.toMatchObject({ code: 'FORBIDDEN' });
+    await invoke(services.documents.skipTemplate, admin, {});
+    expect((await invoke(services.documents.list, auditor, {})).suggestTemplate).toBe(false);
+    await saveSettings(admin, 'onboarding', { ...(await getSettingsOrDefaults('onboarding')), documentsTemplateSkippedAt: null });
+  });
 
   it('suggests the template while empty and creates it once', async () => {
     expect((await invoke(services.documents.list, admin, {})).suggestTemplate).toBe(true);

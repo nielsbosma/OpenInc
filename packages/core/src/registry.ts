@@ -91,6 +91,7 @@ export const services = {
     folders: documents.listFolders,
     template: documents.documentsTemplate,
     applyTemplate: documents.applyDocumentsTemplate,
+    skipTemplate: documents.skipDocumentsTemplate,
     createFolder: documents.createFolder,
     renameFolder: documents.renameFolder,
     deleteFolder: documents.deleteFolder,

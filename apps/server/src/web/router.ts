@@ -94,6 +94,7 @@ export const appRouter = router({
     folders: query(s.documents.folders),
     template: query(s.documents.template),
     applyTemplate: mutation(s.documents.applyTemplate),
+    skipTemplate: mutation(s.documents.skipTemplate),
     createFolder: mutation(s.documents.createFolder),
     renameFolder: mutation(s.documents.renameFolder),
     deleteFolder: mutation(s.documents.deleteFolder),

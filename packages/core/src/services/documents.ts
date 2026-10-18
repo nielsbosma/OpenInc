@@ -16,6 +16,7 @@ import type { Ctx } from '../context.ts';
 import { folderTemplate, type TemplateFolder, templateFolderAt } from '../documents/template.ts';
 import { badRequest, conflict, notFound } from '../errors.ts';
 import { defineService } from '../service.ts';
+import { getSettingsOrDefaults, saveSettings } from '../settings.ts';
 import { toFileDto } from './files.ts';
 
 type FolderRow = typeof documentFolders.$inferSelect;
@@ -86,7 +87,7 @@ function toDocumentDto(row: { document: typeof documents.$inferSelect; file: typ
 export const listDocuments = defineService({
   name: 'documents.list',
   description:
-    'List one folder in Documents, the company document store: its subfolders (with how many documents and folders each holds), its documents with download URLs, and the path to it. Leave folderId out for the top level. When Documents is completely empty, `suggestTemplate` is true and documents.template has the suggested structure.',
+    'List one folder in Documents, the company document store: its subfolders (with how many documents and folders each holds), its documents with download URLs, and the path to it. Leave folderId out for the top level. When Documents is completely empty and nobody skipped the suggestion, `suggestTemplate` is true and documents.template has the suggested structure.',
   kind: 'query',
   access: 'files.read',
   input: listDocumentsInput,
@@ -99,6 +100,7 @@ export const listDocuments = defineService({
       .where(folderId ? eq(documents.folderId, folderId) : isNull(documents.folderId))
       .orderBy(asc(documents.name));
     const allDocs = await ctx.db.select({ folderId: documents.folderId }).from(documents);
+    const { documentsTemplateSkippedAt } = await getSettingsOrDefaults('onboarding');
     const docCount = new Map<string | null, number>();
     for (const d of allDocs) docCount.set(d.folderId, (docCount.get(d.folderId) ?? 0) + 1);
     const children = [...map.values()].filter((f) => f.parentId === folderId).sort((a, b) => a.name.localeCompare(b.name));
@@ -115,7 +117,7 @@ export const listDocuments = defineService({
       })),
       documents: docs.map(toDocumentDto),
       hints,
-      suggestTemplate: map.size === 0 && allDocs.length === 0,
+      suggestTemplate: map.size === 0 && allDocs.length === 0 && !documentsTemplateSkippedAt,
     };
   },
 });
@@ -170,6 +172,22 @@ export const applyDocumentsTemplate = defineService({
     await walk(folderTemplate(), null, '');
     if (created.length) await audit(ctx, { action: 'documents.template_apply', entityType: 'document_folder', after: { created } });
     return { created: created.length };
+  },
+});
+
+export const skipDocumentsTemplate = defineService({
+  name: 'documents.skipTemplate',
+  description:
+    'Stop suggesting the folder structure on the empty Documents page, for everyone in the company. Use it when the company wants to start with its own folders instead.',
+  kind: 'mutation',
+  transaction: false,
+  access: 'files.write',
+  input: empty,
+  async handler(ctx) {
+    const current = await getSettingsOrDefaults('onboarding');
+    if (!current.documentsTemplateSkippedAt)
+      await saveSettings(ctx, 'onboarding', { ...current, documentsTemplateSkippedAt: new Date().toISOString() });
+    return { ok: true };
   },
 });
 
