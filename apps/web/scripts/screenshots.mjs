@@ -19,6 +19,7 @@ const pages = [
   ['settings-account', '/settings/account'],
   ['account-security', '/settings/account#security'],
   ['account-mcp', '/settings/account#mcp'],
+  ['documents', '/documents'],
   ['cap-table', '/cap-table'],
   ['fundraising-pipeline', '/fundraising/pipeline'],
 ];

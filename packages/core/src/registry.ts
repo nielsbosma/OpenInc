@@ -4,6 +4,7 @@ import * as account from './services/account.ts';
 import * as auditServices from './services/audit.ts';
 import * as auth from './services/auth.ts';
 import * as chat from './services/chat.ts';
+import * as documents from './services/documents.ts';
 import * as filesServices from './services/files.ts';
 import * as help from './services/help.ts';
 import * as notifications from './services/notifications.ts';
@@ -83,6 +84,20 @@ export const services = {
   files: {
     get: filesServices.getFile,
     readText: filesServices.readFileText,
+  },
+  documents: {
+    list: documents.listDocuments,
+    search: documents.searchDocuments,
+    folders: documents.listFolders,
+    template: documents.documentsTemplate,
+    applyTemplate: documents.applyDocumentsTemplate,
+    createFolder: documents.createFolder,
+    renameFolder: documents.renameFolder,
+    deleteFolder: documents.deleteFolder,
+    add: documents.addDocument,
+    rename: documents.renameDocument,
+    move: documents.moveDocument,
+    delete: documents.deleteDocument,
   },
   notifications: {
     list: notifications.listNotifications,

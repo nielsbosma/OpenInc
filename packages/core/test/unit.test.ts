@@ -1,8 +1,9 @@
-import { ALL_PERMISSIONS, type Permission, permissionsFor } from '@openinc/shared';
+import { ALL_PERMISSIONS, isApTitleCase, type Permission, permissionsFor } from '@openinc/shared';
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { redact } from '../src/audit.ts';
 import type { Actor, Ctx } from '../src/context.ts';
+import { folderTemplate, parseFolderTemplate, type TemplateFolder, templateFolderAt } from '../src/documents/template.ts';
 import { readEnv } from '../src/env.ts';
 import { AppError } from '../src/errors.ts';
 import { checkSetupCode, decrypt, encrypt, setupCode, sign, verifySigned } from '../src/lib/crypto.ts';
@@ -98,6 +99,26 @@ describe('env', () => {
     });
     expect(env?.ROLE).toBe('all');
     expect(env?.S3_REGION).toBe('us-east-1');
+  });
+});
+
+describe('documents folder template', () => {
+  const all = (folders: TemplateFolder[]): TemplateFolder[] => folders.flatMap((f) => [f, ...all(f.folders)]);
+
+  it('loads, with AP Title Case folder names and document hints', () => {
+    const folders = all(folderTemplate());
+    expect(folders.length).toBeGreaterThan(10);
+    for (const label of folders.flatMap((f) => [f.name, ...f.documents])) expect(isApTitleCase(label), label).toBe(true);
+  });
+
+  it('finds a folder by its path, ignoring case', () => {
+    expect(templateFolderAt(['governance', 'Board Meetings'])?.documents).toContain('Board Minutes, Signed');
+    expect(templateFolderAt(['Governance', 'Nope'])).toBeUndefined();
+  });
+
+  it('rejects duplicate siblings and slashes', () => {
+    expect(() => parseFolderTemplate('folders:\n  - name: A\n  - name: a\n')).toThrow(/appears twice/);
+    expect(() => parseFolderTemplate('folders:\n  - name: A/B\n')).toThrow(/cannot contain/);
   });
 });
 
