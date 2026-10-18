@@ -114,7 +114,7 @@ function Conversation({
 
   return (
     <div className="flex h-full w-full flex-col bg-background">
-      <div className="flex h-12 shrink-0 items-center gap-1 border-b px-3">
+      <div className="flex h-14 shrink-0 items-center gap-1 border-b px-3">
         <Sparkles className="size-4 text-primary" />
         <span className="font-medium">Assistant</span>
         <div className="ml-auto flex items-center">
@@ -236,7 +236,7 @@ function NotConfigured({ onClose }: { onClose: () => void }) {
   const allowed = config?.aiAllowed;
   return (
     <div className="flex h-full w-full flex-col bg-background">
-      <div className="flex h-12 shrink-0 items-center gap-1.5 border-b px-3">
+      <div className="flex h-14 shrink-0 items-center gap-1.5 border-b px-3">
         <Sparkles className="size-4 text-primary" />
         <span className="font-medium">Assistant</span>
         <Button variant="ghost" size="icon-sm" className="ml-auto" onClick={onClose} aria-label="Close Assistant">
