@@ -86,7 +86,6 @@ export function RegistrySettingsForm() {
     maxShares: current?.maxShares?.toString() ?? '',
     fourEyes: current?.fourEyes ?? false,
     drafterCanCommit: current?.drafterCanCommit ?? false,
-    commitOverMcp: current?.commitOverMcp ?? false,
     tokenizeImportIds: current?.tokenizeImportIds ?? true,
   }));
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -224,13 +223,6 @@ export function RegistrySettingsForm() {
           hint="Members who prepare transactions may also enter them, without the board."
           checked={form.drafterCanCommit}
           onChange={(v) => set({ drafterCanCommit: v })}
-        />
-        <Toggle
-          id="reg-mcp"
-          label="Allow Commits From MCP and the Assistant"
-          hint="Off by default: AI clients can read, validate and draft, and a person commits in the app."
-          checked={form.commitOverMcp}
-          onChange={(v) => set({ commitOverMcp: v })}
         />
         <Toggle
           id="reg-tokenize"

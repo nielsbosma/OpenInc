@@ -88,7 +88,6 @@ function settingsDto(row: typeof registrySettings.$inferSelect) {
     ...settingsView(row),
     fourEyes: row.fourEyes,
     drafterCanCommit: row.drafterCanCommit,
-    commitOverMcp: row.commitOverMcp,
     tokenizeImportIds: row.tokenizeImportIds,
     rulePackInfo: {
       id: pack.id,
@@ -281,7 +280,6 @@ const ownSettings = (row: SettingsRow): RegisterOwnSettings => ({
   maxShares: row.maxShares,
   fourEyes: row.fourEyes,
   drafterCanCommit: row.drafterCanCommit,
-  commitOverMcp: row.commitOverMcp,
   tokenizeImportIds: row.tokenizeImportIds,
 });
 
@@ -300,7 +298,7 @@ export async function syncRegistryWithCompany(ctx: Ctx, company: CompanySettings
 export const setupRegistry = defineService({
   name: 'registry.setup',
   description:
-    "Set up or change the share register: share numbering, capital mode and limits from the articles, four-eyes approval, and whether commits are allowed over MCP. The company's country, legal form (which pick the rule pack) and IDs come from Settings → Company (settings.update, group company).",
+    "Set up or change the share register: share numbering, capital mode and limits from the articles, and four-eyes approval. The company's country, legal form (which pick the rule pack) and IDs come from Settings → Company (settings.update, group company).",
   kind: 'mutation',
   access: 'registry.manage',
   input: registrySetupInput,
@@ -323,7 +321,6 @@ export const setupRegistry = defineService({
         maxShares: big(input.maxShares),
         fourEyes: input.fourEyes,
         drafterCanCommit: input.drafterCanCommit,
-        commitOverMcp: input.commitOverMcp,
         tokenizeImportIds: input.tokenizeImportIds,
       },
       before,
@@ -717,8 +714,6 @@ export const submitDraft = defineService({
 });
 
 function assertCanCommit(ctx: Ctx, registry: RegistryContext, row: TxRow) {
-  if ((ctx.surface === 'mcp' || ctx.surface === 'ai') && !registry.row.commitOverMcp)
-    throw forbidden('Committing from MCP clients or the assistant is turned off in Share Register settings. Commit it in the app.');
   const mayCommit = can(ctx, 'registry.commit') || (registry.row.drafterCanCommit && can(ctx, 'registry.draft'));
   if (!mayCommit) throw forbidden('Only the board or CEO can enter transactions in the register. Submit it for approval instead.');
   if (registry.row.fourEyes) {
@@ -731,7 +726,7 @@ function assertCanCommit(ctx: Ctx, registry: RegistryContext, row: TxRow) {
 export const commitTransaction = defineService({
   name: 'registry.commit',
   description:
-    'Enter a draft transaction in the share register. It is validated against the full history (backdated entries re-check every later transaction), sealed with a sequence number and hash, and can never change afterwards. Off over MCP and the assistant unless an Admin allows it.',
+    'Enter a draft transaction in the share register. It is validated against the full history (backdated entries re-check every later transaction), sealed with a sequence number and hash, and can never change afterwards.',
   kind: 'mutation',
   access: 'registry.draft',
   input: transactionIdInput,
