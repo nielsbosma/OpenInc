@@ -1,16 +1,27 @@
-import { formatMoney, legalFormsFor, parseMoney, type RegistrySetupInput, registrySetupInput, rulePackFor } from '@openinc/shared';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import {
+  articleLimitsRequired,
+  companySettings,
+  formatMoney,
+  parseMoney,
+  type RegistrySetupInput,
+  registrySetupInputFor,
+  rulePackFor,
+} from '@openinc/shared';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { Combobox } from '@/components/Combobox';
+import {
+  type CompanyIdentity,
+  CompanyIdentityFields,
+  CompanyIdentitySummary,
+  effectiveLegalForm,
+} from '@/components/CompanyIdentityFields';
 import { Field, validate } from '@/components/common';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { countryOptions } from '@/lib/locale-options';
-import { useClientConfig } from '@/lib/session';
+import { useCan, useClientConfig } from '@/lib/session';
 import { useTRPC } from '@/lib/trpc';
 import { useRegistryStatus } from './common';
 
@@ -54,12 +65,18 @@ export function RegistrySettingsForm() {
       : formatMoney(v, currency)
           .replace(/[^\d.,\s]/g, '')
           .trim();
+  const can = useCan();
+  const editCompany = can('settings.manage');
+  const companyView = useQuery({ ...trpc.settings.get.queryOptions({ group: 'company' }), enabled: editCompany });
+  const fromStatus = status.data?.company;
+  const [identity, setIdentity] = useState<CompanyIdentity>(() => ({
+    country: fromStatus?.country ?? 'SE',
+    legalForm: fromStatus?.legalForm ?? '',
+    registrationNumber: fromStatus?.nationalNumber ?? '',
+    euid: fromStatus?.euid ?? '',
+    lei: fromStatus?.lei ?? '',
+  }));
   const [form, setForm] = useState(() => ({
-    country: current?.country ?? 'SE',
-    legalForm: current?.legalForm ?? '',
-    nationalNumber: current?.nationalNumber ?? '',
-    euid: current?.euid ?? '',
-    lei: current?.lei ?? '',
     numbering: current?.numbering ?? true,
     capitalMode: current?.capitalMode ?? ('quota' as 'quota' | 'nominal'),
     minShareCapital: money(current?.minShareCapital ?? null),
@@ -73,17 +90,11 @@ export function RegistrySettingsForm() {
   }));
   const [errors, setErrors] = useState<Record<string, string>>({});
   const set = (patch: Partial<typeof form>) => setForm((f) => ({ ...f, ...patch }));
-  const forms = legalFormsFor(form.country);
-  const legalForm = forms.some((f) => f.code === form.legalForm) ? form.legalForm : (forms[0]?.code ?? '');
-  const pack = rulePackFor(form.country, legalForm);
-  const save = useMutation(
-    trpc.registry.setup.mutationOptions({
-      onSuccess: async () => {
-        toast.success('Share register settings saved');
-        await queryClient.invalidateQueries({ queryKey: trpc.registry.pathKey() });
-      },
-    }),
-  );
+  const legalForm = effectiveLegalForm(identity.country, identity.legalForm);
+  const pack = rulePackFor(identity.country, legalForm);
+  const saveCompany = useMutation(trpc.settings.update.mutationOptions());
+  const save = useMutation(trpc.registry.setup.mutationOptions());
+  const saving = saveCompany.isPending || save.isPending;
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -97,62 +108,46 @@ export function RegistrySettingsForm() {
     };
     const values: RegistrySetupInput = {
       ...form,
-      legalForm,
       minShareCapital: minor(form.minShareCapital),
       maxShareCapital: minor(form.maxShareCapital),
       minShares: form.minShares.trim() || null,
       maxShares: form.maxShares.trim() || null,
     };
-    const result = validate(registrySetupInput, values);
-    if (result.errors) return setErrors(result.errors);
+    const result = validate(registrySetupInputFor({ country: identity.country, legalForm, currency }), values);
+    const company =
+      editCompany && companyView.data ? validate(companySettings, { ...companyView.data.values, ...identity, legalForm }) : null;
+    if (result.errors || company?.errors) return setErrors({ ...result.errors, ...company?.errors });
     setErrors({});
-    save.mutate(result.data);
+    void (async () => {
+      // Company details first, through the same call as Settings → Company; the register then reads them.
+      if (company?.data) await saveCompany.mutateAsync({ group: 'company', values: company.data });
+      await save.mutateAsync(result.data!);
+      toast.success('Share register settings saved');
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: trpc.registry.pathKey() }),
+        queryClient.invalidateQueries({ queryKey: trpc.settings.pathKey() }),
+        queryClient.invalidateQueries({ queryKey: trpc.system.clientConfig.queryKey() }),
+      ]);
+    })().catch(() => {});
   };
 
   return (
     <form onSubmit={submit} className="grid max-w-3xl gap-6">
-      <section className="grid gap-4 sm:grid-cols-2">
-        <Field label="Country" htmlFor="reg-country" error={errors.country}>
-          <Combobox id="reg-country" value={form.country} onChange={(v) => set({ country: v })} options={countryOptions()} />
-        </Field>
-        <Field label="Legal Form" htmlFor="reg-legal-form" error={errors.legalForm}>
-          <Select value={legalForm} onValueChange={(v) => set({ legalForm: v })}>
-            <SelectTrigger id="reg-legal-form" className="w-full">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {forms.map((f) => (
-                <SelectItem key={f.code} value={f.code}>
-                  {f.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </Field>
-        <Alert className="sm:col-span-2">
-          <AlertDescription>
-            <span className="font-medium text-foreground">{pack.label}.</span> {pack.summary}
-          </AlertDescription>
-        </Alert>
-        <Field
-          label="Registration Number"
-          htmlFor="reg-number"
-          error={errors.nationalNumber}
-          hint={pack.id === 'se-abl' ? 'Organisationsnummer' : undefined}
-        >
-          <Input
-            id="reg-number"
-            className="font-mono"
-            value={form.nationalNumber}
-            onChange={(e) => set({ nationalNumber: e.target.value })}
+      <section className="grid gap-4">
+        <h3 className="font-medium">Company</h3>
+        {editCompany ? (
+          <CompanyIdentityFields
+            values={identity}
+            onChange={(patch) => setIdentity((v) => ({ ...v, ...patch }))}
+            errors={errors}
+            idPrefix="reg"
           />
-        </Field>
-        <Field label="EUID" htmlFor="reg-euid" error={errors.euid} hint="European unique identifier, if you have one">
-          <Input id="reg-euid" className="font-mono" value={form.euid} onChange={(e) => set({ euid: e.target.value })} />
-        </Field>
-        <Field label="LEI" htmlFor="reg-lei" error={errors.lei}>
-          <Input id="reg-lei" className="font-mono" value={form.lei} onChange={(e) => set({ lei: e.target.value })} />
-        </Field>
+        ) : (
+          <CompanyIdentitySummary values={identity} />
+        )}
+      </section>
+
+      <section className="grid gap-4 sm:grid-cols-2">
         <Field
           label="Share Capital"
           htmlFor="reg-capital-mode"
@@ -171,7 +166,14 @@ export function RegistrySettingsForm() {
       </section>
 
       <section className="grid gap-4 sm:grid-cols-2">
-        <h3 className="font-medium sm:col-span-2">Limits in the Articles</h3>
+        <div className="sm:col-span-2">
+          <h3 className="font-medium">Limits in the Articles</h3>
+          <p className="text-muted-foreground">
+            {articleLimitsRequired({ country: identity.country, legalForm, currency })
+              ? 'Required: the articles of a Swedish aktiebolag state the share capital and number of shares as a minimum and maximum, the maximum at most four times the minimum. Use the same value twice for a fixed amount.'
+              : 'Optional. Fill them in if your articles set limits; the register then blocks transactions that go outside them.'}
+          </p>
+        </div>
         <Field label={`Minimum Share Capital (${currency})`} htmlFor="reg-min-cap" error={errors.minShareCapital}>
           <Input
             id="reg-min-cap"
@@ -239,7 +241,7 @@ export function RegistrySettingsForm() {
       </section>
       {errors._ && <p className="text-sm text-destructive">{errors._}</p>}
       <div>
-        <Button type="submit" disabled={save.isPending}>
+        <Button type="submit" disabled={saving}>
           {current ? 'Save' : 'Set Up the Register'}
         </Button>
       </div>

@@ -21,6 +21,7 @@ const pages = [
   ['account-mcp', '/settings/account#mcp'],
   ['documents', '/documents'],
   ['cap-table', '/cap-table'],
+  ['registry-settings', '/registry/settings'],
   ['fundraising-pipeline', '/fundraising/pipeline'],
 ];
 

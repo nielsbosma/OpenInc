@@ -104,7 +104,7 @@ export const SETTINGS_SECTIONS: (NavItem & { key: string })[] = [
     path: '/settings/company',
     icon: Building2,
     permission: 'settings.manage',
-    description: 'Name, registration number, address, currency, time zone and logo.',
+    description: 'Name, country, legal form, IDs, address, currency, time zone and logo.',
   },
   {
     key: 'users',

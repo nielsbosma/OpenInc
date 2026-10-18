@@ -20,6 +20,9 @@ export async function reachable() {
   }
 }
 
+/** The articles' limits a Swedish AB must state: 25 000–100 000 SEK and 25 000–100 000 shares. */
+export const LIMITS = { minShareCapital: '2500000', maxShareCapital: '10000000', minShares: '25000', maxShares: '100000' };
+
 const anon = () => createCtx({ surface: 'web' });
 
 /** A fresh install with a Swedish company and its first admin. */
@@ -45,7 +48,14 @@ export async function freshInstall(): Promise<Ctx> {
   const admin = createCtx({ surface: 'web', actor: (await loadActor(getDb(), row!.id))! });
   await invoke(services.settings.update, admin, {
     group: 'company',
-    values: { name: 'Exempel AB', country: 'SE', currency: 'SEK', timeZone: 'Europe/Stockholm' },
+    values: {
+      name: 'Exempel AB',
+      country: 'SE',
+      legalForm: 'AB',
+      registrationNumber: '556123-4567',
+      currency: 'SEK',
+      timeZone: 'Europe/Stockholm',
+    },
   });
   return admin;
 }

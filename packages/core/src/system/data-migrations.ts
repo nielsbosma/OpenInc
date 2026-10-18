@@ -1,5 +1,6 @@
-import { dataMigrations, eq } from '@openinc/db';
+import { dataMigrations, eq, registrySettings } from '@openinc/db';
 import type { Ctx } from '../context.ts';
+import { getSettings, saveSettings } from '../settings.ts';
 
 /**
  * Backfills too slow to run at startup. Add one here with a unique name; after the schema migration
@@ -12,7 +13,27 @@ export interface DataMigration {
   run(ctx: Ctx, progress: (done: number, total?: number) => Promise<void>): Promise<void>;
 }
 
-export const DATA_MIGRATIONS: DataMigration[] = [];
+export const DATA_MIGRATIONS: DataMigration[] = [
+  {
+    name: 'company-identity-from-registry',
+    description: 'Copy the legal form, EUID and LEI from the share register into Settings → Company, which now owns them.',
+    async run(ctx, progress) {
+      const [row] = await ctx.db.select().from(registrySettings);
+      const company = await getSettings('company');
+      if (row && company) {
+        await saveSettings(ctx, 'company', {
+          ...company,
+          country: company.country || row.country,
+          legalForm: company.legalForm || (company.country === row.country ? row.legalForm : ''),
+          registrationNumber: company.registrationNumber || row.nationalNumber,
+          euid: company.euid || row.euid,
+          lei: company.lei || row.lei,
+        });
+      }
+      await progress(1, 1);
+    },
+  },
+];
 
 /** Runs every data migration that has not finished, one after another. Called by the worker. */
 export async function runDataMigrations(ctx: Ctx, only?: string): Promise<void> {

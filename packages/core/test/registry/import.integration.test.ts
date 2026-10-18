@@ -6,7 +6,7 @@ import { runImport } from '../../src/registry/import/run.ts';
 import { services } from '../../src/registry.ts';
 import { invoke } from '../../src/service.ts';
 import { storeFile } from '../../src/services/files.ts';
-import { freshInstall, reachable, userCtx } from './db.ts';
+import { freshInstall, LIMITS, reachable, userCtx } from './db.ts';
 import { snapshotExtraction } from './helpers.ts';
 
 const usage = { inputTokens: { total: 1 }, outputTokens: { total: 1 } };
@@ -21,7 +21,7 @@ describe.runIf(await reachable())('AI import (database)', () => {
     admin = await freshInstall();
     member = await userCtx('member', 'member@example.com');
     board = await userCtx('board', 'board@example.com');
-    await invoke(services.registry.setup, admin, { country: 'SE', legalForm: 'AB', nationalNumber: '556123-4567' });
+    await invoke(services.registry.setup, admin, LIMITS);
     await invoke(services.settings.update, admin, {
       group: 'ai',
       values: { provider: 'anthropic', model: 'test-model', apiKey: 'test-key' },

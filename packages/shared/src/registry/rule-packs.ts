@@ -182,16 +182,21 @@ export const euBase: RulePack = {
   ],
 };
 
-const SE_MIN_CAPITAL_SEK = 2_500_000n;
+/** In öre: 25 000 SEK for a private aktiebolag, 500 000 SEK for a public one (ABL 1:5). */
+export const SE_MIN_CAPITAL_SEK = 2_500_000n;
+export const SE_MIN_CAPITAL_SEK_PUBL = 50_000_000n;
 
 export const seAbl: RulePack = {
   id: 'se-abl',
   version: 'se-abl@1',
   label: 'Swedish Aktiebolag (ABL)',
   summary:
-    'Swedish private aktiebolag under aktiebolagslagen: personnummer and organisationsnummer checks, numbered shares, interim shares until Bolagsverket registers a new issue, samtycke, förköp and hembud clauses.',
+    'Swedish aktiebolag (private or publ) under aktiebolagslagen: personnummer and organisationsnummer checks, numbered shares, interim shares until Bolagsverket registers a new issue, samtycke, förköp and hembud clauses.',
   countrySpecific: true,
-  legalForms: [{ code: 'AB', label: 'Aktiebolag (Private)' }],
+  legalForms: [
+    { code: 'AB', label: 'Aktiebolag (Private)' },
+    { code: 'AB_PUBL', label: 'Aktiebolag (Public, publ)' },
+  ],
   defaults: { numbering: true, capitalMode: 'quota' },
   terms: {
     register: 'Share Register',
@@ -253,11 +258,14 @@ export const seAbl: RulePack = {
   },
   checkCapital({ shareCapital, totalShares, currency, settings }) {
     const out = [...capitalWithinLimits(shareCapital, settings), ...sharesWithinLimits(totalShares, settings)];
-    if (currency === 'SEK' && shareCapital < SE_MIN_CAPITAL_SEK)
+    const publ = settings.legalForm === 'AB_PUBL';
+    if (currency === 'SEK' && shareCapital < (publ ? SE_MIN_CAPITAL_SEK_PUBL : SE_MIN_CAPITAL_SEK))
       out.push({
         rule: 'SE_MIN_SHARE_CAPITAL',
         severity: 'error',
-        message: 'A private aktiebolag needs a share capital of at least 25 000 SEK (ABL 1:5)',
+        message: publ
+          ? 'A public aktiebolag needs a share capital of at least 500 000 SEK (ABL 1:5)'
+          : 'A private aktiebolag needs a share capital of at least 25 000 SEK (ABL 1:5)',
       });
     return out;
   },
@@ -267,7 +275,7 @@ export const RULE_PACKS: Record<RulePackId, RulePack> = { 'eu-base': euBase, 'se
 
 /** The rule pack for a country and legal form. Everything without its own pack uses the generic EU one. */
 export function rulePackFor(country: string, legalForm: string): RulePack {
-  if (country === 'SE' && legalForm === 'AB') return seAbl;
+  if (country === 'SE' && (legalForm === 'AB' || legalForm === 'AB_PUBL')) return seAbl;
   return euBase;
 }
 

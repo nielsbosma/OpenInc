@@ -27,6 +27,15 @@ export const companySettings = z.object({
   registrationNumber: text(60).default(''),
   address: text(500).default(''),
   country: z.string().toUpperCase().refine(isCountryCode, 'Pick a country'),
+  /** A code from legalFormsFor(country); with the country it picks the share register's rule pack. '' until chosen. */
+  legalForm: text(40).default(''),
+  euid: text(60).default(''),
+  lei: z
+    .string()
+    .trim()
+    .toUpperCase()
+    .regex(/^([A-Z0-9]{18}\d{2})?$/, 'An LEI is 20 characters')
+    .default(''),
   currency: z.string().toUpperCase().refine(isCurrency, 'Pick a currency'),
   timeZone: z.string().refine(isTimeZone, 'Pick a time zone'),
   logoFileId: z.uuid().nullable().default(null),
