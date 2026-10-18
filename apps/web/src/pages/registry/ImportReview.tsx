@@ -385,7 +385,7 @@ export function ImportReview() {
                     <Input aria-label="Name" disabled={!editable} value={h.name} onChange={(e) => change({ name: e.target.value })} />
                     <Confidence value={h.confidence} />
                   </div>
-                  <div className="mt-2 grid items-center gap-2 sm:grid-cols-[1fr_9rem]">
+                  <div className="mt-2 grid items-center gap-2 sm:grid-cols-[minmax(0,1fr)_9rem]">
                     <Input
                       aria-label="ID Number"
                       className="font-mono"
@@ -430,7 +430,7 @@ export function ImportReview() {
                       {holderName(h.holderRef)}
                       <Confidence value={h.confidence} />
                     </div>
-                    <div className="grid items-center gap-2 sm:grid-cols-[4rem_8rem_1fr]">
+                    <div className="grid items-center gap-2 sm:grid-cols-[4rem_8rem_minmax(0,1fr)]">
                       <Input
                         aria-label="Class"
                         disabled={!editable}
@@ -471,7 +471,7 @@ export function ImportReview() {
                     onSelect={() => pickRow(`event-${i}`, e.source)}
                     invalid={rowIssues.some((x) => x.severity === 'error')}
                   >
-                    <div className="grid items-center gap-2 sm:grid-cols-[7rem_1fr_6rem_auto]">
+                    <div className="grid items-center gap-2 sm:grid-cols-[7rem_minmax(0,1fr)_6rem_auto]">
                       <Input
                         aria-label="Date"
                         className="font-mono"

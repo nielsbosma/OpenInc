@@ -155,7 +155,7 @@ export function TransactionWizard() {
           </>
         }
       />
-      <div className="grid gap-6 lg:grid-cols-[12rem_1fr]">
+      <div className="grid gap-6 lg:grid-cols-[12rem_minmax(0,1fr)]">
         <ol className="flex gap-1 overflow-x-auto lg:flex-col">
           {steps.map((s, i) => (
             <li key={s.key}>

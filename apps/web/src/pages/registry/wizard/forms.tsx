@@ -136,6 +136,9 @@ interface ClassDraft {
 }
 
 /** Share classes with their voting, transfer and liquidation terms. Codes of classes that already exist cannot change. */
+/** Columns follow the card's own width (the assistant may be open beside it): one, two, then three. */
+const classGrid = 'grid gap-x-4 gap-y-5 @md:grid-cols-2 @2xl:grid-cols-3';
+
 function ClassesEditor({ ctx, lockedCodes = [] }: { ctx: FormContext; lockedCodes?: string[] }) {
   const classes = ctx.tx.classes as ClassDraft[];
   const update = (i: number, patch: Partial<ClassDraft>) => ctx.set({ classes: classes.map((c, j) => (j === i ? { ...c, ...patch } : c)) });
@@ -145,96 +148,13 @@ function ClassesEditor({ ctx, lockedCodes = [] }: { ctx: FormContext; lockedCode
       {classes.map((c, i) => {
         const locked = lockedCodes.includes(c.code);
         return (
-          <div key={i} className="grid gap-3 rounded-lg border p-3 sm:grid-cols-4">
-            {locked ? (
-              <Field label="Class" htmlFor={`class-code-${i}`}>
-                <Input id={`class-code-${i}`} value={c.code} disabled />
-              </Field>
-            ) : (
-              <TextField id={`class-code-${i}`} label="Class" value={c.code} onChange={(v) => update(i, { code: v })} />
-            )}
-            <TextField id={`class-name-${i}`} label="Name" value={c.name} onChange={(v) => update(i, { name: v })} />
-            <TextField
-              id={`class-votes-${i}`}
-              label="Votes per Share"
-              inputMode="decimal"
-              value={c.votesPerShare}
-              onChange={(v) => update(i, { votesPerShare: v })}
-            />
-            {ctx.nominalMode && !locked ? (
-              <TextField
-                id={`class-nominal-${i}`}
-                label={`Nominal Value (${ctx.currency})`}
-                inputMode="decimal"
-                value={c.nominalPerShare ?? ''}
-                onChange={(v) => update(i, { nominalPerShare: v || null })}
-              />
-            ) : (
-              <div />
-            )}
-            <TextField
-              id={`class-seniority-${i}`}
-              label="Seniority"
-              inputMode="numeric"
-              hint="Higher is paid first; equal is pari passu"
-              value={String(c.seniorityRank ?? 0)}
-              onChange={(v) => update(i, { seniorityRank: Number(v.replace(/\D/g, '') || 0) })}
-            />
-            <TextField
-              id={`class-pref-${i}`}
-              label="Liquidation Preference (x)"
-              inputMode="decimal"
-              hint="Multiple of the issue price; 0 for common shares"
-              value={c.liqPrefMultiple ?? '1'}
-              onChange={(v) => update(i, { liqPrefMultiple: v })}
-            />
-            <ChoiceField
-              id={`class-participation-${i}`}
-              label="Participation"
-              value={c.participation ?? 'none'}
-              onChange={(v) => update(i, { participation: v, ...(v !== 'capped' ? { liqPrefCapMultiple: null } : {}) })}
-              options={PARTICIPATION.map((p) => ({ value: p, label: PARTICIPATION_LABELS[p] }))}
-            />
-            {c.participation === 'capped' ? (
-              <TextField
-                id={`class-cap-${i}`}
-                label="Cap (x)"
-                inputMode="decimal"
-                value={c.liqPrefCapMultiple ?? ''}
-                onChange={(v) => update(i, { liqPrefCapMultiple: v || null })}
-              />
-            ) : (
-              <div />
-            )}
-            <ChoiceField
-              id={`class-anti-dilution-${i}`}
-              label="Anti-dilution"
-              value={c.antiDilution ?? 'none'}
-              onChange={(v) => update(i, { antiDilution: v })}
-              options={ANTI_DILUTION.map((a) => ({ value: a, label: ANTI_DILUTION_LABELS[a] }))}
-            />
-            <div className="flex flex-wrap items-end gap-4 sm:col-span-2">
-              {(
-                [
-                  ['consent', terms.consent],
-                  ['preEmption', terms.preEmption],
-                  ['firstRefusal', terms.firstRefusal],
-                ] as const
-              ).map(([key, label]) => (
-                <label key={key} className="flex items-center gap-2 text-sm">
-                  <Checkbox
-                    checked={!!c.restrictions?.[key]}
-                    onCheckedChange={(v) => update(i, { restrictions: { ...c.restrictions, [key]: v === true } })}
-                  />
-                  {label}
-                </label>
-              ))}
-            </div>
-            <div className="flex items-end justify-end">
+          <section key={i} className="@container grid gap-5 rounded-lg border p-4" aria-label={`Share Class ${c.code || i + 1}`}>
+            <div className="flex items-center justify-between gap-3">
+              <h3 className="truncate font-medium">{c.code ? `Class ${c.code}` : `Share Class ${i + 1}`}</h3>
               <Button
                 type="button"
                 variant="ghost"
-                size="icon"
+                size="icon-sm"
                 aria-label="Remove Class"
                 disabled={classes.length === 1}
                 onClick={() => ctx.set({ classes: classes.filter((_, j) => j !== i) })}
@@ -242,7 +162,94 @@ function ClassesEditor({ ctx, lockedCodes = [] }: { ctx: FormContext; lockedCode
                 <Trash2 />
               </Button>
             </div>
-          </div>
+            <div className={classGrid}>
+              {locked ? (
+                <Field label="Class" htmlFor={`class-code-${i}`}>
+                  <Input id={`class-code-${i}`} value={c.code} disabled />
+                </Field>
+              ) : (
+                <TextField id={`class-code-${i}`} label="Class" value={c.code} onChange={(v) => update(i, { code: v })} />
+              )}
+              <TextField id={`class-name-${i}`} label="Name" value={c.name} onChange={(v) => update(i, { name: v })} />
+              <TextField
+                id={`class-votes-${i}`}
+                label="Votes per Share"
+                inputMode="decimal"
+                value={c.votesPerShare}
+                onChange={(v) => update(i, { votesPerShare: v })}
+              />
+              {ctx.nominalMode && !locked && (
+                <TextField
+                  id={`class-nominal-${i}`}
+                  label={`Nominal Value (${ctx.currency})`}
+                  inputMode="decimal"
+                  value={c.nominalPerShare ?? ''}
+                  onChange={(v) => update(i, { nominalPerShare: v || null })}
+                />
+              )}
+            </div>
+            <div className={classGrid}>
+              <TextField
+                id={`class-seniority-${i}`}
+                label="Seniority"
+                inputMode="numeric"
+                hint="Higher is paid first; equal is pari passu"
+                value={String(c.seniorityRank ?? 0)}
+                onChange={(v) => update(i, { seniorityRank: Number(v.replace(/\D/g, '') || 0) })}
+              />
+              <TextField
+                id={`class-pref-${i}`}
+                label="Liquidation Preference (x)"
+                inputMode="decimal"
+                hint="Multiple of the issue price; 0 for common shares"
+                value={c.liqPrefMultiple ?? '1'}
+                onChange={(v) => update(i, { liqPrefMultiple: v })}
+              />
+              <ChoiceField
+                id={`class-participation-${i}`}
+                label="Participation"
+                value={c.participation ?? 'none'}
+                onChange={(v) => update(i, { participation: v, ...(v !== 'capped' ? { liqPrefCapMultiple: null } : {}) })}
+                options={PARTICIPATION.map((p) => ({ value: p, label: PARTICIPATION_LABELS[p] }))}
+              />
+              {c.participation === 'capped' && (
+                <TextField
+                  id={`class-cap-${i}`}
+                  label="Cap (x)"
+                  inputMode="decimal"
+                  hint="Total return as a multiple of the issue price"
+                  value={c.liqPrefCapMultiple ?? ''}
+                  onChange={(v) => update(i, { liqPrefCapMultiple: v || null })}
+                />
+              )}
+              <ChoiceField
+                id={`class-anti-dilution-${i}`}
+                label="Anti-dilution"
+                value={c.antiDilution ?? 'none'}
+                onChange={(v) => update(i, { antiDilution: v })}
+                options={ANTI_DILUTION.map((a) => ({ value: a, label: ANTI_DILUTION_LABELS[a] }))}
+              />
+            </div>
+            <fieldset className="grid gap-2.5">
+              <legend className="mb-2.5 text-sm font-medium">Restrictions in the Articles</legend>
+              {(
+                [
+                  ['consent', terms.consent],
+                  ['preEmption', terms.preEmption],
+                  ['firstRefusal', terms.firstRefusal],
+                ] as const
+              ).map(([key, label]) => (
+                <label key={key} className="flex items-start gap-2.5 text-sm">
+                  <Checkbox
+                    className="mt-0.5"
+                    checked={!!c.restrictions?.[key]}
+                    onCheckedChange={(v) => update(i, { restrictions: { ...c.restrictions, [key]: v === true } })}
+                  />
+                  <span className="min-w-0">{label}</span>
+                </label>
+              ))}
+            </fieldset>
+          </section>
         );
       })}
       <div>
@@ -319,7 +326,7 @@ function AllocationsEditor({ ctx, field }: { ctx: FormContext; field: 'allocatio
   return (
     <div className="grid gap-3">
       {rows.map((r, i) => (
-        <div key={i} className="grid gap-3 rounded-lg border p-3 sm:grid-cols-[1fr_7rem_9rem_1fr_auto]">
+        <div key={i} className="grid gap-3 rounded-lg border p-3 sm:grid-cols-[minmax(0,1fr)_7rem_9rem_minmax(0,1fr)_auto]">
           <HolderField id={`alloc-holder-${i}`} label="Holder" ctx={ctx} value={r.holderId} onChange={(v) => update(i, { holderId: v })} />
           <ChoiceField
             id={`alloc-class-${i}`}
@@ -391,7 +398,7 @@ function SubscriptionsEditor({ ctx }: { ctx: FormContext }) {
   return (
     <div className="grid gap-3">
       {rows.map((r, i) => (
-        <div key={i} className="grid gap-3 rounded-lg border p-3 sm:grid-cols-[1fr_9rem_auto]">
+        <div key={i} className="grid gap-3 rounded-lg border p-3 sm:grid-cols-[minmax(0,1fr)_9rem_auto]">
           <HolderField
             id={`sub-holder-${i}`}
             label="Subscriber"
