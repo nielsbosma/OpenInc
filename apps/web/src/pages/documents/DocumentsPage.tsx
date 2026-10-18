@@ -1,8 +1,19 @@
 import { formatBytes } from '@openinc/shared';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { ChevronRight, FileArchive, FileText, Folder, FolderOpen, FolderPlus, FolderTree, MoreHorizontal, Upload } from 'lucide-react';
+import {
+  ChevronRight,
+  FileArchive,
+  FileSignature,
+  FileText,
+  Folder,
+  FolderOpen,
+  FolderPlus,
+  FolderTree,
+  MoreHorizontal,
+  Upload,
+} from 'lucide-react';
 import { type ReactNode, useRef, useState } from 'react';
-import { Link, useParams } from 'react-router';
+import { Link, useNavigate, useParams } from 'react-router';
 import { toast } from 'sonner';
 import { Combobox } from '@/components/Combobox';
 import { EmptyState, Field, PageHeader, Spinner } from '@/components/common';
@@ -51,6 +62,10 @@ export function DocumentsPage() {
     }),
   );
   const deleteFolder = useMutation(trpc.documents.deleteFolder.mutationOptions({ onSuccess: refresh }));
+  const navigate = useNavigate();
+  const sendForSignature = useMutation(
+    trpc.signing.create.mutationOptions({ onSuccess: ({ id }) => navigate(`/documents/signing/${id}`) }),
+  );
 
   const onFiles = async (picked: FileList | null) => {
     const all = Array.from(picked ?? []);
@@ -203,6 +218,11 @@ export function DocumentsPage() {
                       <DropdownMenuItem asChild>
                         <a href={`${d.url}?download`}>Download</a>
                       </DropdownMenuItem>
+                      {d.contentType === 'application/pdf' && can('signing.send') && (
+                        <DropdownMenuItem onSelect={() => sendForSignature.mutate({ documentId: d.id })}>
+                          <FileSignature /> Send for Signature
+                        </DropdownMenuItem>
+                      )}
                       {canWrite && (
                         <>
                           <DropdownMenuItem onSelect={() => setRename({ kind: 'document', id: d.id, name: d.name })}>

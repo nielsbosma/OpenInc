@@ -229,8 +229,56 @@ export const uiGuide: GuideEntry[] = [
     title: 'Signing',
     path: '/documents/signing',
     where: 'Sidebar → **Documents** → **Signing** (the arrow next to Documents shows its pages)',
-    summary: 'Coming soon: document signing.',
-    tasks: [],
+    permission: 'signing.read',
+    summary:
+      'Send PDFs from Documents for electronic signature without an outside service. Each signer gets a personal link by email and opens the document with a one-time code sent to the same address; the signing pages and emails are in Swedish. The document is frozen by its SHA-256 hash when sent. When everyone has signed, the PDF gets the field values and a Signeringsintyg (signing certificate) page, is sealed with the company\'s own PAdES certificate, filed as "<title> (signerat).pdf" next to the original and emailed to every recipient. Every step is in a hash-chained **Evidence Trail**. Anyone can check a signed PDF at /verify. This is a simple electronic signature with strong evidence (eIDAS SES); BankID comes later.',
+    tasks: [
+      {
+        task: 'Send a document for signature',
+        steps:
+          'In **Documents**, click **⋯** on a PDF and choose **Send for Signature**, or on **Signing** click **New Envelope** and pick the PDF. Add recipients (**Signer** or **Gets a Copy**), choose a **Signing Order** (**Everyone at Once** or **One After Another**), pick a field such as **Signature** and click on the document where that signer fills it in. Drag a field to move it, drag its corner to resize. Every signer needs a signature field. Click **Send** and choose when the links expire.',
+        permission: 'signing.send',
+      },
+      {
+        task: 'Save a draft for later',
+        steps: 'Click **Save Draft** in the envelope. **Delete Draft** removes it; the PDF stays in Documents.',
+        permission: 'signing.send',
+      },
+      {
+        task: 'See who has signed',
+        steps:
+          'Open the envelope from **Signing**. **Recipients** shows each status and the **Evidence Trail** lists every event with its IP address and hash.',
+      },
+      {
+        task: 'Remind signers',
+        steps: 'Open a waiting envelope and click **Remind**. Signers get a new link and the old one stops working.',
+        permission: 'signing.send',
+      },
+      {
+        task: 'Withdraw an envelope',
+        steps: 'Open a waiting envelope, click **Void** and give a reason. The links stop working and signers are told.',
+        permission: 'signing.send',
+      },
+      {
+        task: 'Get the signed PDF',
+        steps: 'Open a completed envelope and click **Download Signed PDF**, or find it next to the original in **Documents**.',
+      },
+      {
+        task: 'Check a signed PDF',
+        steps:
+          'Click **Verify a PDF** on **Signing** (or open /verify) and drop the file. It says whether the seal is valid and who signed.',
+      },
+    ],
+    services: [
+      'signing.list',
+      'signing.get',
+      'signing.create',
+      'signing.update',
+      'signing.send',
+      'signing.remind',
+      'signing.void',
+      'signing.deleteDraft',
+    ],
   },
   {
     title: 'Fundraising',

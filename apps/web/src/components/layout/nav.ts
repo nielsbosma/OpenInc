@@ -54,6 +54,7 @@ export const MODULES: NavItem[] = [
         title: 'Signing',
         path: '/documents/signing',
         icon: FileSignature,
+        permission: 'signing.read',
         description: 'Send documents for signature and track who has signed.',
       },
     ],
@@ -82,7 +83,7 @@ export const MODULES: NavItem[] = [
   },
 ];
 
-export const BUILT_MODULES = new Set(['/registry', '/documents']);
+export const BUILT_MODULES = new Set(['/registry', '/documents', '/documents/signing']);
 
 export const MAIN_NAV: NavItem[] = [{ title: 'Dashboard', path: '/', icon: LayoutDashboard }, ...MODULES];
 

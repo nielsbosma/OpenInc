@@ -12,6 +12,7 @@ import * as registry from './services/registry.ts';
 import * as registryImport from './services/registry-import.ts';
 import * as settings from './services/settings.ts';
 import * as setup from './services/setup.ts';
+import * as signing from './services/signing.ts';
 import * as system from './services/system.ts';
 import * as users from './services/users.ts';
 
@@ -99,6 +100,22 @@ export const services = {
     move: documents.moveDocument,
     delete: documents.deleteDocument,
     downloadZip: documents.downloadZip,
+  },
+  signing: {
+    list: signing.listEnvelopes,
+    get: signing.getEnvelope,
+    create: signing.createEnvelope,
+    update: signing.updateEnvelope,
+    send: signing.sendEnvelope,
+    remind: signing.remindEnvelope,
+    void: signing.voidEnvelope,
+    deleteDraft: signing.deleteDraftEnvelope,
+    describe: signing.describeSigning,
+    requestCode: signing.requestSigningCode,
+    verifyCode: signing.verifySigningCode,
+    view: signing.viewSigning,
+    sign: signing.signDocument,
+    decline: signing.declineSigning,
   },
   notifications: {
     list: notifications.listNotifications,

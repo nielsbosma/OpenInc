@@ -12,6 +12,7 @@ import {
   runDocumentsZip,
   runRegistryChainCheck,
   runRegistryImport,
+  runSigningSeal,
   systemCtx,
 } from '@openinc/core';
 import { auditLog, loginChallenges, lt, oauthCodes, passwordResetTokens } from '@openinc/db';
@@ -69,6 +70,8 @@ export const handlers: Handlers = {
   'registry.import': ({ importId }) => runRegistryImport(systemCtx('worker'), importId),
 
   'documents.zip': (data) => runDocumentsZip(systemCtx('worker'), data),
+
+  'signing.seal': (data) => runSigningSeal(systemCtx('worker'), data),
 };
 
 export const schedules: { name: JobName; cron: string }[] = [
