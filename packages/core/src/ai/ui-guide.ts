@@ -93,7 +93,7 @@ export const uiGuide: GuideEntry[] = [
       {
         task: 'Set up the share register',
         steps:
-          'Open **Share Register**, pick the **Country** and **Legal Form** (they choose the rule pack), fill in the **Registration Number** and click **Set Up the Register**.',
+          'Open **Share Register**. Under **Company**, check the **Country** and **Legal Form** (they choose the rule pack) and fill in the **Registration Number**; these are the same fields as Settings → **Company** and save there too (only Admins can change them). Fill in **Limits in the Articles** (required for a Swedish aktiebolag: minimum and maximum share capital and number of shares, the maximum at most four times the minimum) and click **Set Up the Register**.',
         permission: 'registry.manage',
       },
       {
@@ -298,7 +298,7 @@ export const uiGuide: GuideEntry[] = [
     'Company',
     'company',
     'settings.manage',
-    'Company name, registration number, address, country, currency, time zone and logo.',
+    'Company name, country, legal form, registration number, EUID, LEI, address, currency, time zone and logo. The share register uses the country, legal form and IDs from here.',
     [{ task: 'Change company details or logo', steps: 'Edit the fields, click **Upload Logo** for a logo, then **Save**.' }],
     ['settings.get', 'settings.update'],
   ),

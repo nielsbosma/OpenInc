@@ -38,8 +38,21 @@ test('sets up the register, incorporates and records a sale through the wizards'
     .getByRole('link', { name: /Share Register/ })
     .click();
   await expect(page.getByText('Set Up the Share Register')).toBeVisible();
+  // The company's country lives in Settings → Company; an Admin can change it right here, with the same fields.
+  await page.getByLabel('Country').click();
+  await page.getByPlaceholder('Search…').fill('Sweden');
+  await page.getByRole('option', { name: /Sweden/ }).click();
   await expect(page.getByText('Swedish Aktiebolag (ABL).')).toBeVisible();
   await page.getByLabel('Registration Number').fill('556123-4567');
+  await page.getByRole('button', { name: 'Set Up the Register' }).click();
+  await expect(page.getByText('Enter the minimum share capital')).toBeVisible();
+  await page.getByLabel(/Minimum Share Capital/).fill('25000');
+  await page.getByLabel(/Maximum Share Capital/).fill('100000');
+  await page.getByLabel('Minimum Number of Shares').fill('25000');
+  await page.getByLabel('Maximum Number of Shares').fill('200000');
+  await page.getByRole('button', { name: 'Set Up the Register' }).click();
+  await expect(page.getByText('The maximum number of shares can be at most four times the minimum')).toBeVisible();
+  await page.getByLabel('Maximum Number of Shares').fill('100000');
   await page.getByRole('button', { name: 'Set Up the Register' }).click();
   await expect(page.getByRole('heading', { name: 'Share Register (Aktiebok)' })).toBeVisible();
 

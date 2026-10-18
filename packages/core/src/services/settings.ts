@@ -21,6 +21,7 @@ import { checkStorage, describeStorageError } from '../lib/storage.ts';
 import { defineService } from '../service.ts';
 import { clearSettings, getSettings, getSettingsView, saveSettings } from '../settings.ts';
 import { productName } from './auth.ts';
+import { syncRegistryWithCompany } from './registry.ts';
 
 export const getSettingsGroup = defineService({
   name: 'settings.get',
@@ -35,13 +36,21 @@ export const getSettingsGroup = defineService({
 export const updateSettingsGroup = defineService({
   name: 'settings.update',
   description:
-    'Save one Admin settings group. Takes effect immediately, without a restart, and is audited. For secret fields (email password, AI apiKey) leave them out to keep the stored value.',
+    'Save one Admin settings group. Takes effect immediately, without a restart, and is audited. For secret fields (email password, AI apiKey) leave them out to keep the stored value. The company group holds the country, legal form, registration number, EUID and LEI that the share register uses; changing them updates the register too.',
   kind: 'mutation',
   transaction: false,
   access: 'settings.manage',
   input: updateSettingsInput,
   async handler(ctx, input) {
-    await saveSettings(ctx, input.group, input.values as Record<string, unknown>);
+    if (input.group === 'company') {
+      // The share register keeps a copy of the company's country, legal form and IDs: both change together or neither.
+      await ctx.db.transaction(async (db) => {
+        const tx = { ...ctx, db };
+        await syncRegistryWithCompany(tx, await saveSettings(tx, 'company', input.values));
+      });
+    } else {
+      await saveSettings(ctx, input.group, input.values as Record<string, unknown>);
+    }
     return getSettingsView(input.group);
   },
 });

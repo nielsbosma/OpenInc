@@ -9,7 +9,7 @@ import { runRegistryChainCheck } from '../../src/registry/jobs.ts';
 import { services } from '../../src/registry.ts';
 import { invoke } from '../../src/service.ts';
 import { storeFile } from '../../src/services/files.ts';
-import { freshInstall, reachable, userCtx } from './db.ts';
+import { freshInstall, LIMITS, reachable, userCtx } from './db.ts';
 import { H, people } from './helpers.ts';
 
 const draft = (ctx: Ctx, transaction: RegistryTransactionInput) => invoke(services.registry.draftTransaction, ctx, { transaction });
@@ -38,11 +38,9 @@ describe.runIf(await reachable())('share register (database)', () => {
   });
 
   it('is set up with the Swedish rule pack for an AB', async () => {
-    await expect(invoke(services.registry.status, auditor, {})).resolves.toEqual({ setUp: false });
-    await expect(
-      invoke(services.registry.setup, member, { country: 'SE', legalForm: 'AB', nationalNumber: '556123-4567' }),
-    ).rejects.toMatchObject({ code: 'FORBIDDEN' });
-    const settings = await invoke(services.registry.setup, admin, { country: 'SE', legalForm: 'AB', nationalNumber: '556123-4567' });
+    await expect(invoke(services.registry.status, auditor, {})).resolves.toMatchObject({ setUp: false });
+    await expect(invoke(services.registry.setup, member, LIMITS)).rejects.toMatchObject({ code: 'FORBIDDEN' });
+    const settings = await invoke(services.registry.setup, admin, LIMITS);
     expect(settings.rulePack).toBe('se-abl');
     expect(settings.numbering).toBe(true);
   });
@@ -190,7 +188,7 @@ describe.runIf(await reachable())('share register (database)', () => {
   });
 
   it('needs a second person under four-eyes approval and refuses commits over MCP', async () => {
-    await invoke(services.registry.setup, admin, { country: 'SE', legalForm: 'AB', nationalNumber: '556123-4567', fourEyes: true });
+    await invoke(services.registry.setup, admin, { ...LIMITS, fourEyes: true });
     const d = await draft(board, {
       type: 'pledge',
       effectiveDate: '2024-08-01',

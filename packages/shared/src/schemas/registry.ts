@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { type ArticleLimitsContext, checkArticleLimits } from '../registry/article-limits.ts';
 import { pagination } from './common.ts';
 
 /**
@@ -382,17 +383,8 @@ export const TX_DOCUMENT_KINDS = [
 
 export const CAPITAL_MODES = ['quota', 'nominal'] as const;
 
+/** The company's country, legal form and IDs come from Settings → Company; these are the register's own settings. */
 export const registrySetupInput = z.object({
-  country: z.string().trim().toUpperCase().length(2, 'Pick a country'),
-  legalForm: z.string().trim().min(1, 'Pick a legal form').max(40),
-  nationalNumber: z.string().trim().max(60).default(''),
-  euid: z.string().trim().max(60).default(''),
-  lei: z
-    .string()
-    .trim()
-    .toUpperCase()
-    .regex(/^([A-Z0-9]{18}\d{2})?$/, 'An LEI is 20 characters')
-    .default(''),
   numbering: z.boolean().optional(),
   capitalMode: z.enum(CAPITAL_MODES).default('quota'),
   minShareCapital: integerString.nullable().default(null),
@@ -405,6 +397,13 @@ export const registrySetupInput = z.object({
   tokenizeImportIds: z.boolean().default(true),
 });
 export type RegistrySetupInput = z.input<typeof registrySetupInput>;
+
+/** registrySetupInput plus the articles' limits as the company's country and legal form require them. */
+export function registrySetupInputFor(c: ArticleLimitsContext) {
+  return registrySetupInput.superRefine((value, ctx) => {
+    for (const issue of checkArticleLimits(c, value)) ctx.addIssue({ code: 'custom', path: [issue.field], message: issue.message });
+  });
+}
 
 export const asOfInput = z.object({
   /** Calendar date; left out means today. */

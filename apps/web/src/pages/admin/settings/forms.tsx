@@ -15,13 +15,14 @@ import { CheckCircle2, Lock, RefreshCw, Upload, XCircle } from 'lucide-react';
 import { type FormEvent, type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { Combobox } from '@/components/Combobox';
+import { type CompanyIdentity, CompanyIdentityFields, effectiveLegalForm, IDENTITY_FIELDS } from '@/components/CompanyIdentityFields';
 import { ConfirmButton, Field, Logo, Spinner, validate } from '@/components/common';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { browserDefaults, countryOptions, currencyOptions, timeZoneOptions } from '@/lib/locale-options';
+import { browserDefaults, currencyOptions, timeZoneOptions } from '@/lib/locale-options';
 import { useSession } from '@/lib/session';
 import { useTRPC } from '@/lib/trpc';
 import { uploadFile } from '@/lib/upload';
@@ -89,15 +90,30 @@ export function CompanyForm({ wizard, onSaved }: FormProps) {
   const fileInput = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (view) setValues({ name: '', registrationNumber: '', address: '', logoFileId: null, ...browserDefaults(), ...view.values });
+    if (view)
+      setValues({
+        name: '',
+        registrationNumber: '',
+        address: '',
+        legalForm: '',
+        euid: '',
+        lei: '',
+        logoFileId: null,
+        ...browserDefaults(),
+        ...view.values,
+      });
   }, [view]);
 
   const set = (field: string) => (value: unknown) => setValues((v) => ({ ...v, [field]: value }));
   const locked = (field: string) => view?.locked.includes(field);
+  const identity = Object.fromEntries(IDENTITY_FIELDS.map((f) => [f, String(values[f] ?? '')])) as unknown as CompanyIdentity;
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
-    const { data, errors } = validate(companySettings, values);
+    const { data, errors } = validate(companySettings, {
+      ...values,
+      legalForm: effectiveLegalForm(identity.country, identity.legalForm),
+    });
     setErrors(errors ?? {});
     if (data)
       update.mutate(
@@ -119,8 +135,9 @@ export function CompanyForm({ wizard, onSaved }: FormProps) {
   };
 
   const logoId = values.logoFileId as string | null;
+  if (isLoading) return <Spinner />;
   return (
-    <FormShell isLoading={isLoading} onSubmit={submit}>
+    <form onSubmit={submit} className="grid max-w-3xl gap-4" noValidate>
       <Field label="Company Name" htmlFor="company-name" error={errors.name}>
         <Input
           id="company-name"
@@ -130,33 +147,23 @@ export function CompanyForm({ wizard, onSaved }: FormProps) {
           autoFocus={wizard}
         />
       </Field>
-      <Field label="Registration Number" htmlFor="company-reg" error={errors.registrationNumber} hint="Organisation or company number">
-        <Input
-          id="company-reg"
-          value={String(values.registrationNumber ?? '')}
-          onChange={(e) => set('registrationNumber')(e.target.value)}
-        />
-      </Field>
+      <CompanyIdentityFields
+        values={identity}
+        onChange={(patch) => setValues((v) => ({ ...v, ...patch }))}
+        errors={errors}
+        locked={view?.locked ?? []}
+      />
       <Field label="Address" htmlFor="company-address" error={errors.address}>
         <Textarea id="company-address" rows={2} value={String(values.address ?? '')} onChange={(e) => set('address')(e.target.value)} />
       </Field>
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="Country" htmlFor="company-country" error={errors.country}>
-          <Combobox
-            id="company-country"
-            value={String(values.country ?? '')}
-            onChange={set('country')}
-            options={countryOptions()}
-            invalid={!!errors.country}
-          />
-        </Field>
         <Field label="Currency" htmlFor="company-currency" error={errors.currency} hint="Amounts are shown and stored in this currency">
           <Combobox id="company-currency" value={String(values.currency ?? '')} onChange={set('currency')} options={currencyOptions()} />
         </Field>
+        <Field label="Time Zone" htmlFor="company-tz" error={errors.timeZone} hint="Dates and times are shown in this time zone">
+          <Combobox id="company-tz" value={String(values.timeZone ?? '')} onChange={set('timeZone')} options={timeZoneOptions()} />
+        </Field>
       </div>
-      <Field label="Time Zone" htmlFor="company-tz" error={errors.timeZone} hint="Dates and times are shown in this time zone">
-        <Combobox id="company-tz" value={String(values.timeZone ?? '')} onChange={set('timeZone')} options={timeZoneOptions()} />
-      </Field>
       <Field label="Logo" hint="PNG, JPEG, WebP or SVG. Shown in the sidebar and on the sign-in page.">
         <div className="flex items-center gap-3">
           <Logo src={logoId ? `/api/files/${logoId}/content` : null} className="size-10" />
@@ -182,7 +189,7 @@ export function CompanyForm({ wizard, onSaved }: FormProps) {
           {update.isPending && <Spinner className="text-primary-foreground" />} {wizard ? 'Continue' : 'Save'}
         </Button>
       </Actions>
-    </FormShell>
+    </form>
   );
 }
 

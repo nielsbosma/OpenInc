@@ -23,6 +23,7 @@ import {
 import {
   asOfInput,
   attachDocumentInput,
+  checkArticleLimits,
   draftTransactionInput,
   empty,
   holderIdInput,
@@ -195,7 +196,8 @@ export const registryStatus = defineService({
   input: empty,
   async handler(ctx) {
     const row = await readRegistrySettings(ctx);
-    if (!row) return { setUp: false as const };
+    const company = companyIdentity(await getSettings('company'), row);
+    if (!row) return { setUp: false as const, company };
     const counts = await ctx.db
       .select({ status: registryTransactions.status, value: count() })
       .from(registryTransactions)
@@ -203,7 +205,7 @@ export const registryStatus = defineService({
     const [check] = await ctx.db.select().from(chainVerifications).orderBy(desc(chainVerifications.ranAt)).limit(1);
     const byStatus = Object.fromEntries(counts.map((c) => [c.status, c.value])) as Partial<Record<TxRow['status'], number>>;
     const warnings = RULE_PACKS[row.rulePack as keyof typeof RULE_PACKS].checkSettings(settingsView(row));
-    return { setUp: true as const, settings: settingsDto(row), counts: byStatus, lastChainCheck: check ?? null, warnings };
+    return { setUp: true as const, company, settings: settingsDto(row), counts: byStatus, lastChainCheck: check ?? null, warnings };
   },
 });
 
@@ -216,54 +218,117 @@ export const registryLegalForms = defineService({
   handler: async (_ctx, input) => legalFormsFor(input.country),
 });
 
+type CompanySettings = NonNullable<Awaited<ReturnType<typeof getSettings<'company'>>>>;
+type SettingsRow = typeof registrySettings.$inferSelect;
+
+/**
+ * The company's country, legal form and IDs, which Settings → Company owns. The register keeps a copy in its settings
+ * row so the rule pack and exports read it directly; a legal form not chosen yet falls back to the register's, then
+ * to the country's first.
+ */
+export function companyIdentity(
+  company: Pick<CompanySettings, 'country' | 'legalForm' | 'registrationNumber' | 'euid' | 'lei'> | null,
+  row?: SettingsRow | null,
+) {
+  const country = company?.country ?? row?.country ?? 'SE';
+  const forms = legalFormsFor(country);
+  const known = (code: string | undefined) => !!code && forms.some((f) => f.code === code);
+  const legalForm = known(company?.legalForm) ? company!.legalForm : known(row?.legalForm) ? row!.legalForm : (forms[0]?.code ?? '');
+  return {
+    country,
+    legalForm,
+    nationalNumber: company?.registrationNumber ?? row?.nationalNumber ?? '',
+    euid: company?.euid ?? row?.euid ?? '',
+    lei: company?.lei ?? row?.lei ?? '',
+  };
+}
+
+type RegisterOwnSettings = Omit<
+  SettingsRow,
+  'id' | 'country' | 'legalForm' | 'rulePack' | 'nationalNumber' | 'euid' | 'lei' | 'updatedBy' | 'createdAt' | 'updatedAt'
+>;
+
+/** Writes the register's settings, checking that every committed transaction still holds under them. */
+async function applyRegistrySettings(ctx: Ctx, company: CompanySettings | null, own: RegisterOwnSettings, before: SettingsRow | null) {
+  const identity = companyIdentity(company, before);
+  const pack = rulePackFor(identity.country, identity.legalForm);
+  const values = { ...identity, ...own, rulePack: pack.id, updatedBy: ctx.actor?.userId ?? before?.updatedBy ?? null };
+  const errors = pack.checkSettings(values).filter((v) => v.severity === 'error');
+  if (errors.length) throw badRequest(errors.map((e) => e.message).join('; '));
+  await lockRegistry(ctx);
+  const rows = await committedRows(ctx);
+  if (rows.length) {
+    const result = replay(effectiveItems(rows), engineConfig(values, company?.currency ?? (await companyCurrency())));
+    if (!result.ok) throw conflictError(result, '', rows);
+  }
+  const [row] = before
+    ? await ctx.db.update(registrySettings).set(values).where(eq(registrySettings.id, 1)).returning()
+    : await ctx.db
+        .insert(registrySettings)
+        .values({ id: 1, ...values })
+        .returning();
+  if (rows.length) await rebuild(ctx, await requireRegistry(ctx));
+  await audit(ctx, { action: 'registry.setup', entityType: 'registry_settings', entityId: '1', before, after: row });
+  return row!;
+}
+
+const ownSettings = (row: SettingsRow): RegisterOwnSettings => ({
+  numbering: row.numbering,
+  capitalMode: row.capitalMode,
+  minShareCapital: row.minShareCapital,
+  maxShareCapital: row.maxShareCapital,
+  minShares: row.minShares,
+  maxShares: row.maxShares,
+  fourEyes: row.fourEyes,
+  drafterCanCommit: row.drafterCanCommit,
+  commitOverMcp: row.commitOverMcp,
+  tokenizeImportIds: row.tokenizeImportIds,
+});
+
+/**
+ * Called when Settings → Company is saved, in the same transaction: the register picks up a new country, legal form
+ * or ID, or the save fails if committed transactions would no longer hold under the new rule pack.
+ */
+export async function syncRegistryWithCompany(ctx: Ctx, company: CompanySettings) {
+  const before = await readRegistrySettings(ctx);
+  if (!before) return;
+  const next = companyIdentity(company, before);
+  const same = (['country', 'legalForm', 'nationalNumber', 'euid', 'lei'] as const).every((k) => next[k] === before[k]);
+  if (!same) await applyRegistrySettings(ctx, company, ownSettings(before), before);
+}
+
 export const setupRegistry = defineService({
   name: 'registry.setup',
   description:
-    'Set up or change the share register: country and legal form (which pick the rule pack), company IDs, share numbering, capital mode and limits from the articles, four-eyes approval, and whether commits are allowed over MCP.',
+    "Set up or change the share register: share numbering, capital mode and limits from the articles, four-eyes approval, and whether commits are allowed over MCP. The company's country, legal form (which pick the rule pack) and IDs come from Settings → Company (settings.update, group company).",
   kind: 'mutation',
   access: 'registry.manage',
   input: registrySetupInput,
   async handler(ctx, input) {
-    const pack = rulePackFor(input.country, input.legalForm);
     const before = await readRegistrySettings(ctx);
+    const company = await getSettings('company');
+    const identity = companyIdentity(company, before);
+    const issues = checkArticleLimits({ ...identity, currency: company?.currency ?? 'EUR' }, input);
+    if (issues.length) throw badRequest(issues.map((i) => i.message).join('; '));
     const big = (v: string | number | null) => (v === null ? null : BigInt(v));
-    const values = {
-      country: input.country,
-      legalForm: input.legalForm,
-      rulePack: pack.id,
-      nationalNumber: input.nationalNumber,
-      euid: input.euid,
-      lei: input.lei,
-      numbering: input.numbering ?? before?.numbering ?? pack.defaults.numbering,
-      capitalMode: input.capitalMode,
-      minShareCapital: big(input.minShareCapital),
-      maxShareCapital: big(input.maxShareCapital),
-      minShares: big(input.minShares),
-      maxShares: big(input.maxShares),
-      fourEyes: input.fourEyes,
-      drafterCanCommit: input.drafterCanCommit,
-      commitOverMcp: input.commitOverMcp,
-      tokenizeImportIds: input.tokenizeImportIds,
-      updatedBy: ctx.actor!.userId,
-    };
-    const errors = pack.checkSettings({ ...values, rulePack: pack.id }).filter((v) => v.severity === 'error');
-    if (errors.length) throw badRequest(errors.map((e) => e.message).join('; '));
-    await lockRegistry(ctx);
-    const rows = await committedRows(ctx);
-    if (rows.length) {
-      const config = engineConfig({ ...values, rulePack: pack.id }, await companyCurrency());
-      const result = replay(effectiveItems(rows), config);
-      if (!result.ok) throw conflictError(result, '', rows);
-    }
-    const [row] = before
-      ? await ctx.db.update(registrySettings).set(values).where(eq(registrySettings.id, 1)).returning()
-      : await ctx.db
-          .insert(registrySettings)
-          .values({ id: 1, ...values })
-          .returning();
-    if (rows.length) await rebuild(ctx, await requireRegistry(ctx));
-    await audit(ctx, { action: 'registry.setup', entityType: 'registry_settings', entityId: '1', before, after: row });
-    return settingsDto(row!);
+    const row = await applyRegistrySettings(
+      ctx,
+      company,
+      {
+        numbering: input.numbering ?? before?.numbering ?? rulePackFor(identity.country, identity.legalForm).defaults.numbering,
+        capitalMode: input.capitalMode,
+        minShareCapital: big(input.minShareCapital),
+        maxShareCapital: big(input.maxShareCapital),
+        minShares: big(input.minShares),
+        maxShares: big(input.maxShares),
+        fourEyes: input.fourEyes,
+        drafterCanCommit: input.drafterCanCommit,
+        commitOverMcp: input.commitOverMcp,
+        tokenizeImportIds: input.tokenizeImportIds,
+      },
+      before,
+    );
+    return settingsDto(row);
   },
 });
 
