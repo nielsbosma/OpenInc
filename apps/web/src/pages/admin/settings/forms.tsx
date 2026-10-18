@@ -17,6 +17,7 @@ import { toast } from 'sonner';
 import { Combobox } from '@/components/Combobox';
 import { type CompanyIdentity, CompanyIdentityFields, effectiveLegalForm, IDENTITY_FIELDS } from '@/components/CompanyIdentityFields';
 import { ConfirmButton, Field, Logo, Spinner, validate } from '@/components/common';
+import { settingsLayout } from '@/components/settings-layout';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -76,7 +77,7 @@ function TestResult({ result }: { result: { ok: boolean; message: string } | nul
 function FormShell({ isLoading, children, onSubmit }: { isLoading: boolean; children: ReactNode; onSubmit: (e: FormEvent) => void }) {
   if (isLoading) return <Spinner />;
   return (
-    <form onSubmit={onSubmit} className="grid max-w-xl gap-4" noValidate>
+    <form onSubmit={onSubmit} className={settingsLayout.form} noValidate>
       {children}
     </form>
   );
@@ -137,7 +138,7 @@ export function CompanyForm({ wizard, onSaved }: FormProps) {
   const logoId = values.logoFileId as string | null;
   if (isLoading) return <Spinner />;
   return (
-    <form onSubmit={submit} className="grid max-w-3xl gap-4" noValidate>
+    <form onSubmit={submit} className={settingsLayout.form} noValidate>
       <Field label="Company Name" htmlFor="company-name" error={errors.name}>
         <Input
           id="company-name"
@@ -156,7 +157,7 @@ export function CompanyForm({ wizard, onSaved }: FormProps) {
       <Field label="Address" htmlFor="company-address" error={errors.address}>
         <Textarea id="company-address" rows={2} value={String(values.address ?? '')} onChange={(e) => set('address')(e.target.value)} />
       </Field>
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className={settingsLayout.twoColumns}>
         <Field label="Currency" htmlFor="company-currency" error={errors.currency} hint="Amounts are shown and stored in this currency">
           <Combobox id="company-currency" value={String(values.currency ?? '')} onChange={set('currency')} options={currencyOptions()} />
         </Field>
@@ -281,7 +282,7 @@ export function EmailForm({ wizard, onSaved, onSkip }: FormProps) {
           </SelectContent>
         </Select>
       </Field>
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className={settingsLayout.twoColumns}>
         <Field label="User Name" htmlFor="smtp-user">
           <Input
             id="smtp-user"
@@ -303,7 +304,7 @@ export function EmailForm({ wizard, onSaved, onSkip }: FormProps) {
           />
         </Field>
       </div>
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className={settingsLayout.twoColumns}>
         <Field label="Sender Address" htmlFor="smtp-from" error={errors.fromAddress}>
           <Input
             id="smtp-from"

@@ -17,6 +17,7 @@ import {
   effectiveLegalForm,
 } from '@/components/CompanyIdentityFields';
 import { Field, validate } from '@/components/common';
+import { settingsLayout } from '@/components/settings-layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -132,7 +133,7 @@ export function RegistrySettingsForm() {
   };
 
   return (
-    <form onSubmit={submit} className="grid max-w-3xl gap-6">
+    <form onSubmit={submit} className={settingsLayout.sectionedForm}>
       <section className="grid gap-4">
         <h3 className="font-medium">Company</h3>
         {editCompany ? (
@@ -147,7 +148,7 @@ export function RegistrySettingsForm() {
         )}
       </section>
 
-      <section className="grid gap-4 sm:grid-cols-2">
+      <section className={settingsLayout.twoColumns}>
         <Field
           label="Share Capital"
           htmlFor="reg-capital-mode"
@@ -165,7 +166,7 @@ export function RegistrySettingsForm() {
         </Field>
       </section>
 
-      <section className="grid gap-4 sm:grid-cols-2">
+      <section className={settingsLayout.twoColumns}>
         <div className="sm:col-span-2">
           <h3 className="font-medium">Limits in the Articles</h3>
           <p className="text-muted-foreground">
