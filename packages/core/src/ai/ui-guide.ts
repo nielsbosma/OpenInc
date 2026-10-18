@@ -202,6 +202,11 @@ export const uiGuide: GuideEntry[] = [
         permission: 'files.write',
       },
       { task: 'Download a document', steps: 'Click its name to open it, or **⋯** → **Download**.' },
+      {
+        task: 'Download a folder as a zip',
+        steps:
+          'Open the folder (or stay at the top for everything) and click the **⋯** above the table, then **Download Zip**. It is made in the background; a notification with the download link arrives when it is ready, and the link works for 7 days.',
+      },
     ],
     services: [
       'documents.list',

@@ -1,6 +1,6 @@
 import { formatBytes } from '@openinc/shared';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { ChevronRight, FileText, Folder, FolderOpen, FolderPlus, FolderTree, MoreHorizontal, Upload } from 'lucide-react';
+import { ChevronRight, FileArchive, FileText, Folder, FolderOpen, FolderPlus, FolderTree, MoreHorizontal, Upload } from 'lucide-react';
 import { type ReactNode, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router';
 import { toast } from 'sonner';
@@ -45,6 +45,11 @@ export function DocumentsPage() {
   const refresh = () => queryClient.invalidateQueries({ queryKey: trpc.documents.pathKey() });
   const add = useMutation(trpc.documents.add.mutationOptions());
   const remove = useMutation(trpc.documents.delete.mutationOptions({ onSuccess: refresh }));
+  const zip = useMutation(
+    trpc.documents.downloadZip.mutationOptions({
+      onSuccess: () => toast.success('Making the zip. You will get a notification with the download link when it is ready.'),
+    }),
+  );
   const deleteFolder = useMutation(trpc.documents.deleteFolder.mutationOptions({ onSuccess: refresh }));
 
   const onFiles = async (picked: FileList | null) => {
@@ -105,7 +110,16 @@ export function DocumentsPage() {
         }
       />
 
-      <Breadcrumbs path={data?.path ?? []} />
+      {data && !data.suggestTemplate && (
+        <div className="mb-4 flex min-h-8 items-center justify-between gap-3">
+          <Breadcrumbs path={data.path} />
+          <RowMenu label={data.folder?.name ?? 'Documents'}>
+            <DropdownMenuItem onSelect={() => zip.mutate({ folderId })}>
+              <FileArchive /> Download Zip
+            </DropdownMenuItem>
+          </RowMenu>
+        </div>
+      )}
 
       {list.isLoading ? (
         <Spinner />
@@ -257,9 +271,9 @@ function folderSummary(documents: number, folders: number) {
 }
 
 function Breadcrumbs({ path }: { path: { id: string; name: string }[] }) {
-  if (!path.length) return null;
+  if (!path.length) return <div />;
   return (
-    <nav aria-label="Folder" className="mb-4 flex flex-wrap items-center gap-1 text-sm text-muted-foreground">
+    <nav aria-label="Folder" className="flex flex-wrap items-center gap-1 text-sm text-muted-foreground">
       <Link to="/documents" className="hover:text-foreground">
         Documents
       </Link>

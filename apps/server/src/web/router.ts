@@ -101,6 +101,7 @@ export const appRouter = router({
     rename: mutation(s.documents.rename),
     move: mutation(s.documents.move),
     delete: mutation(s.documents.delete),
+    downloadZip: mutation(s.documents.downloadZip),
   }),
   notifications: router({
     list: query(s.notifications.list),

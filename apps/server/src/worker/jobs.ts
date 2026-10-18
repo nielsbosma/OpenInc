@@ -1,5 +1,6 @@
 import {
   deleteExpiredSessions,
+  deleteOldDocumentZips,
   deliverEmail,
   EmailNotConfiguredError,
   getDb,
@@ -8,6 +9,7 @@ import {
   type JobPayloads,
   notify,
   runDataMigrations,
+  runDocumentsZip,
   runRegistryChainCheck,
   runRegistryImport,
   systemCtx,
@@ -58,12 +60,15 @@ export const handlers: Handlers = {
       const cutoff = new Date(now.getTime() - auditRetentionDays * 24 * 60 * 60 * 1000);
       audit = (await db.delete(auditLog).where(lt(auditLog.occurredAt, cutoff)).returning({ id: auditLog.id })).length;
     }
-    return { sessions: sessions.length, audit };
+    const documentZips = await deleteOldDocumentZips(systemCtx('worker'), now);
+    return { sessions: sessions.length, audit, documentZips };
   },
 
   'registry.verifyChain': () => runRegistryChainCheck(systemCtx('worker')),
 
   'registry.import': ({ importId }) => runRegistryImport(systemCtx('worker'), importId),
+
+  'documents.zip': (data) => runDocumentsZip(systemCtx('worker'), data),
 };
 
 export const schedules: { name: JobName; cron: string }[] = [

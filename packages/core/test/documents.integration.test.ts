@@ -1,6 +1,10 @@
+import { eq, files, notifications } from '@openinc/db';
+import { unzipSync } from 'fflate';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { type Ctx, closeDb } from '../src/context.ts';
+import { type Ctx, closeDb, getDb, systemCtx } from '../src/context.ts';
+import { deleteOldDocumentZips, runDocumentsZip } from '../src/documents/zip.ts';
 import { stopJobs } from '../src/jobs.ts';
+import { getObjectBuffer } from '../src/lib/storage.ts';
 import { services } from '../src/registry.ts';
 import { invoke } from '../src/service.ts';
 import { storeFile } from '../src/services/files.ts';
@@ -64,5 +68,44 @@ describe.runIf(await reachable())('documents (database)', () => {
     await invoke(services.documents.renameFolder, admin, { folderId: child.id, name: 'Beta' });
     await invoke(services.documents.deleteFolder, admin, { folderId: child.id });
     await invoke(services.documents.deleteFolder, admin, { folderId: parent.id });
+  });
+
+  it('zips a folder with its subfolders and notifies with a link only the requester can open', async () => {
+    const folders = await invoke(services.documents.folders, admin, {});
+    const governance = folders.find((f) => f.path === 'Governance')!;
+    const board = folders.find((f) => f.path === 'Governance / Board Meetings')!;
+    for (const [name, folderId] of [
+      ['Minutes.pdf', board.id],
+      ['Minutes.pdf', board.id],
+      ['Rules.txt', governance.id],
+    ] as const) {
+      const file = await upload(name);
+      await invoke(services.documents.add, admin, { fileId: file.id, folderId });
+    }
+    await expect(invoke(services.documents.downloadZip, admin, { folderId: governance.id })).resolves.toHaveProperty('jobId');
+
+    const result = await runDocumentsZip(systemCtx('worker'), { userId: admin.actor!.userId, folderId: governance.id });
+    const fileId = result.fileId!;
+    expect(result.documents).toBe(3);
+    const file = await invoke(services.files.get, admin, { fileId: fileId });
+    expect(file.name).toMatch(/^Governance \d{4}-\d{2}-\d{2}\.zip$/);
+    const [row] = await getDb().select().from(files).where(eq(files.id, fileId));
+    const entries = unzipSync(new Uint8Array(await getObjectBuffer(row!.storageKey)));
+    expect(Object.keys(entries).sort()).toEqual([
+      'Board Meetings/',
+      'Board Meetings/Minutes (2).pdf',
+      'Board Meetings/Minutes.pdf',
+      'General Meetings/',
+      'Policies/',
+      'Rules.txt',
+    ]);
+    expect(new TextDecoder().decode(entries['Rules.txt'])).toBe('%PDF Rules.txt');
+    await expect(invoke(services.files.get, auditor, { fileId: fileId })).rejects.toMatchObject({ code: 'FORBIDDEN' });
+
+    const [note] = await getDb().select().from(notifications).where(eq(notifications.type, 'documents.zip_ready'));
+    expect(note!.link).toBe(`/api/files/${fileId}/content?download`);
+
+    expect(await deleteOldDocumentZips(systemCtx('worker'), new Date(Date.now() + 8 * 24 * 60 * 60 * 1000))).toBe(1);
+    await expect(invoke(services.files.get, admin, { fileId: fileId })).rejects.toMatchObject({ code: 'NOT_FOUND' });
   });
 });

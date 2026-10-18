@@ -98,6 +98,7 @@ export const services = {
     rename: documents.renameDocument,
     move: documents.moveDocument,
     delete: documents.deleteDocument,
+    downloadZip: documents.downloadZip,
   },
   notifications: {
     list: notifications.listNotifications,
