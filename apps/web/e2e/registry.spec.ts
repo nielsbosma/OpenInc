@@ -38,6 +38,10 @@ test('sets up the register, incorporates and records a sale through the wizards'
     .getByRole('link', { name: /Share Register/ })
     .click();
   await expect(page.getByText('Set Up the Share Register')).toBeVisible();
+  // The company's country lives in Settings → Company; an Admin can change it right here, with the same fields.
+  await page.getByLabel('Country').click();
+  await page.getByPlaceholder('Search…').fill('Sweden');
+  await page.getByRole('option', { name: /Sweden/ }).click();
   await expect(page.getByText('Swedish Aktiebolag (ABL).')).toBeVisible();
   await page.getByLabel('Registration Number').fill('556123-4567');
   await page.getByRole('button', { name: 'Set Up the Register' }).click();
