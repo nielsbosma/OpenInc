@@ -3,6 +3,7 @@ export { buildTools, systemPrompt } from './ai/tools.ts';
 export { uiGuide } from './ai/ui-guide.ts';
 export * from './audit.ts';
 export { deleteExpiredSessions, loadActor, resolveSession, SESSION_COOKIE } from './auth/sessions.ts';
+export * as captableExports from './captable/exports.ts';
 export * from './context.ts';
 export * from './env.ts';
 export * from './errors.ts';

@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { boot, type Ctx, getSystemStatus, isReady, readEnv, rememberRequestOrigin, reportError } from '@openinc/core';
 import { createExpressMiddleware } from '@trpc/server/adapters/express';
 import express, { type NextFunction, type Request, type Response } from 'express';
+import { captableExportHandler } from './captable-exports.ts';
 import { chatHandler } from './chat.ts';
 import { backupHandler, filesRouter, logoHandler } from './files.ts';
 import { ctxFromRequest } from './http-context.ts';
@@ -98,6 +99,9 @@ export function createApp() {
   app.use('/api/files', requireReady, filesRouter());
   app.get('/api/backups/:name', requireReady, (req, res, next) => {
     backupHandler(req, res).catch(next);
+  });
+  app.get('/api/captable/export/:kind', requireReady, (req, res, next) => {
+    captableExportHandler(req, res).catch(next);
   });
   app.get('/api/registry/export/:kind', requireReady, (req, res, next) => {
     registryExportHandler(req, res).catch(next);

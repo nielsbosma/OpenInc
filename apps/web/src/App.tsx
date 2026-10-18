@@ -13,6 +13,7 @@ import { ForgotPasswordPage, ResetPasswordPage } from '@/pages/auth/PasswordPage
 import { TwoFactorRequiredPage } from '@/pages/auth/TwoFactorRequiredPage';
 import { ComingSoonPage } from '@/pages/ComingSoonPage';
 import { ConsentPage } from '@/pages/ConsentPage';
+import { CapTableRoutes } from '@/pages/cap-table/CapTableRoutes';
 import { DashboardPage } from '@/pages/DashboardPage';
 import { DocumentsPage } from '@/pages/documents/DocumentsPage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
@@ -87,6 +88,7 @@ export function App() {
           ),
         )}
         <Route path="/registry/*" element={<RegistryRoutes />} />
+        <Route path="/cap-table/*" element={<CapTableRoutes />} />
         <Route path="/documents/:folderId?" element={<DocumentsPage />} />
         <Route path="/signing" element={<Navigate to="/documents/signing" replace />} />
         <Route path="/dataroom" element={<Navigate to="/documents/dataroom" replace />} />

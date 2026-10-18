@@ -16,7 +16,7 @@ if (!['localhost', '127.0.0.1', 'postgres', '::1'].includes(host) && process.env
 const client = new pg.Client({ connectionString: url });
 await client.connect();
 await client.query(
-  'drop schema if exists registry cascade; drop schema if exists public cascade; drop schema if exists pgboss cascade; create schema public;',
+  'drop schema if exists captable cascade; drop schema if exists registry cascade; drop schema if exists public cascade; drop schema if exists pgboss cascade; create schema public;',
 );
 await client.end();
 console.log('database wiped');

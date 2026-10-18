@@ -3,6 +3,7 @@ import type { AnyService } from './service.ts';
 import * as account from './services/account.ts';
 import * as auditServices from './services/audit.ts';
 import * as auth from './services/auth.ts';
+import * as captable from './services/captable.ts';
 import * as chat from './services/chat.ts';
 import * as documents from './services/documents.ts';
 import * as filesServices from './services/files.ts';
@@ -147,6 +148,42 @@ export const services = {
     updateImport: registryImport.updateImport,
     createImportDrafts: registryImport.createImportDrafts,
     discardImport: registryImport.discardImport,
+  },
+  captable: {
+    get: captable.getCaptable,
+    settings: captable.getCaptableSettings,
+    updateSettings: captable.updateCaptableSettings,
+    history: captable.ownershipHistory,
+    listStakeholders: captable.listStakeholders,
+    stakeholder: captable.stakeholderDetail,
+    saveStakeholder: captable.saveStakeholder,
+    assignGroup: captable.assignGroup,
+    saveGroup: captable.saveGroup,
+    deleteGroup: captable.deleteGroup,
+    listPlans: captable.listPlans,
+    savePlan: captable.savePlan,
+    changePool: captable.changePool,
+    saveSchedule: captable.saveSchedule,
+    saveGrant: captable.saveGrant,
+    terminateGrant: captable.terminateGrant,
+    exerciseGrant: captable.exerciseGrant,
+    listUnpriced: captable.listUnpriced,
+    saveUnpriced: captable.saveUnpriced,
+    cancelUnpriced: captable.cancelUnpriced,
+    listValuations: captable.listValuations,
+    saveValuation: captable.saveValuation,
+    deleteValuation: captable.deleteValuation,
+    fairValue: captable.fairValue,
+    modelRound: captable.modelRound,
+    waterfall: captable.waterfall,
+    listScenarios: captable.listScenarios,
+    getScenario: captable.getScenario,
+    runScenario: captable.runScenarioService,
+    saveScenario: captable.saveScenario,
+    archiveScenario: captable.archiveScenario,
+    rebaseScenario: captable.rebaseScenario,
+    compareScenarios: captable.compareScenarios,
+    promoteScenario: captable.promoteScenario,
   },
   oauth: {
     describe: describeAuthorization,
