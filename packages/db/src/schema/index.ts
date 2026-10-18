@@ -1,3 +1,4 @@
+export * from './captable.ts';
 export * from './columns.ts';
 export * from './dataroom.ts';
 export * from './documents.ts';

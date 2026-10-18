@@ -224,7 +224,96 @@ export const uiGuide: GuideEntry[] = [
       'dataroom.roomsForDocument',
     ],
   },
-  { title: 'Cap Table', path: '/cap-table', where: 'Sidebar → **Cap Table**', summary: 'Coming soon: the cap table.', tasks: [] },
+  {
+    title: 'Cap Table',
+    path: '/cap-table',
+    where: 'Sidebar → **Cap Table**',
+    permission: 'captable.read',
+    summary:
+      'Fully diluted ownership built from the share register for any date, with what the register does not hold: equity plans and grants (options, warrants, virtual shares and country profiles such as Swedish warrants and KPO, German VSOP, French BSPCE, UK EMI), unpriced instruments (SAFEs, convertible loans, BSA AIR, ASA), valuations and scenarios. Tabs: **Overview**, **Ownership Over Time**, **Equity Plans**, **Convertibles**, **Valuations**, **Scenarios**, **Settings**. The cap table never changes the register: exercises and promoted scenarios become register drafts that a person commits.',
+    tasks: [
+      {
+        task: 'See the cap table on a date',
+        steps:
+          'On **Overview**, change **As of Date**. Switch **Count** between **Fully Diluted** and **Issued Shares**, and **Rows** to **By Group**.',
+      },
+      {
+        task: 'Download the cap table',
+        steps: 'On **Overview**, click **Export** and pick **PDF**, **Excel (XLSX)**, **CSV** or **JSON**.',
+      },
+      {
+        task: 'See one holder',
+        steps: 'Click a name on **Overview**: shares, grants with vesting, convertibles and value at the last price.',
+      },
+      {
+        task: 'Group stakeholders',
+        steps:
+          "On **Settings**, under **Stakeholder Groups**, add a group (for example Founders, Employees, Investors) and pick each stakeholder's group.",
+        permission: 'captable.manage',
+      },
+      {
+        task: 'Create an option or warrant plan',
+        steps:
+          'On **Equity Plans**, click **New Equity Plan**, choose the **Profile**, the share class an exercise delivers and the pool size. Change the size later with **Change Pool**.',
+        permission: 'captable.manage',
+      },
+      {
+        task: 'Grant options, warrants or virtual shares',
+        steps:
+          'On **Equity Plans**, click **New Grant**, pick the stakeholder (or add one), the units, strike price, dates and vesting schedule. Add schedules with **New Vesting Schedule**.',
+        permission: 'captable.manage',
+      },
+      {
+        task: 'Record a leaver',
+        steps:
+          "On **Equity Plans**, open the grant's menu and click **Mark as Leaver**. A good leaver keeps what has vested; a bad leaver forfeits what is not exercised.",
+        permission: 'captable.manage',
+      },
+      {
+        task: 'Exercise options or warrants',
+        steps:
+          'On **Equity Plans**, click **Exercise** on the grant. It drafts a new issue in the share register; commit it there and the cap table counts the shares.',
+        permission: 'captable.manage',
+      },
+      {
+        task: 'Add a SAFE or convertible loan',
+        steps:
+          'On **Convertibles**, click **Add Instrument**, pick the **Profile**, the holder, amount, cap, discount and interest. It converts in a priced round in a scenario.',
+        permission: 'captable.manage',
+      },
+      {
+        task: 'Record a valuation or price an incentive',
+        steps:
+          'On **Valuations**, click **Record Valuation**, or use the **Fair Value Helper** (Black-Scholes, an estimate, not a formal valuation) and **Save to Valuation Log**.',
+        permission: 'captable.manage',
+      },
+      {
+        task: 'Model a round or an exit',
+        steps:
+          'On **Scenarios**, click **New Scenario**, then **Add Step**: **Priced Round**, **Pool Change**, **Grant Batch**, **Secondary Sale**, **Exercise** or **Exit**. Results update as you type; click **Save**. **Quick Exit Waterfall** on **Scenarios** shows payouts on the real cap table.',
+        permission: 'captable.model',
+      },
+      { task: 'Compare two scenarios', steps: 'On **Scenarios**, click **Compare** and pick two.', permission: 'captable.model' },
+      {
+        task: 'Turn a scenario into real transactions',
+        steps:
+          'Open the scenario and click **Promote to Register**. It creates share register drafts (new class, new issue, conversions by set-off, transfers) and records pool changes and grants; commit the drafts in the register. If the register changed since, click **Rebase on Today** first.',
+        permission: 'captable.manage',
+      },
+    ],
+    services: [
+      'captable.get',
+      'captable.history',
+      'captable.stakeholder',
+      'captable.listPlans',
+      'captable.listUnpriced',
+      'captable.listValuations',
+      'captable.modelRound',
+      'captable.waterfall',
+      'captable.saveScenario',
+      'captable.promoteScenario',
+    ],
+  },
   {
     title: 'Dataroom',
     path: '/documents/dataroom',

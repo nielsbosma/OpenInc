@@ -1,212 +1,56 @@
 {
-  "id": "c49013ae-14a8-4ac2-9433-6d551edf4751",
+  "id": "2acfffe7-6d55-4f06-b988-d6c3846723d9",
   "prevId": "120ce5aa-86b9-4e8e-93ce-7ef65a36c2a5",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
-    "public.data_room_events": {
-      "name": "data_room_events",
-      "schema": "",
+    "captable.settings": {
+      "name": "settings",
+      "schema": "captable",
       "columns": {
         "id": {
           "name": "id",
-          "type": "uuid",
+          "type": "integer",
           "primaryKey": true,
           "notNull": true,
-          "default": "gen_random_uuid()"
+          "default": 1
         },
-        "room_id": {
-          "name": "room_id",
-          "type": "uuid",
+        "include_unallocated_pool": {
+          "name": "include_unallocated_pool",
+          "type": "boolean",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "default": true
         },
-        "link_id": {
-          "name": "link_id",
-          "type": "uuid",
+        "holders_see_full_table": {
+          "name": "holders_see_full_table",
+          "type": "boolean",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true,
+          "default": false
         },
-        "visitor_id": {
-          "name": "visitor_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "session_id": {
-          "name": "session_id",
+        "updated_by": {
+          "name": "updated_by",
           "type": "uuid",
           "primaryKey": false,
           "notNull": false
         },
-        "item_id": {
-          "name": "item_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "document_id": {
-          "name": "document_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "type": {
-          "name": "type",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "page": {
-          "name": "page",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "page_count": {
-          "name": "page_count",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "duration_ms": {
-          "name": "duration_ms",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "at": {
-          "name": "at",
+        "updated_at": {
+          "name": "updated_at",
           "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
         }
       },
-      "indexes": {
-        "data_room_events_room_idx": {
-          "name": "data_room_events_room_idx",
-          "columns": [
-            {
-              "expression": "room_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "at",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "data_room_events_document_idx": {
-          "name": "data_room_events_document_idx",
-          "columns": [
-            {
-              "expression": "document_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "at",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "data_room_events_session_idx": {
-          "name": "data_room_events_session_idx",
-          "columns": [
-            {
-              "expression": "session_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "type",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
+      "indexes": {},
       "foreignKeys": {
-        "data_room_events_room_id_data_rooms_id_fk": {
-          "name": "data_room_events_room_id_data_rooms_id_fk",
-          "tableFrom": "data_room_events",
-          "tableTo": "data_rooms",
+        "settings_updated_by_users_id_fk": {
+          "name": "settings_updated_by_users_id_fk",
+          "tableFrom": "settings",
+          "tableTo": "users",
           "columnsFrom": [
-            "room_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "data_room_events_link_id_data_room_links_id_fk": {
-          "name": "data_room_events_link_id_data_room_links_id_fk",
-          "tableFrom": "data_room_events",
-          "tableTo": "data_room_links",
-          "columnsFrom": [
-            "link_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "set null",
-          "onUpdate": "no action"
-        },
-        "data_room_events_visitor_id_data_room_visitors_id_fk": {
-          "name": "data_room_events_visitor_id_data_room_visitors_id_fk",
-          "tableFrom": "data_room_events",
-          "tableTo": "data_room_visitors",
-          "columnsFrom": [
-            "visitor_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "set null",
-          "onUpdate": "no action"
-        },
-        "data_room_events_session_id_data_room_sessions_id_fk": {
-          "name": "data_room_events_session_id_data_room_sessions_id_fk",
-          "tableFrom": "data_room_events",
-          "tableTo": "data_room_sessions",
-          "columnsFrom": [
-            "session_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "set null",
-          "onUpdate": "no action"
-        },
-        "data_room_events_item_id_data_room_items_id_fk": {
-          "name": "data_room_events_item_id_data_room_items_id_fk",
-          "tableFrom": "data_room_events",
-          "tableTo": "data_room_items",
-          "columnsFrom": [
-            "item_id"
+            "updated_by"
           ],
           "columnsTo": [
             "id"
@@ -218,12 +62,17 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},
-      "checkConstraints": {},
+      "checkConstraints": {
+        "captable_settings_singleton": {
+          "name": "captable_settings_singleton",
+          "value": "\"captable\".\"settings\".\"id\" = 1"
+        }
+      },
       "isRLSEnabled": false
     },
-    "public.data_room_folders": {
-      "name": "data_room_folders",
-      "schema": "",
+    "captable.equity_plan": {
+      "name": "equity_plan",
+      "schema": "captable",
       "columns": {
         "id": {
           "name": "id",
@@ -231,18 +80,6 @@
           "primaryKey": true,
           "notNull": true,
           "default": "gen_random_uuid()"
-        },
-        "room_id": {
-          "name": "room_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "parent_id": {
-          "name": "parent_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
         },
         "name": {
           "name": "name",
@@ -250,12 +87,37 @@
           "primaryKey": false,
           "notNull": true
         },
-        "position": {
-          "name": "position",
-          "type": "integer",
+        "profile": {
+          "name": "profile",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "kind": {
+          "name": "kind",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "class_code": {
+          "name": "class_code",
+          "type": "text",
           "primaryKey": false,
           "notNull": true,
-          "default": 0
+          "default": "''"
+        },
+        "approved_on": {
+          "name": "approved_on",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "notes": {
+          "name": "notes",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "''"
         },
         "created_at": {
           "name": "created_at",
@@ -263,192 +125,26 @@
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "data_room_folders_room_id_data_rooms_id_fk": {
-          "name": "data_room_folders_room_id_data_rooms_id_fk",
-          "tableFrom": "data_room_folders",
-          "tableTo": "data_rooms",
-          "columnsFrom": [
-            "room_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
         },
-        "data_room_folders_parent_id_data_room_folders_id_fk": {
-          "name": "data_room_folders_parent_id_data_room_folders_id_fk",
-          "tableFrom": "data_room_folders",
-          "tableTo": "data_room_folders",
-          "columnsFrom": [
-            "parent_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "data_room_folders_name_unique": {
-          "name": "data_room_folders_name_unique",
-          "nullsNotDistinct": true,
-          "columns": [
-            "room_id",
-            "parent_id",
-            "name"
-          ]
-        }
-      },
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.data_room_items": {
-      "name": "data_room_items",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "room_id": {
-          "name": "room_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "folder_id": {
-          "name": "folder_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "document_id": {
-          "name": "document_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "position": {
-          "name": "position",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "default": 0
-        },
-        "added_by": {
-          "name": "added_by",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "added_at": {
-          "name": "added_at",
+        "updated_at": {
+          "name": "updated_at",
           "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
         }
       },
-      "indexes": {
-        "data_room_items_document_idx": {
-          "name": "data_room_items_document_idx",
-          "columns": [
-            {
-              "expression": "document_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "data_room_items_room_id_data_rooms_id_fk": {
-          "name": "data_room_items_room_id_data_rooms_id_fk",
-          "tableFrom": "data_room_items",
-          "tableTo": "data_rooms",
-          "columnsFrom": [
-            "room_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "data_room_items_folder_id_data_room_folders_id_fk": {
-          "name": "data_room_items_folder_id_data_room_folders_id_fk",
-          "tableFrom": "data_room_items",
-          "tableTo": "data_room_folders",
-          "columnsFrom": [
-            "folder_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "data_room_items_document_id_documents_id_fk": {
-          "name": "data_room_items_document_id_documents_id_fk",
-          "tableFrom": "data_room_items",
-          "tableTo": "documents",
-          "columnsFrom": [
-            "document_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "data_room_items_added_by_users_id_fk": {
-          "name": "data_room_items_added_by_users_id_fk",
-          "tableFrom": "data_room_items",
-          "tableTo": "users",
-          "columnsFrom": [
-            "added_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "set null",
-          "onUpdate": "no action"
-        }
-      },
+      "indexes": {},
+      "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "data_room_items_document_unique": {
-          "name": "data_room_items_document_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "room_id",
-            "document_id"
-          ]
-        }
-      },
+      "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.data_room_links": {
-      "name": "data_room_links",
-      "schema": "",
+    "captable.exercise": {
+      "name": "exercise",
+      "schema": "captable",
       "columns": {
         "id": {
           "name": "id",
@@ -457,87 +153,27 @@
           "notNull": true,
           "default": "gen_random_uuid()"
         },
-        "room_id": {
-          "name": "room_id",
+        "grant_id": {
+          "name": "grant_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
         },
-        "label": {
-          "name": "label",
-          "type": "text",
+        "date": {
+          "name": "date",
+          "type": "date",
           "primaryKey": false,
           "notNull": true
         },
-        "token": {
-          "name": "token",
-          "type": "text",
+        "units": {
+          "name": "units",
+          "type": "bigint",
           "primaryKey": false,
           "notNull": true
         },
-        "password_hash": {
-          "name": "password_hash",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "allowed_emails": {
-          "name": "allowed_emails",
-          "type": "text[]",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'{}'"
-        },
-        "allowed_domains": {
-          "name": "allowed_domains",
-          "type": "text[]",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'{}'"
-        },
-        "require_email": {
-          "name": "require_email",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": true
-        },
-        "verify_email": {
-          "name": "verify_email",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": false
-        },
-        "allow_download": {
-          "name": "allow_download",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": false
-        },
-        "watermark": {
-          "name": "watermark",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": true
-        },
-        "folder_ids": {
-          "name": "folder_ids",
-          "type": "uuid[]",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "expires_at": {
-          "name": "expires_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "revoked_at": {
-          "name": "revoked_at",
-          "type": "timestamp with time zone",
+        "registry_tx_id": {
+          "name": "registry_tx_id",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": false
         },
@@ -556,11 +192,11 @@
         }
       },
       "indexes": {
-        "data_room_links_room_idx": {
-          "name": "data_room_links_room_idx",
+        "exercise_grant_idx": {
+          "name": "exercise_grant_idx",
           "columns": [
             {
-              "expression": "room_id",
+              "expression": "grant_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -573,12 +209,13 @@
         }
       },
       "foreignKeys": {
-        "data_room_links_room_id_data_rooms_id_fk": {
-          "name": "data_room_links_room_id_data_rooms_id_fk",
-          "tableFrom": "data_room_links",
-          "tableTo": "data_rooms",
+        "exercise_grant_id_grant_id_fk": {
+          "name": "exercise_grant_id_grant_id_fk",
+          "tableFrom": "exercise",
+          "tableTo": "grant",
+          "schemaTo": "captable",
           "columnsFrom": [
-            "room_id"
+            "grant_id"
           ],
           "columnsTo": [
             "id"
@@ -586,9 +223,9 @@
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
-        "data_room_links_created_by_users_id_fk": {
-          "name": "data_room_links_created_by_users_id_fk",
-          "tableFrom": "data_room_links",
+        "exercise_created_by_users_id_fk": {
+          "name": "exercise_created_by_users_id_fk",
+          "tableFrom": "exercise",
           "tableTo": "users",
           "columnsFrom": [
             "created_by"
@@ -601,22 +238,14 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "data_room_links_token_unique": {
-          "name": "data_room_links_token_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "token"
-          ]
-        }
-      },
+      "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.data_room_sessions": {
-      "name": "data_room_sessions",
-      "schema": "",
+    "captable.grant": {
+      "name": "grant",
+      "schema": "captable",
       "columns": {
         "id": {
           "name": "id",
@@ -625,72 +254,66 @@
           "notNull": true,
           "default": "gen_random_uuid()"
         },
-        "link_id": {
-          "name": "link_id",
+        "plan_id": {
+          "name": "plan_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
         },
-        "visitor_id": {
-          "name": "visitor_id",
+        "stakeholder_id": {
+          "name": "stakeholder_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "units": {
+          "name": "units",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "strike_price": {
+          "name": "strike_price",
+          "type": "numeric(24, 10)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "grant_date": {
+          "name": "grant_date",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "vesting_start": {
+          "name": "vesting_start",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "schedule_id": {
+          "name": "schedule_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": false
         },
-        "token_hash": {
-          "name": "token_hash",
-          "type": "text",
+        "terminated_on": {
+          "name": "terminated_on",
+          "type": "date",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
-        "code_hash": {
-          "name": "code_hash",
+        "leaver": {
+          "name": "leaver",
           "type": "text",
           "primaryKey": false,
           "notNull": false
         },
-        "code_expires_at": {
-          "name": "code_expires_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "code_attempts": {
-          "name": "code_attempts",
-          "type": "integer",
+        "notes": {
+          "name": "notes",
+          "type": "text",
           "primaryKey": false,
           "notNull": true,
-          "default": 0
-        },
-        "email_verified_at": {
-          "name": "email_verified_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "password_ok_at": {
-          "name": "password_ok_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "opened_at": {
-          "name": "opened_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "ip_address": {
-          "name": "ip_address",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "user_agent": {
-          "name": "user_agent",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
+          "default": "''"
         },
         "created_at": {
           "name": "created_at",
@@ -699,14 +322,8 @@
           "notNull": true,
           "default": "now()"
         },
-        "expires_at": {
-          "name": "expires_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "last_seen_at": {
-          "name": "last_seen_at",
+        "updated_at": {
+          "name": "updated_at",
           "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": true,
@@ -714,17 +331,26 @@
         }
       },
       "indexes": {
-        "data_room_sessions_link_idx": {
-          "name": "data_room_sessions_link_idx",
+        "grant_plan_idx": {
+          "name": "grant_plan_idx",
           "columns": [
             {
-              "expression": "link_id",
+              "expression": "plan_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
-            },
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "grant_stakeholder_idx": {
+          "name": "grant_stakeholder_idx",
+          "columns": [
             {
-              "expression": "created_at",
+              "expression": "stakeholder_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -737,50 +363,58 @@
         }
       },
       "foreignKeys": {
-        "data_room_sessions_link_id_data_room_links_id_fk": {
-          "name": "data_room_sessions_link_id_data_room_links_id_fk",
-          "tableFrom": "data_room_sessions",
-          "tableTo": "data_room_links",
+        "grant_plan_id_equity_plan_id_fk": {
+          "name": "grant_plan_id_equity_plan_id_fk",
+          "tableFrom": "grant",
+          "tableTo": "equity_plan",
+          "schemaTo": "captable",
           "columnsFrom": [
-            "link_id"
+            "plan_id"
           ],
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
+          "onDelete": "restrict",
           "onUpdate": "no action"
         },
-        "data_room_sessions_visitor_id_data_room_visitors_id_fk": {
-          "name": "data_room_sessions_visitor_id_data_room_visitors_id_fk",
-          "tableFrom": "data_room_sessions",
-          "tableTo": "data_room_visitors",
+        "grant_stakeholder_id_stakeholder_id_fk": {
+          "name": "grant_stakeholder_id_stakeholder_id_fk",
+          "tableFrom": "grant",
+          "tableTo": "stakeholder",
+          "schemaTo": "captable",
           "columnsFrom": [
-            "visitor_id"
+            "stakeholder_id"
           ],
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        },
+        "grant_schedule_id_vesting_schedule_id_fk": {
+          "name": "grant_schedule_id_vesting_schedule_id_fk",
+          "tableFrom": "grant",
+          "tableTo": "vesting_schedule",
+          "schemaTo": "captable",
+          "columnsFrom": [
+            "schedule_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
           "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "data_room_sessions_tokenHash_unique": {
-          "name": "data_room_sessions_tokenHash_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "token_hash"
-          ]
-        }
-      },
+      "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.data_room_visitors": {
-      "name": "data_room_visitors",
-      "schema": "",
+    "captable.pool_change": {
+      "name": "pool_change",
+      "schema": "captable",
       "columns": {
         "id": {
           "name": "id",
@@ -789,93 +423,112 @@
           "notNull": true,
           "default": "gen_random_uuid()"
         },
-        "room_id": {
-          "name": "room_id",
+        "plan_id": {
+          "name": "plan_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
         },
-        "email": {
-          "name": "email",
-          "type": "text",
+        "date": {
+          "name": "date",
+          "type": "date",
           "primaryKey": false,
           "notNull": true
         },
-        "name": {
-          "name": "name",
+        "delta": {
+          "name": "delta",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "note": {
+          "name": "note",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
           "default": "''"
         },
-        "company": {
-          "name": "company",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "''"
-        },
-        "verified_at": {
-          "name": "verified_at",
-          "type": "timestamp with time zone",
+        "scenario_id": {
+          "name": "scenario_id",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": false
         },
-        "nda_accepted_at": {
-          "name": "nda_accepted_at",
-          "type": "timestamp with time zone",
+        "created_by": {
+          "name": "created_by",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": false
         },
-        "first_seen_at": {
-          "name": "first_seen_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "last_seen_at": {
-          "name": "last_seen_at",
+        "created_at": {
+          "name": "created_at",
           "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "pool_change_plan_idx": {
+          "name": "pool_change_plan_idx",
+          "columns": [
+            {
+              "expression": "plan_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "date",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
-        "data_room_visitors_room_id_data_rooms_id_fk": {
-          "name": "data_room_visitors_room_id_data_rooms_id_fk",
-          "tableFrom": "data_room_visitors",
-          "tableTo": "data_rooms",
+        "pool_change_plan_id_equity_plan_id_fk": {
+          "name": "pool_change_plan_id_equity_plan_id_fk",
+          "tableFrom": "pool_change",
+          "tableTo": "equity_plan",
+          "schemaTo": "captable",
           "columnsFrom": [
-            "room_id"
+            "plan_id"
           ],
           "columnsTo": [
             "id"
           ],
           "onDelete": "cascade",
           "onUpdate": "no action"
+        },
+        "pool_change_created_by_users_id_fk": {
+          "name": "pool_change_created_by_users_id_fk",
+          "tableFrom": "pool_change",
+          "tableTo": "users",
+          "columnsFrom": [
+            "created_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "data_room_visitors_email_unique": {
-          "name": "data_room_visitors_email_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "room_id",
-            "email"
-          ]
-        }
-      },
+      "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.data_rooms": {
-      "name": "data_rooms",
-      "schema": "",
+    "captable.scenario": {
+      "name": "scenario",
+      "schema": "captable",
       "columns": {
         "id": {
           "name": "id",
@@ -897,12 +550,25 @@
           "notNull": true,
           "default": "''"
         },
-        "welcome_message": {
-          "name": "welcome_message",
-          "type": "text",
+        "base_date": {
+          "name": "base_date",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "base_seq": {
+          "name": "base_seq",
+          "type": "integer",
           "primaryKey": false,
           "notNull": true,
-          "default": "''"
+          "default": 0
+        },
+        "steps": {
+          "name": "steps",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'[]'::jsonb"
         },
         "status": {
           "name": "status",
@@ -911,58 +577,439 @@
           "notNull": true,
           "default": "'draft'"
         },
-        "owner_id": {
-          "name": "owner_id",
+        "shared_with": {
+          "name": "shared_with",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'[]'::jsonb"
+        },
+        "promoted_tx_ids": {
+          "name": "promoted_tx_ids",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'[]'::jsonb"
+        },
+        "created_by": {
+          "name": "created_by",
           "type": "uuid",
           "primaryKey": false,
           "notNull": false
         },
-        "default_allow_download": {
-          "name": "default_allow_download",
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "scenario_created_by_idx": {
+          "name": "scenario_created_by_idx",
+          "columns": [
+            {
+              "expression": "created_by",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "scenario_created_by_users_id_fk": {
+          "name": "scenario_created_by_users_id_fk",
+          "tableFrom": "scenario",
+          "tableTo": "users",
+          "columnsFrom": [
+            "created_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "captable.stakeholder_group": {
+      "name": "stakeholder_group",
+      "schema": "captable",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "color": {
+          "name": "color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'indigo'"
+        },
+        "sort_order": {
+          "name": "sort_order",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "captable.stakeholder": {
+      "name": "stakeholder",
+      "schema": "captable",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "''"
+        },
+        "kind": {
+          "name": "kind",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'person'"
+        },
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "''"
+        },
+        "country": {
+          "name": "country",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "''"
+        },
+        "group_id": {
+          "name": "group_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "stakeholder_group_id_stakeholder_group_id_fk": {
+          "name": "stakeholder_group_id_stakeholder_group_id_fk",
+          "tableFrom": "stakeholder",
+          "tableTo": "stakeholder_group",
+          "schemaTo": "captable",
+          "columnsFrom": [
+            "group_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "captable.unpriced_instrument": {
+      "name": "unpriced_instrument",
+      "schema": "captable",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "stakeholder_id": {
+          "name": "stakeholder_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "profile": {
+          "name": "profile",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "kind": {
+          "name": "kind",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "amount": {
+          "name": "amount",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "original_amount": {
+          "name": "original_amount",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "original_currency": {
+          "name": "original_currency",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "valuation_cap": {
+          "name": "valuation_cap",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "discount_pct": {
+          "name": "discount_pct",
+          "type": "numeric(9, 6)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'0'"
+        },
+        "interest_rate_pct": {
+          "name": "interest_rate_pct",
+          "type": "numeric(9, 6)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'0'"
+        },
+        "interest": {
+          "name": "interest",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'simple'"
+        },
+        "post_money": {
+          "name": "post_money",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        },
+        "mfn": {
+          "name": "mfn",
           "type": "boolean",
           "primaryKey": false,
           "notNull": true,
           "default": false
         },
-        "default_watermark": {
-          "name": "default_watermark",
-          "type": "boolean",
+        "signed_on": {
+          "name": "signed_on",
+          "type": "date",
           "primaryKey": false,
-          "notNull": true,
-          "default": true
+          "notNull": true
         },
-        "nda_text": {
-          "name": "nda_text",
+        "maturity_date": {
+          "name": "maturity_date",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "conversion_tx_id": {
+          "name": "conversion_tx_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "cancelled_on": {
+          "name": "cancelled_on",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "notes": {
+          "name": "notes",
           "type": "text",
           "primaryKey": false,
+          "notNull": true,
+          "default": "''"
+        },
+        "file_id": {
+          "name": "file_id",
+          "type": "uuid",
+          "primaryKey": false,
           "notNull": false
         },
-        "closes_at": {
-          "name": "closes_at",
+        "created_at": {
+          "name": "created_at",
           "type": "timestamp with time zone",
           "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "unpriced_instrument_stakeholder_id_stakeholder_id_fk": {
+          "name": "unpriced_instrument_stakeholder_id_stakeholder_id_fk",
+          "tableFrom": "unpriced_instrument",
+          "tableTo": "stakeholder",
+          "schemaTo": "captable",
+          "columnsFrom": [
+            "stakeholder_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        },
+        "unpriced_instrument_file_id_files_id_fk": {
+          "name": "unpriced_instrument_file_id_files_id_fk",
+          "tableFrom": "unpriced_instrument",
+          "tableTo": "files",
+          "columnsFrom": [
+            "file_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "captable.valuation": {
+      "name": "valuation",
+      "schema": "captable",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "date": {
+          "name": "date",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "price_per_share": {
+          "name": "price_per_share",
+          "type": "numeric(24, 10)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "source": {
+          "name": "source",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "method": {
+          "name": "method",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "''"
+        },
+        "notes": {
+          "name": "notes",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "''"
+        },
+        "inputs": {
+          "name": "inputs",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'::jsonb"
+        },
+        "file_id": {
+          "name": "file_id",
+          "type": "uuid",
+          "primaryKey": false,
           "notNull": false
-        },
-        "alert_on_first_visit": {
-          "name": "alert_on_first_visit",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": true
-        },
-        "alert_on_download": {
-          "name": "alert_on_download",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": true
-        },
-        "alert_on_failed_passwords": {
-          "name": "alert_on_failed_passwords",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": true
         },
         "created_by": {
           "name": "created_by",
@@ -980,12 +1027,12 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "data_rooms_owner_id_users_id_fk": {
-          "name": "data_rooms_owner_id_users_id_fk",
-          "tableFrom": "data_rooms",
-          "tableTo": "users",
+        "valuation_file_id_files_id_fk": {
+          "name": "valuation_file_id_files_id_fk",
+          "tableFrom": "valuation",
+          "tableTo": "files",
           "columnsFrom": [
-            "owner_id"
+            "file_id"
           ],
           "columnsTo": [
             "id"
@@ -993,9 +1040,9 @@
           "onDelete": "set null",
           "onUpdate": "no action"
         },
-        "data_rooms_created_by_users_id_fk": {
-          "name": "data_rooms_created_by_users_id_fk",
-          "tableFrom": "data_rooms",
+        "valuation_created_by_users_id_fk": {
+          "name": "valuation_created_by_users_id_fk",
+          "tableFrom": "valuation",
           "tableTo": "users",
           "columnsFrom": [
             "created_by"
@@ -1007,6 +1054,64 @@
           "onUpdate": "no action"
         }
       },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "captable.vesting_schedule": {
+      "name": "vesting_schedule",
+      "schema": "captable",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "cliff_months": {
+          "name": "cliff_months",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "total_months": {
+          "name": "total_months",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "frequency_months": {
+          "name": "frequency_months",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "acceleration": {
+          "name": "acceleration",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'none'"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},
@@ -4058,6 +4163,7 @@
   },
   "enums": {},
   "schemas": {
+    "captable": "captable",
     "registry": "registry"
   },
   "sequences": {},
