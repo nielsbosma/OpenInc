@@ -1,5 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { useLogout } from '@/components/layout/UserMenu';
+import { useLogout } from '@/components/layout/user';
 import { TwoFactorSetup } from '@/components/TwoFactorSetup';
 import { Button } from '@/components/ui/button';
 import { AuthLayout } from './AuthLayout';

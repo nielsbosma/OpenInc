@@ -322,7 +322,7 @@ export const acceptInvite = defineService({
         type: 'invites.accepted',
         title: `${user!.name} joined`,
         body: `${user!.email} accepted your invitation.`,
-        link: '/admin/users',
+        link: '/settings/users',
       });
     }
     return startSession(ctx, user!.id, 'invite');

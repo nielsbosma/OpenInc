@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { CheckCircle2, FolderLock, Info } from 'lucide-react';
 import { EmptyState, PageHeader, Spinner, StatusDot } from '../common';
-import { UserAvatar } from '../layout/UserMenu';
+import { UserAvatar } from '../layout/user';
 import { RecoveryCodes } from '../TwoFactorSetup';
 import { Alert, AlertDescription, AlertTitle } from './alert';
 import { Badge } from './badge';

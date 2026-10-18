@@ -2,18 +2,19 @@ import { changeEmailInput, changePasswordInput, formatRelative, updateProfileInp
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Upload } from 'lucide-react';
 import { type FormEvent, type ReactNode, useEffect, useRef, useState } from 'react';
-import { useNavigate, useParams } from 'react-router';
+import { useLocation } from 'react-router';
 import { toast } from 'sonner';
-import { CopyButton, EmptyState, Field, PageHeader, Spinner, validate } from '@/components/common';
-import { UserAvatar } from '@/components/layout/UserMenu';
+import { CopyButton, EmptyState, Field, Spinner, validate } from '@/components/common';
+import { UserAvatar } from '@/components/layout/user';
 import { RecoveryCodes, TwoFactorSetup } from '@/components/TwoFactorSetup';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Switch } from '@/components/ui/switch';
 import { useSession } from '@/lib/session';
+import { useTheme } from '@/lib/theme';
 import { useTRPC } from '@/lib/trpc';
 import { uploadFile } from '@/lib/upload';
 
@@ -360,28 +361,34 @@ function McpTab() {
   );
 }
 
-const TABS = { profile: 'Profile', security: 'Security', mcp: 'MCP' } as const;
-type Tab = keyof typeof TABS;
-
-export function AccountPage() {
-  const { tab = 'profile' } = useParams();
-  const navigate = useNavigate();
-  const current = (tab in TABS ? tab : 'profile') as Tab;
+function AppearanceCard() {
+  const { theme, toggle } = useTheme();
   return (
-    <>
-      <PageHeader title="Account" />
-      <Tabs value={current} onValueChange={(t) => navigate(`/account/${t}`)} className="mb-6">
-        <TabsList>
-          {Object.entries(TABS).map(([key, label]) => (
-            <TabsTrigger key={key} value={key}>
-              {label}
-            </TabsTrigger>
-          ))}
-        </TabsList>
-      </Tabs>
-      {current === 'profile' && <ProfileTab />}
-      {current === 'security' && <SecurityTab />}
-      {current === 'mcp' && <McpTab />}
-    </>
+    <Section title="Appearance">
+      <label className="flex items-center gap-3">
+        <Switch checked={theme === 'dark'} onCheckedChange={toggle} />
+        <span className="font-medium">Dark Mode</span>
+      </label>
+    </Section>
+  );
+}
+
+/** Settings → Account: everything about the signed-in person. #security and #mcp jump to those parts. */
+export function AccountSection() {
+  const { hash } = useLocation();
+  useEffect(() => {
+    if (hash) document.getElementById(hash.slice(1))?.scrollIntoView({ block: 'start' });
+  }, [hash]);
+  return (
+    <div className="grid gap-6">
+      <ProfileTab />
+      <AppearanceCard />
+      <div id="security" className="scroll-mt-6">
+        <SecurityTab />
+      </div>
+      <div id="mcp" className="scroll-mt-6">
+        <McpTab />
+      </div>
+    </div>
   );
 }

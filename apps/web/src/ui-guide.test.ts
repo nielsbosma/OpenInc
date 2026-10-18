@@ -9,10 +9,10 @@ import { MAIN_NAV, SETTINGS_NAV, SETTINGS_SECTIONS } from './components/layout/n
 // there is a page the assistant cannot explain.
 describe('assistant UI guide', () => {
   it('has an entry for every sidebar item, titled as the sidebar shows it', () => {
-    for (const item of [...MAIN_NAV, SETTINGS_NAV, ...SETTINGS_SECTIONS]) {
+    for (const item of [...MAIN_NAV.flatMap((m) => [m, ...(m.children ?? [])]), SETTINGS_NAV, ...SETTINGS_SECTIONS]) {
       const entry = uiGuide.find((e) => e.path === item.path);
       expect(entry, `no guide entry for ${item.path}`).toBeTruthy();
-      expect(entry!.title).toBe(item.path === SETTINGS_NAV.path ? 'Admin Settings' : item.title);
+      expect(entry!.title).toBe(item.title);
     }
   });
 
@@ -21,7 +21,7 @@ describe('assistant UI guide', () => {
     const routes = app
       .split(/\r?\n/)
       .filter((line) => !line.includes('<Navigate'))
-      .flatMap((line) => [...line.matchAll(/path="(\/(?:account|admin)[^"/:]*(?:\/[^"/:]+)?)/g)].map((m) => m[1]!));
+      .flatMap((line) => [...line.matchAll(/path="(\/(?:settings)[^"/:]*(?:\/[^"/:]+)?)/g)].map((m) => m[1]!));
     for (const path of routes)
       expect(
         uiGuide.some((e) => e.path === path),

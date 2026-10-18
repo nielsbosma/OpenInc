@@ -7,7 +7,7 @@ import { CHECKLIST } from './components/layout/SetupChecklist.tsx';
 // UI labels use AP-style Title Case (CLAUDE.md). These are the labels that live in data; JSX labels are reviewed by hand.
 describe('AP Title Case labels', () => {
   it.each([
-    ...[...MAIN_NAV, SETTINGS_NAV, ...SETTINGS_SECTIONS].map((n) => n.title),
+    ...[...MAIN_NAV.flatMap((m) => [m, ...(m.children ?? [])]), SETTINGS_NAV, ...SETTINGS_SECTIONS].map((n) => n.title),
     ...Object.values(CHECKLIST).map((c) => c.title),
     ...uiGuide.map((e) => e.title),
   ])('%s', (label) => {

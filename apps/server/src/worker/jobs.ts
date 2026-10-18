@@ -37,7 +37,7 @@ export const handlers: Handlers = {
       type: 'jobs.finished',
       title: 'Test job finished',
       body: `The background worker picked up your job and finished after ${seconds} s.`,
-      link: '/admin/settings/system',
+      link: '/settings/system',
     });
     return { ok: true };
   },
