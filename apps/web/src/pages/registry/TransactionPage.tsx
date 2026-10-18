@@ -19,7 +19,7 @@ import { Documents } from './Documents';
 
 function Fact({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="grid grid-cols-[10rem_1fr] gap-2 py-1">
+    <div className="grid grid-cols-[10rem_minmax(0,1fr)] gap-2 py-1">
       <dt className="text-muted-foreground">{label}</dt>
       <dd className="min-w-0 break-words">{children || '—'}</dd>
     </div>

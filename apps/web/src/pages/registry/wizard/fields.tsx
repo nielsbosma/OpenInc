@@ -228,7 +228,7 @@ export function LinesEditor({
         const positions = holderId ? held(line.classCode) : undefined;
         const available = positions?.reduce((s, p) => s + p.count - p.pledged, 0n);
         return (
-          <div key={i} className="grid gap-3 rounded-lg border p-3 sm:grid-cols-[8rem_10rem_1fr_auto]">
+          <div key={i} className="grid gap-3 rounded-lg border p-3 sm:grid-cols-[8rem_10rem_minmax(0,1fr)_auto]">
             <ChoiceField
               id={`line-class-${i}`}
               label="Class"
