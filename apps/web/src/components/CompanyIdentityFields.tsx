@@ -1,6 +1,7 @@
 import { legalFormsFor, rulePackFor } from '@openinc/shared';
 import { Combobox } from '@/components/Combobox';
 import { Field } from '@/components/common';
+import { settingsLayout } from '@/components/settings-layout';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -44,7 +45,7 @@ export function CompanyIdentityFields({
   const pack = rulePackFor(values.country, legalForm);
   const id = (field: string) => `${idPrefix}-${field}`;
   return (
-    <div className="grid gap-4 sm:grid-cols-2">
+    <div className={settingsLayout.twoColumns}>
       <Field label="Country" htmlFor={id('country')} error={errors.country}>
         <Combobox
           id={id('country')}

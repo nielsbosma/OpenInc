@@ -1,15 +1,15 @@
 import { changeEmailInput, changePasswordInput, formatRelative, updateProfileInput } from '@openinc/shared';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Upload } from 'lucide-react';
-import { type FormEvent, type ReactNode, useEffect, useRef, useState } from 'react';
+import { type FormEvent, useEffect, useRef, useState } from 'react';
 import { useLocation } from 'react-router';
 import { toast } from 'sonner';
 import { CopyButton, EmptyState, Field, Spinner, validate } from '@/components/common';
 import { UserAvatar } from '@/components/layout/user';
+import { SettingsCard, settingsLayout } from '@/components/settings-layout';
 import { RecoveryCodes, TwoFactorSetup } from '@/components/TwoFactorSetup';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
@@ -18,18 +18,6 @@ import { useTheme } from '@/lib/theme';
 import { useTRPC } from '@/lib/trpc';
 import { uploadFile } from '@/lib/upload';
 import { McpClientGuides } from './McpClientGuides';
-
-function Section({ title, description, children }: { title: string; description?: ReactNode; children: ReactNode }) {
-  return (
-    <Card className="shadow-none">
-      <CardHeader>
-        <CardTitle>{title}</CardTitle>
-        {description && <CardDescription>{description}</CardDescription>}
-      </CardHeader>
-      <CardContent>{children}</CardContent>
-    </Card>
-  );
-}
 
 function useRefreshSession() {
   const trpc = useTRPC();
@@ -82,10 +70,10 @@ function ProfileTab() {
   };
 
   return (
-    <div className="grid gap-6">
-      <Section title="Profile">
+    <div className={settingsLayout.stack}>
+      <SettingsCard title="Profile">
         <form
-          className="grid max-w-md gap-4"
+          className={settingsLayout.narrowForm}
           onSubmit={(e) => {
             e.preventDefault();
             const { data, errors } = validate(updateProfileInput, { name });
@@ -118,10 +106,10 @@ function ProfileTab() {
             Save
           </Button>
         </form>
-      </Section>
-      <Section title="Email" description={`You sign in with ${user.email}.`}>
+      </SettingsCard>
+      <SettingsCard title="Email" description={`You sign in with ${user.email}.`}>
         <form
-          className="grid max-w-md gap-4"
+          className={settingsLayout.narrowForm}
           onSubmit={(e) => {
             e.preventDefault();
             const { data, errors } = validate(changeEmailInput, { email, currentPassword: emailPassword });
@@ -145,7 +133,7 @@ function ProfileTab() {
             Change Email
           </Button>
         </form>
-      </Section>
+      </SettingsCard>
     </div>
   );
 }
@@ -196,8 +184,8 @@ function SecurityTab() {
   };
 
   return (
-    <div className="grid gap-6">
-      <Section
+    <div className={settingsLayout.stack}>
+      <SettingsCard
         title="Two-Factor Authentication"
         description={
           user.totpEnabled ? (
@@ -231,9 +219,9 @@ function SecurityTab() {
         ) : (
           <Button onClick={() => setSetupOpen(true)}>Set Up Two-Factor</Button>
         )}
-      </Section>
-      <Section title="Password">
-        <form onSubmit={submitPassword} className="grid max-w-md gap-4" noValidate>
+      </SettingsCard>
+      <SettingsCard title="Password">
+        <form onSubmit={submitPassword} className={settingsLayout.narrowForm} noValidate>
           <Field label="Current Password" htmlFor="current-password" error={errors.currentPassword}>
             <Input
               id="current-password"
@@ -255,7 +243,7 @@ function SecurityTab() {
             Change Password
           </Button>
         </form>
-      </Section>
+      </SettingsCard>
       <Dialog
         open={!!confirm}
         onOpenChange={(o) => {
@@ -307,8 +295,8 @@ function McpTab() {
   );
   const url = connection.data?.url ?? '';
   return (
-    <div className="grid gap-6">
-      <Section
+    <div className={settingsLayout.stack}>
+      <SettingsCard
         title="Connect an AI Client"
         description="Everything you can do here, an MCP client can do for you: with your permissions, and every change in the audit log."
       >
@@ -325,8 +313,8 @@ function McpTab() {
             and only HTTPS addresses work outside your own computer. Every connected client appears below; disconnect it here at any time.
           </p>
         </div>
-      </Section>
-      <Section title="Connected Clients">
+      </SettingsCard>
+      <SettingsCard title="Connected Clients">
         {!clients.data?.length ? (
           <EmptyState title="No Clients Connected" />
         ) : (
@@ -347,7 +335,7 @@ function McpTab() {
             ))}
           </ul>
         )}
-      </Section>
+      </SettingsCard>
     </div>
   );
 }
@@ -355,12 +343,12 @@ function McpTab() {
 function AppearanceCard() {
   const { theme, toggle } = useTheme();
   return (
-    <Section title="Appearance">
+    <SettingsCard title="Appearance">
       <label className="flex items-center gap-3">
         <Switch checked={theme === 'dark'} onCheckedChange={toggle} />
         <span className="font-medium">Dark Mode</span>
       </label>
-    </Section>
+    </SettingsCard>
   );
 }
 
@@ -371,7 +359,7 @@ export function AccountSection() {
     if (hash) document.getElementById(hash.slice(1))?.scrollIntoView({ block: 'start' });
   }, [hash]);
   return (
-    <div className="grid gap-6">
+    <div className={settingsLayout.stack}>
       <ProfileTab />
       <AppearanceCard />
       <div id="security" className="scroll-mt-6">

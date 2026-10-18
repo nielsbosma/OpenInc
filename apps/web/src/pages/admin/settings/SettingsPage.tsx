@@ -7,10 +7,10 @@ import { toast } from 'sonner';
 import { EmptyState, Field, PageHeader, Spinner, StatusDot, validate } from '@/components/common';
 import { SETTINGS_SECTIONS } from '@/components/layout/nav';
 import { useLogout } from '@/components/layout/user';
+import { SettingsCard, SettingsSectionHeader, settingsLayout } from '@/components/settings-layout';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
@@ -21,18 +21,6 @@ import { AccountSection } from '@/pages/account/AccountSection';
 import { AuditSection } from '../AuditPage';
 import { UsersSection } from '../UsersPage';
 import { AiForm, CompanyForm, EmailForm, ErrorTrackingForm } from './forms';
-
-function Panel({ title, description, children }: { title: string; description?: ReactNode; children: ReactNode }) {
-  return (
-    <Card className="shadow-none">
-      <CardHeader>
-        <CardTitle>{title}</CardTitle>
-        {description && <CardDescription>{description}</CardDescription>}
-      </CardHeader>
-      <CardContent>{children}</CardContent>
-    </Card>
-  );
-}
 
 function StorageTab() {
   const trpc = useTRPC();
@@ -48,7 +36,7 @@ function StorageTab() {
     ['Database Backups', `${d.backups} · ${formatBytes(d.backupBytes)}`],
   ];
   return (
-    <div className="grid max-w-xl gap-4">
+    <div className="grid max-w-3xl gap-6">
       <dl className="divide-y rounded-lg border">
         {rows.map(([k, v]) => (
           <div key={k} className="flex justify-between gap-4 px-3 py-2">
@@ -96,7 +84,7 @@ function SecurityTab() {
   const locked = (f: string) => view.data.locked.includes(f);
   return (
     <form
-      className="grid max-w-xl gap-5"
+      className={settingsLayout.form}
       onSubmit={(e) => {
         e.preventDefault();
         const { data, errors } = validate(securitySettings, values);
@@ -207,8 +195,8 @@ function SystemTab() {
   const d = info.data;
 
   return (
-    <div className="grid gap-6">
-      <Panel title="Version">
+    <div className={settingsLayout.stack}>
+      <SettingsCard title="Version">
         <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
           <span className="font-mono text-2xl font-semibold tracking-tight">v{d.version}</span>
           <UpdateBadge info={d} retrying={info.isFetching} onRetry={() => setRecheck(true)} />
@@ -217,9 +205,9 @@ function SystemTab() {
           To upgrade, redeploy with a newer image tag. Migrations run on start, after a backup to the bucket.
         </p>
         <p className="mt-1 font-mono text-[11px] text-muted-foreground">Node {d.node}</p>
-      </Panel>
+      </SettingsCard>
 
-      <Panel title="Background Jobs">
+      <SettingsCard title="Background Jobs">
         <ul className="grid gap-1.5 sm:grid-cols-2">
           {d.queues.map((q) => (
             <li key={q.name} className="flex items-center gap-2 rounded-md border px-2.5 py-1.5 text-xs">
@@ -245,10 +233,10 @@ function SystemTab() {
         <Button variant="outline" size="sm" className="mt-4" onClick={() => demo.mutate({ seconds: 3 })} disabled={demo.isPending}>
           Run a Test Job
         </Button>
-      </Panel>
+      </SettingsCard>
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <Panel title="Database Migrations" description={`${d.migrations.length} applied`}>
+      <div className="grid gap-8 lg:grid-cols-2">
+        <SettingsCard title="Database Migrations" description={`${d.migrations.length} applied`}>
           <ul className="divide-y rounded-md border">
             {d.migrations.map((m) => (
               <li key={m.tag} className="min-w-0 px-3 py-2">
@@ -261,8 +249,8 @@ function SystemTab() {
               </li>
             ))}
           </ul>
-        </Panel>
-        <Panel title="Backups" description="Taken before every upgrade that changes the database. The newest five are kept.">
+        </SettingsCard>
+        <SettingsCard title="Backups" description="Taken before every upgrade that changes the database. The newest five are kept.">
           {d.backups.length === 0 ? (
             <EmptyState title="No Backups Yet">The first one is taken before the first upgrade.</EmptyState>
           ) : (
@@ -289,12 +277,12 @@ function SystemTab() {
               })}
             </ul>
           )}
-        </Panel>
+        </SettingsCard>
       </div>
 
-      <Panel title="Options">
+      <SettingsCard title="Options">
         <form
-          className="grid max-w-xl gap-5"
+          className={settingsLayout.form}
           onSubmit={(e) => {
             e.preventDefault();
             const { data } = validate(systemSettings, values);
@@ -323,7 +311,7 @@ function SystemTab() {
             Save
           </Button>
         </form>
-      </Panel>
+      </SettingsCard>
     </div>
   );
 }
@@ -350,17 +338,17 @@ export function SettingsPage() {
         title="Settings"
         description="Your account, and for admins, the whole install. Changes apply at once and are recorded in the audit log."
       />
-      <div className="grid gap-6 md:grid-cols-[180px_minmax(0,1fr)]">
-        <nav className="flex gap-1 overflow-x-auto md:flex-col" aria-label="Settings">
+      <div className="grid gap-6 md:grid-cols-[200px_minmax(0,1fr)] md:gap-10 lg:gap-12">
+        <nav className="flex gap-1 overflow-x-auto md:flex-col md:gap-0.5" aria-label="Settings">
           {sections.map((s, i) => (
             <Fragment key={s.key}>
-              {i === 1 && <div className="mx-1 my-1 hidden border-t md:block" />}
+              {i === 1 && <div className="mx-1 my-2 hidden border-t md:block" />}
               <button
                 type="button"
                 onClick={() => navigate(s.path)}
                 aria-current={current.key === s.key ? 'page' : undefined}
                 className={cn(
-                  'flex shrink-0 items-center gap-2 rounded-md px-2.5 py-1.5 text-left text-[13px] font-medium text-muted-foreground hover:bg-accent hover:text-foreground',
+                  'flex shrink-0 items-center gap-2 rounded-md px-3 py-2 text-left text-[13px] font-medium text-muted-foreground hover:bg-accent hover:text-foreground',
                   current.key === s.key && 'bg-accent text-foreground',
                 )}
               >
@@ -369,21 +357,18 @@ export function SettingsPage() {
               </button>
             </Fragment>
           ))}
-          <div className="mx-1 my-1 hidden border-t md:block" />
+          <div className="mx-1 my-2 hidden border-t md:block" />
           <button
             type="button"
             onClick={() => logout.mutate({})}
             disabled={logout.isPending}
-            className="flex shrink-0 items-center gap-2 rounded-md px-2.5 py-1.5 text-left text-[13px] font-medium text-muted-foreground hover:bg-accent hover:text-foreground"
+            className="flex shrink-0 items-center gap-2 rounded-md px-3 py-2 text-left text-[13px] font-medium text-muted-foreground hover:bg-accent hover:text-foreground"
           >
             <LogOut className="size-4" /> Sign Out
           </button>
         </nav>
         <div className="min-w-0">
-          <div className="mb-4">
-            <h2 className="font-medium">{current.title}</h2>
-            <p className="text-muted-foreground">{current.description}</p>
-          </div>
+          <SettingsSectionHeader title={current.title} description={current.description} />
           {current.key === 'account' && <AccountSection />}
           {current.key === 'company' && <CompanyForm />}
           {current.key === 'users' && <UsersSection />}

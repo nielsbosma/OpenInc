@@ -49,7 +49,7 @@ export function Field({
 }) {
   return (
     // content-start: in a two-column row a field without helper text must not stretch, or its label drifts down.
-    <div className={cn('grid content-start gap-1.5', className)}>
+    <div className={cn('grid content-start gap-2', className)}>
       <Label htmlFor={htmlFor}>{label}</Label>
       {children}
       {error ? <p className="text-xs text-destructive">{error}</p> : hint ? <p className="text-xs text-muted-foreground">{hint}</p> : null}
