@@ -37,6 +37,7 @@ export function toFileDto(row: typeof files.$inferSelect) {
 function checkWrite(ctx: Ctx, kind: FileKind, contentType: string) {
   if (!ctx.actor) throw unauthorized();
   if (ctx.actor.mustEnableTwoFactor) throw forbidden('Set up two-factor authentication first');
+  if (kind === 'documents-zip') throw forbidden('Zips of Documents are made by the worker');
   if (kind === 'chat-attachment' && !can(ctx, 'ai.chat')) throw forbidden();
   if (kind === 'logo' && !can(ctx, 'settings.manage')) throw forbidden();
   if (kind === 'document' && !can(ctx, 'files.write')) throw forbidden();
@@ -53,6 +54,7 @@ function checkRead(ctx: Ctx, row: typeof files.$inferSelect) {
   if (row.kind === 'document' && can(ctx, 'files.read')) return;
   if (row.kind === 'registry-document' && can(ctx, 'registry.read')) return;
   if (row.kind === 'registry-import' && can(ctx, 'registry.draft')) return;
+  if (row.kind === 'documents-zip' && row.uploadedBy === ctx.actor.userId && can(ctx, 'files.read')) return;
   throw forbidden();
 }
 

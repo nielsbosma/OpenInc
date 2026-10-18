@@ -3,6 +3,7 @@ import {
   addDocumentInput,
   createFolderInput,
   documentIdInput,
+  downloadZipInput,
   empty,
   folderIdInput,
   listDocumentsInput,
@@ -15,6 +16,7 @@ import { audit } from '../audit.ts';
 import type { Ctx } from '../context.ts';
 import { folderTemplate, type TemplateFolder, templateFolderAt } from '../documents/template.ts';
 import { badRequest, conflict, notFound } from '../errors.ts';
+import { enqueue } from '../jobs.ts';
 import { defineService } from '../service.ts';
 import { toFileDto } from './files.ts';
 
@@ -347,5 +349,25 @@ export const searchDocuments = defineService({
       .orderBy(asc(documents.name))
       .limit(50);
     return rows.map((r) => ({ ...toDocumentDto(r), folderPath: pathText(pathOf(map, r.document.folderId)) }));
+  },
+});
+
+export const downloadZip = defineService({
+  name: 'documents.downloadZip',
+  description:
+    'Start a background job that zips a folder of Documents with all its subfolders (everything when folderId is left out). The caller gets a notification with the download link when it is ready; the zip is kept for 7 days.',
+  kind: 'mutation',
+  access: 'files.read',
+  input: downloadZipInput,
+  async handler(ctx, input) {
+    const folder = input.folderId ? await loadFolder(ctx, input.folderId) : null;
+    const jobId = await enqueue('documents.zip', { userId: ctx.actor!.userId, folderId: folder?.id ?? null });
+    await audit(ctx, {
+      action: 'documents.zip_request',
+      entityType: 'document_folder',
+      entityId: folder?.id,
+      metadata: { jobId, folder: folder?.name ?? 'Documents' },
+    });
+    return { jobId };
   },
 });
