@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { Link } from 'react-router';
 import { useTRPC } from '@/lib/trpc';
 import { cn } from '@/lib/utils';
+import { RailTip, useRail } from './rail';
 
 export const CHECKLIST: Record<SetupChecklistItem, { title: string; to: string }> = {
   email: { title: 'Set Up Real Email', to: '/settings/email' },
@@ -23,13 +24,53 @@ export function useChecklist() {
   return { data: query.data, dismiss: () => dismiss.mutate({}), show: () => show.mutate({}) };
 }
 
+function ProgressRing({ value }: { value: number }) {
+  const r = 7;
+  const c = 2 * Math.PI * r;
+  return (
+    <svg viewBox="0 0 18 18" className="size-[18px] -rotate-90" aria-hidden>
+      <circle cx="9" cy="9" r={r} fill="none" strokeWidth="2.5" className="stroke-muted" />
+      <circle
+        cx="9"
+        cy="9"
+        r={r}
+        fill="none"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        className="stroke-primary"
+        strokeDasharray={`${c * value} ${c}`}
+      />
+    </svg>
+  );
+}
+
 /** What is left after the setup wizard, in the sidebar until it is done or dismissed (per person). */
 export function SetupChecklist({ onNavigate }: { onNavigate?: () => void }) {
   const { data, dismiss } = useChecklist();
   const [open, setOpen] = useState(false);
+  const { collapsed, expand } = useRail();
   if (!data?.visible) return null;
   const items = Object.entries(data.items) as [SetupChecklistItem, boolean][];
   const done = items.filter(([, d]) => d).length;
+  if (collapsed)
+    return (
+      <div className="mb-2 px-2">
+        <RailTip label={`Finish Setting Up (${done} of ${items.length} Done)`}>
+          <button
+            type="button"
+            onClick={() => {
+              setOpen(true);
+              expand();
+            }}
+            aria-label="Finish Setting Up"
+            className="flex size-9 items-center justify-center rounded-md border bg-background hover:bg-sidebar-accent"
+            data-testid="setup-checklist"
+          >
+            <ProgressRing value={done / items.length} />
+          </button>
+        </RailTip>
+      </div>
+    );
   return (
     <div className="mx-2 mb-2 rounded-lg border bg-background p-2.5" data-testid="setup-checklist">
       <div className="flex items-center gap-1">

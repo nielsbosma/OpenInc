@@ -54,9 +54,9 @@ export const uiGuide: GuideEntry[] = [
           'Click **Notifications** near the bottom of the sidebar; the badge shows how many are unread. **Mark All Read** clears the count.',
       },
       {
-        task: 'Hide or show the sidebar',
+        task: 'Collapse or expand the sidebar',
         steps:
-          'Click the **panel icon** next to the company name (**Close Sidebar**), or press **Ctrl+B** (**⌘B** on a Mac). The panel icon at the top left of the page (**Open Sidebar**) brings it back. **Toggle Sidebar** in Ctrl+K does the same.',
+          'Click the **panel icon** next to the company name (**Close Sidebar**), or press **Ctrl+B** (**⌘B** on a Mac). The sidebar shrinks to a rail of icons with a tooltip each; **Documents** and **Fundraising** open a menu of their pages, and the ring opens **Finish Setting Up**. Click the logo (**Open Sidebar**) or press Ctrl+B again to expand it. **Toggle Sidebar** in Ctrl+K does the same. The choice is remembered in this browser.',
       },
       {
         task: 'Switch between light and dark mode',

@@ -98,9 +98,11 @@ test('admin invites a member, who accepts by email and lands on the dashboard', 
   await page.getByRole('link', { name: 'Pipeline' }).click();
   await expect(page).toHaveURL(/\/fundraising\/pipeline/);
   await page.getByRole('button', { name: 'Close Sidebar' }).click();
-  await expect(page.getByRole('navigation', { name: 'Main' })).toHaveCount(0);
+  await expect(page.locator('aside[data-collapsed]')).toBeVisible();
+  await page.getByRole('navigation', { name: 'Main' }).getByRole('link', { name: 'Dashboard' }).click();
+  await expect(page).toHaveURL(/\/$/);
   await page.getByRole('button', { name: 'Open Sidebar' }).click();
-  await expect(page.getByRole('navigation', { name: 'Main' })).toBeVisible();
+  await expect(page.locator('aside[data-collapsed]')).toHaveCount(0);
 
   await page.keyboard.press('Control+k');
   await page.getByPlaceholder('Type a page or action…').fill('Invite');

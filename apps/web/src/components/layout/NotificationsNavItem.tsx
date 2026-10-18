@@ -7,6 +7,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useTRPC } from '@/lib/trpc';
 import { cn } from '@/lib/utils';
+import { RailTip, railFade, railRow, useRail } from './rail';
 
 /** Sidebar item with the unread count; opens the latest notifications beside it. */
 export function NotificationsNavItem() {
@@ -18,24 +19,40 @@ export function NotificationsNavItem() {
   const markRead = useMutation(trpc.notifications.markRead.mutationOptions({ onSuccess: invalidate }));
   const markAll = useMutation(trpc.notifications.markAllRead.mutationOptions({ onSuccess: invalidate }));
   const unread = data?.unread ?? 0;
+  const { collapsed } = useRail();
 
   return (
     <Popover>
-      <PopoverTrigger asChild>
-        <button
-          type="button"
-          className="flex h-8 w-full items-center gap-2.5 rounded-md px-2.5 text-[13px] font-medium text-sidebar-foreground/75 transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground data-[state=open]:bg-sidebar-accent"
-          aria-label={unread ? `Notifications, ${unread} unread` : 'Notifications'}
-        >
-          <Bell className="size-4 shrink-0 opacity-80" />
-          <span className="truncate">Notifications</span>
-          {unread > 0 && (
-            <span className="ml-auto flex min-w-5 items-center justify-center rounded-full bg-primary px-1.5 font-mono text-[10px] leading-5 text-primary-foreground">
-              {unread > 99 ? '99+' : unread}
+      <RailTip label={unread ? `Notifications (${unread} Unread)` : 'Notifications'}>
+        <PopoverTrigger asChild>
+          <button
+            type="button"
+            className={cn(
+              'flex h-8 items-center gap-2.5 overflow-hidden whitespace-nowrap rounded-md px-2.5 text-[13px] font-medium text-sidebar-foreground/75 hover:bg-sidebar-accent hover:text-sidebar-foreground data-[state=open]:bg-sidebar-accent',
+              railRow(collapsed),
+            )}
+            aria-label={unread ? `Notifications, ${unread} unread` : 'Notifications'}
+          >
+            <span className="relative shrink-0">
+              <Bell className="size-4 opacity-80" />
+              {unread > 0 && collapsed && (
+                <span className="absolute -top-0.5 -right-0.5 size-2 rounded-full bg-primary ring-2 ring-sidebar" />
+              )}
             </span>
-          )}
-        </button>
-      </PopoverTrigger>
+            <span className={cn('truncate', railFade(collapsed))}>Notifications</span>
+            {unread > 0 && (
+              <span
+                className={cn(
+                  'ml-auto flex min-w-5 items-center justify-center rounded-full bg-primary px-1.5 font-mono text-[10px] leading-5 text-primary-foreground',
+                  railFade(collapsed),
+                )}
+              >
+                {unread > 99 ? '99+' : unread}
+              </span>
+            )}
+          </button>
+        </PopoverTrigger>
+      </RailTip>
       <PopoverContent side="right" align="end" sideOffset={8} className="w-80 p-0">
         <div className="flex items-center justify-between border-b px-3 py-2">
           <span className="font-medium">Notifications</span>
