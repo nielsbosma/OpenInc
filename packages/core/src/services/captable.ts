@@ -115,7 +115,10 @@ async function loadData(ctx: Ctx): Promise<CapData> {
       discountPct: u.discountPct,
       interestRatePct: u.interestRatePct,
     })),
-    valuations: valuationRows.map((v) => ({ date: v.date, pricePerShare: v.pricePerShare, source: v.source })),
+    // A fair value helper result prices one option, not a share.
+    valuations: valuationRows
+      .filter((v) => v.source !== 'fair_value')
+      .map((v) => ({ date: v.date, pricePerShare: v.pricePerShare, source: v.source })),
   };
 }
 
