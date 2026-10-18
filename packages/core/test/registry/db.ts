@@ -30,7 +30,7 @@ export async function freshInstall(): Promise<Ctx> {
   const client = new pg.Client({ connectionString: process.env.DATABASE_URL });
   await client.connect();
   await client.query(
-    'drop schema if exists registry cascade; drop schema if exists public cascade; drop schema if exists pgboss cascade; create schema public;',
+    'drop schema if exists captable cascade; drop schema if exists registry cascade; drop schema if exists public cascade; drop schema if exists pgboss cascade; create schema public;',
   );
   await client.end();
   resetSystemStatus();
