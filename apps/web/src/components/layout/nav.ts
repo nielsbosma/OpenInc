@@ -2,6 +2,7 @@ import type { Permission } from '@openinc/shared';
 import {
   Activity,
   BarChart3,
+  BookUser,
   Building2,
   FileSignature,
   FolderLock,
@@ -26,13 +27,14 @@ export interface NavItem {
   children?: NavItem[];
 }
 
-/** The company modules. Each is a placeholder until its own spec is built. */
+/** The company modules. Those not in BUILT_MODULES are placeholders until their own spec is built. */
 export const MODULES: NavItem[] = [
   {
-    title: 'Shareholders',
-    path: '/shareholders',
-    icon: Building2,
-    description: 'The shareholder registry: who owns which shares, with history.',
+    title: 'Share Register',
+    path: '/registry',
+    icon: BookUser,
+    permission: 'registry.read',
+    description: 'Who owns which shares at any date, every transaction behind it, and the exports.',
   },
   { title: 'Cap Table', path: '/cap-table', icon: BarChart3, description: 'Share classes, options and fully diluted ownership.' },
   { title: 'Signing', path: '/signing', icon: FileSignature, description: 'Send documents for signature and track who has signed.' },
@@ -59,6 +61,8 @@ export const MODULES: NavItem[] = [
     ],
   },
 ];
+
+export const BUILT_MODULES = new Set(['/registry']);
 
 export const MAIN_NAV: NavItem[] = [{ title: 'Dashboard', path: '/', icon: LayoutDashboard }, ...MODULES];
 

@@ -5,6 +5,7 @@ storybook-static/
 coverage/
 test-results/
 playwright-report/
+apps/web/e2e/.auth/
 *.log
 .env
 .env.local

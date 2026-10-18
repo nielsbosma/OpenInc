@@ -1,6 +1,6 @@
 import { createHash, randomBytes } from 'node:crypto';
 import { expect, test } from '@playwright/test';
-import { freshTotp, linkFromLatestEmail, SMTP_HOST, setupCode } from './helpers';
+import { freshTotp, linkFromLatestEmail, SMTP_HOST, saveAdmin, setupCode } from './helpers';
 
 const stamp = process.env.E2E_STAMP ?? Date.now();
 const admin = { name: 'Ada Admin', email: `ada-${stamp}@example.com`, password: 'correct-horse-battery-1' };
@@ -34,6 +34,7 @@ test('first run: install, admin with two-factor, company, email, extras', async 
   await page.getByRole('button', { name: 'Turn On' }).click();
   await expect(page.getByTestId('recovery-codes')).toBeVisible();
   await page.getByRole('button', { name: 'I Saved Them' }).click();
+  saveAdmin({ email: admin.email, password: admin.password, secret: adminSecret });
 
   await expect(page.getByText('Your Company')).toBeVisible();
   await page.getByLabel('Company Name').fill('Acme Robotics AB');

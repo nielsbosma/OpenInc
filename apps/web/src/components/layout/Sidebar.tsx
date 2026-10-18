@@ -10,7 +10,7 @@ import { useClientConfig } from '@/lib/session';
 import { cn } from '@/lib/utils';
 import { isMac } from './keys';
 import { NotificationsNavItem } from './NotificationsNavItem';
-import { MAIN_NAV, MODULES, type NavItem, SETTINGS_NAV } from './nav';
+import { BUILT_MODULES, MAIN_NAV, MODULES, type NavItem, SETTINGS_NAV } from './nav';
 import { SetupChecklist } from './SetupChecklist';
 
 const linkClass = (isActive: boolean) =>
@@ -32,7 +32,7 @@ function Item({ item, onNavigate }: { item: NavItem; onNavigate?: () => void }) 
     <NavLink to={item.path} end={item.path === '/'} onClick={onNavigate} className={({ isActive }) => linkClass(isActive)}>
       <item.icon className="size-4 shrink-0 opacity-80" />
       <span className="truncate">{item.title}</span>
-      {MODULES.includes(item) && <SoonBadge />}
+      {MODULES.includes(item) && !BUILT_MODULES.has(item.path) && <SoonBadge />}
     </NavLink>
   );
 }

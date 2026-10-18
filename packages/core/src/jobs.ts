@@ -12,6 +12,7 @@ export interface JobPayloads {
   'system.dataMigration': { name: string };
   'maintenance.cleanup': Record<string, never>;
   'registry.verifyChain': Record<string, never>;
+  'registry.import': { importId: string };
 }
 
 export type JobName = keyof JobPayloads;
@@ -23,6 +24,7 @@ export const QUEUES: JobName[] = [
   'system.dataMigration',
   'maintenance.cleanup',
   'registry.verifyChain',
+  'registry.import',
 ];
 
 let sender: Promise<PgBoss> | undefined;

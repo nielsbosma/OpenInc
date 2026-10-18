@@ -1,4 +1,11 @@
-import { euBase, type RegistrySettingsView, type RegistryTransactionInput, registryTransaction, seAbl } from '@openinc/shared';
+import {
+  euBase,
+  type ImportExtraction,
+  type RegistrySettingsView,
+  type RegistryTransactionInput,
+  registryTransaction,
+  seAbl,
+} from '@openinc/shared';
 import type { EngineConfig, LedgerTx } from '../../src/registry/engine.ts';
 
 export const H = {
@@ -99,4 +106,32 @@ export function incorporation(seq = 1, date = '2024-01-15'): LedgerTx {
     },
     seq,
   );
+}
+
+export const src = (cell: string) => ({ source: { sheet: 'CSV', cell, page: null, line: null }, confidence: 0.95 });
+
+export function snapshotExtraction(over: Partial<ImportExtraction> = {}): ImportExtraction {
+  return {
+    company: {
+      name: 'Exempel AB',
+      nationalNumber: '556123-4567',
+      shareCapital: '25 000',
+      currency: 'SEK',
+      asOfDate: '2024-12-31',
+      ...src('B1'),
+    },
+    classes: [{ code: 'A', votesPerShare: '1', ...src('C3') }],
+    holders: [
+      { ref: 'h1', kind: 'person', name: 'Åsa Öberg', nationalId: '19811218-9876', country: 'SE', address: 'Storgatan 1', ...src('A3') },
+      { ref: 'h2', kind: 'company', name: 'Invest AB', nationalId: '556036-0793', country: 'SE', address: '', ...src('A4') },
+    ],
+    mode: 'snapshot',
+    holdings: [
+      { holderRef: 'h1', classCode: 'A', count: '15 000', shareNumbers: '1-15000', ...src('D3') },
+      { holderRef: 'h2', classCode: 'A', count: '10000', shareNumbers: '15001–25000', ...src('D4') },
+    ],
+    events: [],
+    notes: [],
+    ...over,
+  };
 }

@@ -12,6 +12,8 @@ export { deliverEmail, type Email, EmailNotConfiguredError } from './lib/email.t
 export { initErrorTracking, reportError } from './lib/sentry.ts';
 export { getObjectBuffer, getObjectStream } from './lib/storage.ts';
 export * from './oauth.ts';
+export * as registryExports from './registry/exports-files.ts';
+export { runImport as runRegistryImport } from './registry/import/run.ts';
 export { runRegistryChainCheck } from './registry/jobs.ts';
 export * from './registry.ts';
 export * from './service.ts';
@@ -19,6 +21,7 @@ export type { LoginResult } from './services/auth.ts';
 export { saveChatThread } from './services/chat.ts';
 export { getReadableFile, storeFile } from './services/files.ts';
 export { notify } from './services/notifications.ts';
+export { createDraft as draftRegistryTransaction } from './services/registry.ts';
 export { companyLogo } from './services/settings.ts';
 export * from './settings.ts';
 export { runDataMigrations } from './system/data-migrations.ts';

@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Navigate, Route, Routes, useLocation, useParams } from 'react-router';
 import { Spinner } from '@/components/common';
 import { AppShell } from '@/components/layout/AppShell';
-import { MODULE_PAGES } from '@/components/layout/nav';
+import { BUILT_MODULES, MODULE_PAGES } from '@/components/layout/nav';
 import { useErrorTracking } from '@/lib/error-tracking';
 import { useSession } from '@/lib/session';
 import { useTRPC } from '@/lib/trpc';
@@ -15,6 +15,7 @@ import { ComingSoonPage } from '@/pages/ComingSoonPage';
 import { ConsentPage } from '@/pages/ConsentPage';
 import { DashboardPage } from '@/pages/DashboardPage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
+import { RegistryRoutes } from '@/pages/registry/RegistryRoutes';
 import { SetupWizard } from '@/pages/setup/SetupWizard';
 import { SystemStatusPage } from '@/pages/setup/SystemStatusPage';
 
@@ -77,13 +78,14 @@ export function App() {
         }
       >
         <Route index element={<DashboardPage />} />
-        {MODULE_PAGES.map((m) =>
+        {MODULE_PAGES.filter((m) => !BUILT_MODULES.has(m.path)).map((m) =>
           m.children?.length ? (
             <Route key={m.path} path={m.path} element={<Navigate to={m.children[0]!.path} replace />} />
           ) : (
             <Route key={m.path} path={m.path} element={<ComingSoonPage module={m} />} />
           ),
         )}
+        <Route path="/registry/*" element={<RegistryRoutes />} />
         <Route path="/settings/:tab?" element={<SettingsPage />} />
         <Route
           path="/account/:tab?"
