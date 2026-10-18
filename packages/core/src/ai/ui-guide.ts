@@ -69,11 +69,94 @@ export const uiGuide: GuideEntry[] = [
     tasks: [],
   },
   {
-    title: 'Shareholders',
-    path: '/shareholders',
-    where: 'Sidebar → **Shareholders**',
-    summary: 'Coming soon: the shareholder registry.',
-    tasks: [],
+    title: 'Share Register',
+    path: '/registry',
+    where: 'Sidebar → **Share Register**',
+    permission: 'registry.read',
+    summary:
+      'The share register (aktiebok): holders, classes, share numbers, votes and capital percentages as of any date, every transaction behind it, and exports. Tabs: **Register**, **Transactions**, **Classes**, **Import**, **Settings**. Every change is a transaction: prepared as a draft, checked against the whole history, then committed by the board, after which it never changes (mistakes are fixed with **Reverse**).',
+    tasks: [
+      {
+        task: 'Set up the share register',
+        steps:
+          'Open **Share Register**, pick the **Country** and **Legal Form** (they choose the rule pack), fill in the **Registration Number** and click **Set Up the Register**.',
+        permission: 'registry.manage',
+      },
+      {
+        task: 'Start the register',
+        steps:
+          'Click **Start the Register** and choose **Incorporation (a New Company)** or **Opening Balance (an Existing Register)**. Fill in the share capital, the classes and who holds what, then **Commit to the Register** on **Review**.',
+        permission: 'registry.draft',
+      },
+      {
+        task: 'See the register on an earlier date',
+        steps: 'On **Register**, change **As of Date**.',
+      },
+      {
+        task: 'Record a sale, gift or inheritance',
+        steps:
+          'Click **New Transaction** → **Transfer**. Pick **Kind of Transfer**, **From** and **To** (or **Add New Holder**), the shares, any **Restrictions** steps and the price, then check **Review** and click **Commit to the Register** (or **Submit for Approval**). For an inheritance, transfer to the estate first, then use **Division of Property** from the estate.',
+        permission: 'registry.draft',
+      },
+      {
+        task: 'Record a new issue',
+        steps:
+          'Click **New Transaction** → **New Issue** and go through **Decision**, **Subscription**, **Payment** and **Registration**. Without a registration date a Swedish AB gets interim shares; when Bolagsverket registers it, open the issue and click **Enter Registration**.',
+        permission: 'registry.draft',
+      },
+      {
+        task: 'Wait for a decision or registration',
+        steps:
+          'On **Review**, click **Park as Awaiting Decision** or **Park as Awaiting Registration**. Find it later on **Transactions**.',
+        permission: 'registry.draft',
+      },
+      {
+        task: 'Attach evidence',
+        steps:
+          'In the wizard click **Save Draft**, then on **Documents** pick the kind and click **Attach Document**. Committed transactions can get documents on their own page.',
+        permission: 'registry.draft',
+      },
+      {
+        task: 'Approve a transaction',
+        steps:
+          'Open it from **Transactions** and click **Approve and Commit**. With four-eyes approval on, someone other than the person who prepared it must do this.',
+        permission: 'registry.commit',
+      },
+      {
+        task: 'Correct a committed transaction',
+        steps:
+          'Open it and click **Reverse**, give a reason, then enter the right transaction. If a later transaction depends on it, the reversal is refused and the conflict is named.',
+        permission: 'registry.commit',
+      },
+      {
+        task: 'Add a share class or change its rights',
+        steps:
+          'On **Classes**, click **Change Class Terms** (or **New Transaction** → **Class Terms Change**). Click **Change Class** for an existing class or **Add Share Class** for a new one, and set votes, **Seniority**, **Liquidation Preference (x)**, **Participation**, **Cap (x)**, **Anti-dilution** and the transfer restrictions. In a Swedish AB it needs a registration date from Bolagsverket.',
+        permission: 'registry.draft',
+      },
+      {
+        task: 'Import an existing register from a spreadsheet or PDF',
+        steps:
+          'Open **Import**, click **Upload a File** and pick an XLSX, XLS, CSV or PDF. When it is **Ready for Review**, click each row to see its cell or line in the file on the right, correct anything, click **Check Again**, then **Create Drafts**. Nothing is entered until the drafts are committed (or **Commit All in Order**).',
+        permission: 'registry.draft',
+      },
+      {
+        task: 'Download the register',
+        steps:
+          'On **Register**, click **Export**: **PDF in English**, **PDF in Swedish (Aktiebok)**, **Excel (XLSX)**, **CSV**, the full history, or **Everything as JSON**. Each holder page has **Extract**; a sale has **Settlement Note**.',
+      },
+    ],
+    services: [
+      'registry.status',
+      'registry.getRegister',
+      'registry.getHolder',
+      'registry.listTransactions',
+      'registry.getTransaction',
+      'registry.validate',
+      'registry.draftTransaction',
+      'registry.commit',
+      'registry.reverse',
+    ],
   },
   { title: 'Cap Table', path: '/cap-table', where: 'Sidebar → **Cap Table**', summary: 'Coming soon: the cap table.', tasks: [] },
   { title: 'Signing', path: '/signing', where: 'Sidebar → **Signing**', summary: 'Coming soon: document signing.', tasks: [] },
@@ -134,7 +217,7 @@ export const uiGuide: GuideEntry[] = [
     'Users',
     'users',
     'users.read',
-    'Everyone with an account, pending invitations and roles (Admin, Member, Read-only).',
+    'Everyone with an account, pending invitations and roles (Admin, Board / CEO, Member, Auditor, Read-only).',
     [
       {
         task: 'Invite someone',

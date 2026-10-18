@@ -345,6 +345,92 @@ describe('registry engine', () => {
     expect(!r.ok && r.errors[0]?.rule).toBe('INSUFFICIENT_SHARES');
   });
 
+  it('creates a preferred class and changes class terms only through a transaction', () => {
+    const preferred = tx(
+      {
+        type: 'class_change',
+        effectiveDate: '2024-04-01',
+        registrationDate: '2024-04-01',
+        classes: [
+          {
+            code: 'P',
+            votesPerShare: '1',
+            seniorityRank: 2,
+            liqPrefMultiple: '1.5',
+            liqPrefCapMultiple: '3',
+            participation: 'capped',
+            antiDilution: 'broad_weighted_average',
+          },
+        ],
+      },
+      2,
+    );
+    const issue = tx(
+      {
+        type: 'new_issue',
+        effectiveDate: '2024-05-01',
+        registrationDate: '2024-05-01',
+        form: 'cash',
+        allocation: 'directed',
+        classCode: 'P',
+        pricePerShare: '100',
+        holders: [people.bolag],
+        subscriptions: [{ holderId: H.bolag, count: 1000 }],
+      },
+      3,
+    );
+    const r = ok(replay([incorporation(), preferred, issue], seConfig()));
+    const p = registerView(r.ledger, seConfig(), '2024-05-01').classes.find((c) => c.code === 'P')!;
+    expect(p).toMatchObject({
+      issued: 1000n,
+      seniorityRank: 2,
+      liqPrefMultiple: '1.5',
+      liqPrefCapMultiple: '3',
+      participation: 'capped',
+      antiDilution: 'broad_weighted_average',
+      termsFromTx: preferred.id,
+    });
+
+    const common = tx(
+      {
+        type: 'class_change',
+        effectiveDate: '2024-06-01',
+        registrationDate: '2024-06-01',
+        classes: [{ code: 'B', votesPerShare: '1', liqPrefMultiple: '0' }],
+      },
+      4,
+    );
+    const after = ok(replay([incorporation(), preferred, issue, common], seConfig()));
+    expect(registerView(after.ledger, seConfig(), '2024-06-01').classes.find((c) => c.code === 'B')).toMatchObject({
+      issued: 24000n,
+      liqPrefMultiple: '0',
+    });
+    const before = ok(replay([incorporation(), preferred, issue, common], seConfig(), { until: '2024-05-31' }));
+    expect(registerView(before.ledger, seConfig(), '2024-05-31').classes.find((c) => c.code === 'B')?.liqPrefMultiple).toBe('1');
+
+    const noCap = replay(
+      [
+        incorporation(),
+        tx(
+          {
+            type: 'class_change',
+            effectiveDate: '2024-04-01',
+            registrationDate: '2024-04-01',
+            classes: [{ code: 'P', participation: 'capped' }],
+          },
+          2,
+        ),
+      ],
+      seConfig(),
+    );
+    expect(!noCap.ok && noCap.errors[0]?.rule).toBe('PARTICIPATION_CAP_REQUIRED');
+    const unregistered = replay(
+      [incorporation(), tx({ type: 'class_change', effectiveDate: '2024-04-01', classes: [{ code: 'P' }] }, 2)],
+      seConfig(),
+    );
+    expect(!unregistered.ok && unregistered.errors[0]?.rule).toBe('REGISTRATION_REQUIRED');
+  });
+
   it('checks share capital against nominal values in nominal mode', () => {
     const inc = tx(
       {

@@ -1,50 +1,16 @@
 import { createHash } from 'node:crypto';
-import { eq, lots, registryTransactions, sql, users } from '@openinc/db';
+import { eq, lots, registryTransactions, sql } from '@openinc/db';
 import type { RegistryTransactionInput } from '@openinc/shared';
-import pg from 'pg';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { loadActor } from '../../src/auth/sessions.ts';
 import { type Ctx, closeDb, createCtx, getDb } from '../../src/context.ts';
 import { stopJobs } from '../../src/jobs.ts';
-import { setupCode } from '../../src/lib/crypto.ts';
-import { hashPassword } from '../../src/lib/password.ts';
+import * as registryExports from '../../src/registry/exports-files.ts';
 import { runRegistryChainCheck } from '../../src/registry/jobs.ts';
 import { services } from '../../src/registry.ts';
 import { invoke } from '../../src/service.ts';
 import { storeFile } from '../../src/services/files.ts';
-import { invalidateSettings } from '../../src/settings.ts';
-import { boot, resetSystemStatus } from '../../src/system/lifecycle.ts';
+import { freshInstall, reachable, userCtx } from './db.ts';
 import { H, people } from './helpers.ts';
-
-async function reachable() {
-  const client = new pg.Client({ connectionString: process.env.DATABASE_URL, connectionTimeoutMillis: 2000 });
-  try {
-    await client.connect();
-    await client.end();
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-async function wipe() {
-  const client = new pg.Client({ connectionString: process.env.DATABASE_URL });
-  await client.connect();
-  await client.query(
-    'drop schema if exists registry cascade; drop schema if exists public cascade; drop schema if exists pgboss cascade; create schema public;',
-  );
-  await client.end();
-}
-
-const anon = () => createCtx({ surface: 'web' });
-
-async function userCtx(role: 'board' | 'member' | 'auditor', email: string, surface: Ctx['surface'] = 'web'): Promise<Ctx> {
-  const [user] = await getDb()
-    .insert(users)
-    .values({ email, name: email.split('@')[0]!, role, passwordHash: await hashPassword('a-long-password-1') })
-    .returning();
-  return createCtx({ surface, actor: (await loadActor(getDb(), user!.id))! });
-}
 
 const draft = (ctx: Ctx, transaction: RegistryTransactionInput) => invoke(services.registry.draftTransaction, ctx, { transaction });
 
@@ -60,24 +26,7 @@ describe.runIf(await reachable())('share register (database)', () => {
   let saleEnteredAt: Date;
 
   beforeAll(async () => {
-    await wipe();
-    resetSystemStatus();
-    invalidateSettings();
-    await boot({ migrate: true });
-    await invoke(services.setup.install, anon(), { code: setupCode() });
-    const result = await invoke(services.setup.createFirstAdmin, anon(), {
-      code: setupCode(),
-      name: 'Ada Admin',
-      email: 'ada@example.com',
-      password: 'a-long-password-1',
-    });
-    if (result.status !== 'ok') throw new Error('no admin');
-    const [row] = await getDb().select().from(users).where(eq(users.email, 'ada@example.com'));
-    admin = createCtx({ surface: 'web', actor: (await loadActor(getDb(), row!.id))! });
-    await invoke(services.settings.update, admin, {
-      group: 'company',
-      values: { name: 'Exempel AB', country: 'SE', currency: 'SEK', timeZone: 'Europe/Stockholm' },
-    });
+    admin = await freshInstall();
     board = await userCtx('board', 'board@example.com');
     member = await userCtx('member', 'member@example.com');
     auditor = await userCtx('auditor', 'auditor@example.com');
@@ -142,6 +91,22 @@ describe.runIf(await reachable())('share register (database)', () => {
     const after = await invoke(services.registry.getRegister, auditor, { asOf: '2024-06-01' });
     expect(before.holders.find((h) => h.holderId === H.cecilia)).toBeUndefined();
     expect(after.holders.find((h) => h.holderId === H.cecilia)?.shares).toBe(20000n);
+  });
+
+  it('lets another module prepare a draft that a person commits in the wizard', async () => {
+    const d = await invoke(services.registry.draftTransaction, member, {
+      transaction: {
+        type: 'class_change',
+        effectiveDate: '2024-05-01',
+        registrationDate: '2024-05-01',
+        classes: [{ code: 'P', liqPrefMultiple: '1', seniorityRank: 1 }],
+      },
+      origin: { module: 'cap-table', reference: 'scenario-7', label: 'Cap Table: Series A' },
+    });
+    expect(d.status).toBe('draft');
+    expect(d.url).toBe(`/registry/transactions/${d.id}/edit`);
+    expect(d.origin).toEqual({ module: 'cap-table', reference: 'scenario-7', label: 'Cap Table: Series A' });
+    await invoke(services.registry.deleteDraft, member, { transactionId: d.id });
   });
 
   it('blocks a backdated transaction that breaks a later one, naming it', async () => {
@@ -255,5 +220,27 @@ describe.runIf(await reachable())('share register (database)', () => {
     expect(doc.sha256).toBe(createHash('sha256').update('%PDF-1.4 minutes').digest('hex'));
     const tx = await invoke(services.registry.getTransaction, auditor, { transactionId: incorporationId });
     expect(tx.documents).toHaveLength(1);
+  });
+
+  it('exports the register, history, extracts and settlement notes', async () => {
+    for (const lang of ['en', 'sv'] as const) {
+      const pdf = await registryExports.registerExport(auditor, { asOf: '2024-12-31', format: 'pdf', lang });
+      expect(pdf.body.subarray(0, 4).toString()).toBe('%PDF');
+      const xlsx = await registryExports.registerExport(auditor, { asOf: '2024-12-31', format: 'xlsx', lang });
+      expect(xlsx.body.subarray(0, 2).toString()).toBe('PK');
+      const history = await registryExports.historyExport(auditor, { format: 'csv', lang });
+      expect(history.body.toString()).toContain(lang === 'sv' ? 'Bildande' : 'Incorporation');
+      const extract = await registryExports.holderExtract(auditor, { holderId: H.anna, lang });
+      expect(extract.body.subarray(0, 4).toString()).toBe('%PDF');
+      const note = await registryExports.settlementNote(auditor, { transactionId: saleId, lang });
+      expect(note.contentType).toBe('application/pdf');
+    }
+    const csv = await registryExports.registerExport(auditor, { format: 'csv', lang: 'en' });
+    expect(csv.body.toString()).toContain('Anna Andersson');
+    const full = JSON.parse((await registryExports.fullJsonExport(auditor)).body.toString());
+    expect(full.transactions.length).toBe(5);
+    await expect(registryExports.registerExport(createCtx({ surface: 'web' }), { format: 'pdf', lang: 'en' })).rejects.toMatchObject({
+      code: 'UNAUTHORIZED',
+    });
   });
 });

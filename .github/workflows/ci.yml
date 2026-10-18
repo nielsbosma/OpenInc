@@ -145,10 +145,10 @@ jobs:
           E2E_SMTP_HOST: mailpit
           APP_SECRET: local-prod-profile-secret-change-me-0123456789
         run: |
-          docker compose exec -T postgres psql -U openinc -d openinc_prod -c "drop schema if exists public cascade; drop schema if exists pgboss cascade; create schema public;"
+          docker compose exec -T postgres psql -U openinc -d openinc_prod -c "drop schema if exists registry cascade; drop schema if exists public cascade; drop schema if exists pgboss cascade; create schema public;"
           OPENINC_IMAGE=openinc:local docker compose --profile prod up -d --no-build app
           for i in $(seq 1 60); do curl -sf http://localhost:8080/api/health && break; sleep 2; done
-          pnpm --filter @openinc/web exec playwright test install.spec.ts
+          pnpm --filter @openinc/web exec playwright test install.spec.ts registry.spec.ts
 
       - name: Logs and report
         if: failure()

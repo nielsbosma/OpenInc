@@ -1,4 +1,27 @@
 import { createHmac, hkdfSync } from 'node:crypto';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+
+/** install.spec.ts creates the first admin; later spec files sign in with it. */
+const ADMIN_STATE = new URL('./.auth/admin.json', import.meta.url);
+
+export interface E2eAdmin {
+  email: string;
+  password: string;
+  secret: string;
+  lastStep: number;
+}
+
+export function saveAdmin(admin: Omit<E2eAdmin, 'lastStep'>) {
+  mkdirSync(new URL('./.auth/', import.meta.url), { recursive: true });
+  writeFileSync(ADMIN_STATE, JSON.stringify({ ...admin, lastStep }));
+}
+
+export function loadAdmin(): E2eAdmin {
+  const admin = JSON.parse(readFileSync(ADMIN_STATE, 'utf8')) as E2eAdmin;
+  // Earlier files used codes up to about now; the server refuses a step it has seen.
+  lastStep = Math.max(lastStep, admin.lastStep, Math.floor(Date.now() / 30_000));
+  return admin;
+}
 
 export const MAILPIT = process.env.E2E_MAILPIT_URL ?? 'http://localhost:8025';
 /** The SMTP host as the app sees it: localhost for `pnpm dev`, `mailpit` inside Compose. */

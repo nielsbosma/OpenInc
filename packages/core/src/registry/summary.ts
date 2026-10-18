@@ -31,6 +31,8 @@ export function summarize(tx: RegistryTransaction, names: Map<string, string>): 
       return `Pledge: ${lines(tx.lines)} of ${name(tx.holderId)} to ${tx.pledgee.name}`;
     case 'pledge_release':
       return 'Pledge release';
+    case 'class_change':
+      return `Class terms: ${tx.classes.map((c) => c.code).join(', ')}`;
     case 'reversal':
       return `Reversal: ${tx.reason}`;
   }

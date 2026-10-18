@@ -130,6 +130,12 @@ export const appRouter = router({
     verifyChain: mutation(s.registry.verifyChain),
     rebuild: mutation(s.registry.rebuild),
     history: query(s.registry.history),
+    startImport: mutation(s.registry.startImport),
+    listImports: query(s.registry.listImports),
+    getImport: query(s.registry.getImport),
+    updateImport: mutation(s.registry.updateImport),
+    createImportDrafts: mutation(s.registry.createImportDrafts),
+    discardImport: mutation(s.registry.discardImport),
   }),
   oauth: router({
     describe: query(s.oauth.describe),

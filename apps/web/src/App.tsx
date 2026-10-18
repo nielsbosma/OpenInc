@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Navigate, Route, Routes, useLocation } from 'react-router';
 import { Spinner } from '@/components/common';
 import { AppShell } from '@/components/layout/AppShell';
-import { MODULES } from '@/components/layout/nav';
+import { BUILT_MODULES, MODULES } from '@/components/layout/nav';
 import { useErrorTracking } from '@/lib/error-tracking';
 import { useSession } from '@/lib/session';
 import { useTRPC } from '@/lib/trpc';
@@ -16,6 +16,7 @@ import { ComingSoonPage } from '@/pages/ComingSoonPage';
 import { ConsentPage } from '@/pages/ConsentPage';
 import { DashboardPage } from '@/pages/DashboardPage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
+import { RegistryRoutes } from '@/pages/registry/RegistryRoutes';
 import { SetupWizard } from '@/pages/setup/SetupWizard';
 import { SystemStatusPage } from '@/pages/setup/SystemStatusPage';
 
@@ -72,9 +73,10 @@ export function App() {
         }
       >
         <Route index element={<DashboardPage />} />
-        {MODULES.map((m) => (
+        {MODULES.filter((m) => !BUILT_MODULES.has(m.path)).map((m) => (
           <Route key={m.path} path={m.path} element={<ComingSoonPage module={m} />} />
         ))}
+        <Route path="/registry/*" element={<RegistryRoutes />} />
         <Route path="/account/:tab?" element={<AccountPage />} />
         <Route path="/admin/users" element={<Navigate to="/admin/settings/users" replace />} />
         <Route path="/admin/audit" element={<Navigate to="/admin/settings/audit-log" replace />} />

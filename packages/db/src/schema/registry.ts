@@ -56,6 +56,8 @@ export const registryTransactions = registry.table(
     payload: jsonb().$type<Record<string, unknown>>().notNull(),
     summary: text().notNull().default(''),
     note: text().notNull().default(''),
+    /** Another module that prepared this draft, e.g. the cap table, and its own reference. */
+    origin: jsonb().$type<{ module: string; reference: string; label: string }>(),
     prevHash: text(),
     hash: text(),
     createdBy: uuid().references(() => users.id, { onDelete: 'set null' }),
@@ -84,6 +86,12 @@ export const shareClasses = registry.table('share_class', {
   conversionClause: text().notNull().default(''),
   redemptionClause: text().notNull().default(''),
   restrictions: jsonb().$type<{ consent: boolean; preEmption: boolean; firstRefusal: boolean }>().notNull(),
+  /** Higher is paid first in a liquidation or exit; equal ranks are pari passu. */
+  seniorityRank: integer().notNull().default(0),
+  liqPrefMultiple: pricePerShare().notNull().default('1'),
+  liqPrefCapMultiple: pricePerShare(),
+  participation: text().$type<'none' | 'full' | 'capped'>().notNull().default('none'),
+  antiDilution: text().$type<'none' | 'broad_weighted_average' | 'narrow_weighted_average' | 'full_ratchet'>().notNull().default('none'),
   issued: shareCount().notNull(),
   validFromTx: uuid().notNull(),
 });

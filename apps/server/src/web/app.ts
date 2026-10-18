@@ -9,6 +9,7 @@ import { chatHandler } from './chat.ts';
 import { backupHandler, filesRouter, logoHandler } from './files.ts';
 import { ctxFromRequest } from './http-context.ts';
 import { mcpRouter } from './mcp.ts';
+import { registryExportHandler } from './registry-exports.ts';
 import { appRouter } from './router.ts';
 import { INTERNAL_ERROR_MESSAGE } from './trpc.ts';
 
@@ -97,6 +98,9 @@ export function createApp() {
   app.use('/api/files', requireReady, filesRouter());
   app.get('/api/backups/:name', requireReady, (req, res, next) => {
     backupHandler(req, res).catch(next);
+  });
+  app.get('/api/registry/export/:kind', requireReady, (req, res, next) => {
+    registryExportHandler(req, res).catch(next);
   });
   app.get('/api/public/logo', requireReady, (req, res, next) => {
     logoHandler(req, res).catch(next);

@@ -8,6 +8,7 @@ import * as filesServices from './services/files.ts';
 import * as help from './services/help.ts';
 import * as notifications from './services/notifications.ts';
 import * as registry from './services/registry.ts';
+import * as registryImport from './services/registry-import.ts';
 import * as settings from './services/settings.ts';
 import * as setup from './services/setup.ts';
 import * as system from './services/system.ts';
@@ -125,6 +126,12 @@ export const services = {
     verifyChain: registry.verifyRegistryChain,
     rebuild: registry.rebuildRegistry,
     history: registry.registryHistory,
+    startImport: registryImport.startImport,
+    listImports: registryImport.listImports,
+    getImport: registryImport.getImport,
+    updateImport: registryImport.updateImport,
+    createImportDrafts: registryImport.createImportDrafts,
+    discardImport: registryImport.discardImport,
   },
   oauth: {
     describe: describeAuthorization,

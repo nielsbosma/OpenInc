@@ -50,6 +50,35 @@ export const restrictions = z.object({
 });
 export type Restrictions = z.output<typeof restrictions>;
 
+export const PARTICIPATION = ['none', 'full', 'capped'] as const;
+export type Participation = (typeof PARTICIPATION)[number];
+export const ANTI_DILUTION = ['none', 'broad_weighted_average', 'narrow_weighted_average', 'full_ratchet'] as const;
+export type AntiDilution = (typeof ANTI_DILUTION)[number];
+
+export const PARTICIPATION_LABELS: Record<Participation, string> = {
+  none: 'Non-participating',
+  full: 'Fully Participating',
+  capped: 'Participating up to a Cap',
+};
+export const ANTI_DILUTION_LABELS: Record<AntiDilution, string> = {
+  none: 'None',
+  broad_weighted_average: 'Broad-Based Weighted Average',
+  narrow_weighted_average: 'Narrow-Based Weighted Average',
+  full_ratchet: 'Full Ratchet',
+};
+
+/**
+ * The economic terms an exit waterfall reads. Higher seniority is paid first; equal ranks share pari passu.
+ * The multiple is of the original issue price (0 for common shares); the cap is a multiple too.
+ */
+export const classEconomics = {
+  seniorityRank: z.number().int().min(0).max(1000).default(0),
+  liqPrefMultiple: decimalString.default('1'),
+  liqPrefCapMultiple: decimalString.nullable().default(null),
+  participation: z.enum(PARTICIPATION).default('none'),
+  antiDilution: z.enum(ANTI_DILUTION).default('none'),
+};
+
 export const shareClassDef = z.object({
   code: z
     .string()
@@ -66,6 +95,7 @@ export const shareClassDef = z.object({
   conversionClause: z.string().max(4000).default(''),
   redemptionClause: z.string().max(4000).default(''),
   restrictions: restrictions.default({ consent: false, preEmption: false, firstRefusal: false }),
+  ...classEconomics,
 });
 export type ShareClassDef = z.output<typeof shareClassDef>;
 
@@ -260,6 +290,16 @@ export const pledgeReleaseTx = z.object({
   pledgeId: z.string().trim().min(1).max(100),
 });
 
+/**
+ * Creates share classes or changes the terms of existing ones (an amendment of the articles). Rights
+ * attached to shares that are already issued only change this way, so the history shows when.
+ */
+export const classChangeTx = z.object({
+  type: z.literal('class_change'),
+  ...base,
+  classes: z.array(shareClassDef).min(1).max(20),
+});
+
 export const reversalTx = z.object({
   type: z.literal('reversal'),
   ...base,
@@ -279,6 +319,7 @@ export const registryTransaction = z.discriminatedUnion('type', [
   reverseSplitTx,
   pledgeTx,
   pledgeReleaseTx,
+  classChangeTx,
   reversalTx,
 ]);
 export type RegistryTransaction = z.output<typeof registryTransaction>;
@@ -297,6 +338,7 @@ export const TRANSACTION_TYPES = [
   'reverse_split',
   'pledge',
   'pledge_release',
+  'class_change',
   'reversal',
 ] as const satisfies readonly TransactionType[];
 
@@ -312,6 +354,7 @@ export const TRANSACTION_LABELS: Record<TransactionType, string> = {
   reverse_split: 'Reverse Split',
   pledge: 'Pledge',
   pledge_release: 'Pledge Release',
+  class_change: 'Class Terms Change',
   reversal: 'Reversal',
 };
 
@@ -380,9 +423,17 @@ export const listTransactionsInput = pagination.extend({
   includeDrafts: z.boolean().default(true),
 });
 
+/** Set when another module prepares the draft, e.g. the cap table's Promote. Shown in the wizard and the ledger. */
+export const draftOrigin = z.object({
+  module: z.string().trim().min(1).max(40),
+  reference: z.string().trim().max(200).default(''),
+  label: z.string().trim().max(200).default(''),
+});
+
 export const draftTransactionInput = z.object({
   transaction: registryTransaction,
   summary: z.string().trim().max(300).optional(),
+  origin: draftOrigin.optional(),
 });
 
 export const updateDraftInput = draftTransactionInput.extend({ transactionId: z.uuid() });
@@ -413,3 +464,66 @@ export const reverseTransactionInput = z.object({
 });
 
 export const searchHoldersInput = z.object({ search: z.string().trim().max(200).default('') });
+
+/** Where in the uploaded file a value came from: a spreadsheet cell, or a PDF page and line. */
+export const importSource = z.object({
+  sheet: z.string().nullable(),
+  cell: z.string().nullable(),
+  page: z.number().int().nullable(),
+  line: z.number().int().nullable(),
+});
+export type ImportSource = z.output<typeof importSource>;
+
+const sourced = { source: importSource, confidence: z.number().min(0).max(1) };
+
+/**
+ * What the AI import asks the model for. Every field is required (null when unknown) so the same
+ * schema works with every provider's structured output. Values stay strings until validation.
+ */
+export const importExtraction = z.object({
+  company: z.object({
+    name: z.string().nullable(),
+    nationalNumber: z.string().nullable(),
+    shareCapital: z.string().nullable(),
+    currency: z.string().nullable(),
+    asOfDate: z.string().nullable(),
+    ...sourced,
+  }),
+  classes: z.array(z.object({ code: z.string(), votesPerShare: z.string(), ...sourced })),
+  holders: z.array(
+    z.object({
+      ref: z.string(),
+      kind: z.enum(HOLDER_KINDS),
+      name: z.string(),
+      nationalId: z.string(),
+      country: z.string(),
+      address: z.string(),
+      ...sourced,
+    }),
+  ),
+  mode: z.enum(['snapshot', 'history']),
+  holdings: z.array(z.object({ holderRef: z.string(), classCode: z.string(), count: z.string(), shareNumbers: z.string(), ...sourced })),
+  events: z.array(
+    z.object({
+      date: z.string(),
+      type: z.enum(['incorporation', 'new_issue', 'transfer', 'split', 'other']),
+      fromRef: z.string().nullable(),
+      toRef: z.string().nullable(),
+      classCode: z.string(),
+      count: z.string(),
+      shareNumbers: z.string(),
+      pricePerShare: z.string().nullable(),
+      ratio: z.number().nullable(),
+      description: z.string(),
+      ...sourced,
+    }),
+  ),
+  notes: z.array(z.string()),
+});
+export type ImportExtraction = z.output<typeof importExtraction>;
+
+export const IMPORT_TYPES = /\.(xlsx|xls|csv|pdf)$/i;
+
+export const startImportInput = z.object({ fileId: z.uuid() });
+export const importIdInput = z.object({ importId: z.uuid() });
+export const updateImportInput = z.object({ importId: z.uuid(), extraction: importExtraction });
