@@ -72,7 +72,7 @@ export function AppShell() {
 
       <main className="relative min-w-0 flex-1 overflow-y-auto">
         {!showSidebar && (
-          <div className="absolute top-4 left-2 z-10 sm:left-3">
+          <div className="absolute top-2.5 left-3 z-10">
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button variant="ghost" size="icon" onClick={toggleSidebar} aria-label="Open Sidebar" className="text-muted-foreground">
@@ -83,26 +83,31 @@ export function AppShell() {
             </Tooltip>
           </div>
         )}
-        <div className="absolute top-4 right-2 z-10 sm:right-3">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant={chatOpen ? 'secondary' : 'ghost'}
-                size="icon"
-                onClick={() => setChatOpen(!chatOpen)}
-                aria-pressed={chatOpen}
-                aria-label="Assistant"
-                data-testid="chat-toggle"
-                className={cn(!chatOpen && 'text-muted-foreground')}
-              >
-                <Sparkles />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>Assistant</TooltipContent>
-          </Tooltip>
-        </div>
+        {!chatOpen && (
+          <div className="absolute top-2.5 right-3 z-10">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setChatOpen(true)}
+                  aria-label="Assistant"
+                  data-testid="chat-toggle"
+                  className="text-muted-foreground"
+                >
+                  <Sparkles />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Assistant</TooltipContent>
+            </Tooltip>
+          </div>
+        )}
         <div
-          className={cn('mx-auto w-full max-w-6xl py-6 pr-14 sm:pr-16 lg:pr-16', showSidebar ? 'pl-4 sm:pl-6 lg:pl-8' : 'pl-14 sm:pl-16')}
+          className={cn(
+            'mx-auto w-full max-w-6xl pt-3.5 pb-6',
+            chatOpen ? 'pr-4 sm:pr-6 lg:pr-8' : 'pr-14 sm:pr-16',
+            showSidebar ? 'pl-4 sm:pl-6 lg:pl-8' : 'pl-14 sm:pl-16',
+          )}
         >
           <Outlet />
         </div>
