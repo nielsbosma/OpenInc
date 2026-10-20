@@ -7,6 +7,7 @@ All notable changes are listed here. The format follows [Keep a Changelog](https
 ### Added
 
 - One Docker image (web, API, MCP and job worker), configured with Postgres, an S3 bucket and `APP_SECRET`.
+- One-click deploy to Sliplane from the README: `sliplane.yaml` creates a managed Postgres database, a bucket and the service.
 - Self-installing database: setup wizard with install progress, automatic migrations on start with a `pg_dump` backup to the bucket, advisory lock, refusal to run against a newer database.
 - First-run wizard behind a one-time setup code: admin account, two-factor, company, email, AI and error tracking.
 - Accounts: password sign-in, TOTP two-factor with recovery codes, enforceable two-factor, password reset, invites, profile images.
