@@ -1,0 +1,40 @@
+# yaml-language-server: $schema=https://sliplane.opendeploy.cloud/schema/v1.json
+version: 1
+
+app:
+  name: OpenInc
+  description: Your company's shareholder registry, cap table, document signing, dataroom and fundraising, on your own server.
+  icon: apps/web/public/favicon.svg
+  docs: https://github.com/nielsbosma/openinc
+
+server:
+  minimum: base
+
+databases:
+  db:
+    engine: postgres
+    version: 17
+    existing: false
+
+buckets:
+  files: {}
+
+services:
+  web:
+    image: ghcr.io/nielsbosma/openinc:${{ if(release.ref == 'main', 'edge', release.version) }}
+    public: true
+    port: 3000
+    healthcheck: /api/health
+    env:
+      DATABASE_URL: ${{ databases.db.url }}
+      S3_ENDPOINT: ${{ buckets.files.endpoint }}
+      S3_BUCKET: ${{ buckets.files.bucket }}
+      S3_ACCESS_KEY: ${{ buckets.files.accessKeyId }}
+      S3_SECRET_KEY: ${{ buckets.files.secretAccessKey }}
+      S3_REGION: auto
+      APP_SECRET: ${{ secret(64) }}
+      APP_URL: ${{ services.web.url }}
+
+done:
+  open: ${{ services.web.url }}
+  message: The setup wizard asks for a one-time setup code. Find it in the service's Logs on Sliplane, then install the database and create your admin account.
