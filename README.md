@@ -36,6 +36,10 @@ Everything else (company details, email, AI provider, error tracking, security r
 
 ### On Sliplane
 
+[![Deploy to Sliplane](https://sliplane.opendeploy.cloud/button.svg)](https://sliplane.opendeploy.cloud/?repo=https://github.com/nielsbosma/openinc)
+
+The button creates the Postgres database, the bucket and the service for you. To do it by hand:
+
 1. Create a **Postgres** service. Copy its connection string.
 2. Create a bucket (Sliplane, Cloudflare R2, AWS, …) and an access key for it.
 3. Create a service from the image `ghcr.io/nielsbosma/openinc:latest`, port `3000`, and paste the variables above.
