@@ -218,8 +218,8 @@ importers:
         specifier: ^11.8.0
         version: 11.8.0(@babel/core@7.29.7)
       '@signpdf/placeholder-pdf-lib':
-        specifier: ^3.3.0
-        version: 3.3.0(pdf-lib@1.17.1)
+        specifier: ^4.0.0
+        version: 4.0.0(pdf-lib@1.17.1)
       '@signpdf/signpdf':
         specifier: ^3.3.0
         version: 3.3.0
@@ -2420,9 +2420,9 @@ packages:
     resolution: {integrity: sha512-2MRFz1rXxnuDGafl6o/itwKHZeZn5hUZYeXNbQK012uO/a2pXhEc8Zh3FeO5L4tjGrIWHx419saAFnKwbVC2IQ==}
     engines: {node: '>=20.19.0 <22.0.0 || >=22.12.0 <23.0.0 || >=23.2.0'}
 
-  '@signpdf/placeholder-pdf-lib@3.3.0':
-    resolution: {integrity: sha512-DT1s617z88NvvCmo+z8jaz7lNzy7b7/fwo/movJGukpfSkl4FaLNRXIHNBCTRCP9TUb6F/axK1JulES/jY7mLQ==}
-    engines: {node: '>=12', yarn: '>=1.22.18'}
+  '@signpdf/placeholder-pdf-lib@4.0.0':
+    resolution: {integrity: sha512-5EGTe4RVulLaxDi1ta2v42+M3rhy55LmgpSZUWTTspUpXAfhsjyhE+dUINXz6wYKtjDoY+Qz2yR9kD2xOPSTCw==}
+    engines: {node: '>=22', yarn: '>=1.22.18'}
     peerDependencies:
       pdf-lib: ^1.17.1
 
@@ -2433,6 +2433,10 @@ packages:
   '@signpdf/utils@3.3.0':
     resolution: {integrity: sha512-ArOP0MIhCfdChh1oZkog81TPeSY2e5TvHQmXJ682T4+SKb6Z609uAZhqMQZ9xm+YenEf/eNMSE5KVwU+EudXug==}
     engines: {node: '>=12', yarn: '>=1.22.18'}
+
+  '@signpdf/utils@4.0.0':
+    resolution: {integrity: sha512-4uiNqyHTVnXGYK+zhwLKrsykX3d4f0mlbzykyI0BGiNVIZssHo61KmwWzUEbAcE//TpheUd2xD7yA8mjxIpaZg==}
+    engines: {node: '>=22', yarn: '>=1.22.18'}
 
   '@smithy/core@3.36.0':
     resolution: {integrity: sha512-3hJiwG1F5t1SoXqp/yOCmYXziyx7ZVqF63S5W6YU201e/qwVaHPex+E/3vvyY9a3ORq/b+BydeNZpP2saQ9X2g==}
@@ -6795,9 +6799,9 @@ snapshots:
       '@sentry/conventions': 0.27.0
       '@sentry/core': 11.8.0
 
-  '@signpdf/placeholder-pdf-lib@3.3.0(pdf-lib@1.17.1)':
+  '@signpdf/placeholder-pdf-lib@4.0.0(pdf-lib@1.17.1)':
     dependencies:
-      '@signpdf/utils': 3.3.0
+      '@signpdf/utils': 4.0.0
       pdf-lib: 1.17.1
 
   '@signpdf/signpdf@3.3.0':
@@ -6805,6 +6809,8 @@ snapshots:
       '@signpdf/utils': 3.3.0
 
   '@signpdf/utils@3.3.0': {}
+
+  '@signpdf/utils@4.0.0': {}
 
   '@smithy/core@3.36.0':
     dependencies:
