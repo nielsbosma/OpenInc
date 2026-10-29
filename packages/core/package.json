@@ -22,7 +22,7 @@
     "@openinc/db": "workspace:^",
     "@openinc/shared": "workspace:^",
     "@sentry/node": "^11.8.0",
-    "@signpdf/placeholder-pdf-lib": "^3.3.0",
+    "@signpdf/placeholder-pdf-lib": "^4.0.0",
     "@signpdf/signpdf": "^3.3.0",
     "@signpdf/utils": "^3.3.0",
     "ai": "^7.0.143",
