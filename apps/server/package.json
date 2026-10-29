@@ -13,12 +13,12 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.32.1",
+    "@modelcontextprotocol/sdk": "^1.32.2",
     "@openinc/core": "workspace:^",
     "@openinc/db": "workspace:^",
     "@openinc/shared": "workspace:^",
     "@trpc/server": "^11.19.0",
-    "ai": "^7.0.143",
+    "ai": "^7.0.153",
     "express": "^5.3.0",
     "pg-boss": "^12.38.0",
     "superjson": "^2.2.6",

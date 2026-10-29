@@ -23,9 +23,9 @@
     "db:reset": "pnpm --filter @openinc/core reset"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.5.15",
+    "@biomejs/biome": "^2.6.3",
     "@types/node": "^22",
-    "turbo": "^2.11.9",
+    "turbo": "^2.11.10",
     "typescript": "^6"
   }
 }
