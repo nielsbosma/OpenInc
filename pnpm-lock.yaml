@@ -75,12 +75,12 @@ importers:
       '@ai-sdk/react':
         specifier: ^4.0.147
         version: 4.0.147(react@19.3.1)(zod@4.6.7)
+      '@fontsource-variable/hanken-grotesk':
+        specifier: ^5.3.0
+        version: 5.3.0
       '@fontsource-variable/source-code-pro':
         specifier: ^5.3.1
         version: 5.3.1
-      '@fontsource/open-runde':
-        specifier: ^5.3.0
-        version: 5.3.0
       '@openinc/shared':
         specifier: workspace:^
         version: link:../../packages/shared
@@ -1067,11 +1067,11 @@ packages:
   '@floating-ui/utils@0.2.12':
     resolution: {integrity: sha512-HpCo8tmWzLVad5s2d19EhAz5zqrrQ6s69qd6moPMQvkOuSwDT1YgRfWSVuc4ennqrgv3OHppiOGMQ7oC13yIww==}
 
+  '@fontsource-variable/hanken-grotesk@5.3.0':
+    resolution: {integrity: sha512-DOd0FqL+3cH2dfNy0JtSq9tUfxBz5mLmHMjTU0DOr3E9Zo6wxuatCl53DIPNrSPgCsnuKyM739BTIG5glCLirw==}
+
   '@fontsource-variable/source-code-pro@5.3.1':
     resolution: {integrity: sha512-N0nZDizh8CQ19+AHHA8Ssb1i/aQf4N2lpRl3qZVH4/9f1yNgWzTkBFpc26v+QQr2hm4By4aiv597BCoEg2SDQg==}
-
-  '@fontsource/open-runde@5.3.0':
-    resolution: {integrity: sha512-htjSGuJ/cq2DARGqEvXhkghhRXxIz3gzw+tbB0xt6zidL0mvDrR/VQCfDeCCw7wp0x5ar6dTLWD5iOF0EDqaGA==}
 
   '@hono/node-server@2.1.5':
     resolution: {integrity: sha512-MgP/I06GdvsilDspMk/qmRzpk8LOUStP6jFAbSRi40W09DhoyUn+Mj7eyKICPqeYKybOjVFLVIAQzvu1bfIa7Q==}
@@ -5572,9 +5572,9 @@ snapshots:
 
   '@floating-ui/utils@0.2.12': {}
 
-  '@fontsource-variable/source-code-pro@5.3.1': {}
+  '@fontsource-variable/hanken-grotesk@5.3.0': {}
 
-  '@fontsource/open-runde@5.3.0': {}
+  '@fontsource-variable/source-code-pro@5.3.1': {}
 
   '@hono/node-server@2.1.5(hono@4.13.13)':
     dependencies:
