@@ -2,9 +2,10 @@
 #   docker run -p 3000:3000 -e DATABASE_URL=... -e S3_BUCKET=... -e S3_ACCESS_KEY=... -e S3_SECRET_KEY=... -e APP_SECRET=... ghcr.io/nielsbosma/openinc
 # ROLE=web or ROLE=worker runs only one half; the default runs both in one process.
 
-FROM node:24-alpine AS base
+FROM node:26-alpine AS base
 ENV PNPM_HOME=/pnpm PATH=/pnpm:$PATH COREPACK_ENABLE_DOWNLOAD_PROMPT=0
-RUN corepack enable
+# Node 25 and later no longer bundle corepack; install it so pnpm still comes from packageManager.
+RUN npm install -g corepack@0.36.0 && corepack enable
 WORKDIR /app
 
 FROM base AS build

@@ -1,4 +1,4 @@
-import type { PDFDocumentProxy } from 'pdfjs-dist';
+import type { PDFDocumentLoadingTask, PDFDocumentProxy } from 'pdfjs-dist';
 import { useEffect, useRef, useState } from 'react';
 import { Spinner } from '@/components/common';
 
@@ -20,7 +20,7 @@ export function PdfViewer({
 
   useEffect(() => {
     let cancelled = false;
-    let loaded: PDFDocumentProxy | null = null;
+    let task: PDFDocumentLoadingTask | null = null;
     (async () => {
       const pdfjs = await import('pdfjs-dist');
       const worker = await import('pdfjs-dist/build/pdf.worker.min.mjs?url');
@@ -30,12 +30,13 @@ export function PdfViewer({
         const body = (await response.json().catch(() => null)) as { error?: string } | null;
         throw new Error(body?.error ?? 'The document could not be opened');
       }
-      loaded = await pdfjs.getDocument({ data: new Uint8Array(await response.arrayBuffer()) }).promise;
+      task = pdfjs.getDocument({ data: new Uint8Array(await response.arrayBuffer()) });
+      const loaded = await task.promise;
       if (!cancelled) setPdf(loaded);
     })().catch((error: Error) => !cancelled && onError(error.message));
     return () => {
       cancelled = true;
-      void loaded?.destroy();
+      void task?.destroy();
     };
   }, [url, onError]);
 
