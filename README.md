@@ -118,7 +118,7 @@ Stack: TypeScript, pnpm + Turborepo, React 19, shadcn/ui, Tailwind 4, tRPC 11, Z
 
 ## Development
 
-Requirements: Node 22.12+, pnpm 10 (`corepack enable`), Docker.
+Requirements: Node 26+, pnpm 10 (Node 25 and later no longer bundle corepack: `npm i -g corepack && corepack enable`), Docker.
 
 ```sh
 pnpm install
