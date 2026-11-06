@@ -24,7 +24,9 @@ const OID = {
 
 const ALGORITHM = { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' } as const;
 
-pkijs.setEngine('node', new pkijs.CryptoEngine({ name: 'node', crypto: webcrypto as never }));
+// @types/node 26 adds the post-quantum KEM methods (encapsulateKey …) to SubtleCrypto, which pkijs 3's ICryptoEngine
+// extends but its CryptoEngine does not implement. pkijs never calls them, so the cast only bridges the types.
+pkijs.setEngine('node', new pkijs.CryptoEngine({ name: 'node', crypto: webcrypto as never }) as unknown as pkijs.ICryptoEngine);
 
 const toArrayBuffer = (b: Uint8Array): ArrayBuffer => b.buffer.slice(b.byteOffset, b.byteOffset + b.byteLength) as ArrayBuffer;
 
