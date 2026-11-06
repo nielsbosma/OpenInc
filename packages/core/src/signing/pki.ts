@@ -4,6 +4,11 @@ import * as pkijs from 'pkijs';
 
 export type CryptoKey = webcrypto.CryptoKey;
 
+/** pkijs types its keys as the global CryptoKey, which is the DOM's in the web app's typecheck and no longer matches
+ * node:crypto's since @types/node 26. Same object at runtime. */
+type PkijsKey = Parameters<pkijs.Certificate['sign']>[0];
+const forPkijs = (key: CryptoKey): PkijsKey => key as unknown as PkijsKey;
+
 const OID = {
   commonName: '2.5.4.3',
   organization: '2.5.4.10',
@@ -114,7 +119,7 @@ async function issue(input: {
   const now = new Date();
   cert.notBefore.value = new Date(now.getTime() - 60_000);
   cert.notAfter.value = new Date(now.getTime() + input.years * 365.25 * 24 * 3600 * 1000);
-  await cert.subjectPublicKeyInfo.importKey(keys.publicKey);
+  await cert.subjectPublicKeyInfo.importKey(forPkijs(keys.publicKey));
 
   const subjectKeyId = await keyId(keys.publicKey);
   const authorityKeyId = input.issuer ? await keyId(await input.issuer.cert.getPublicKey()) : subjectKeyId;
@@ -140,7 +145,7 @@ async function issue(input: {
     extensions.push(new pkijs.Extension({ extnID: OID.extKeyUsage, extnValue: usage.toSchema().toBER(false), parsedValue: usage }));
   }
   cert.extensions = extensions;
-  await cert.sign(input.issuer?.privateKey ?? keys.privateKey, 'SHA-256');
+  await cert.sign(forPkijs(input.issuer?.privateKey ?? keys.privateKey), 'SHA-256');
 
   return {
     cert,
@@ -214,7 +219,7 @@ export async function signCms(content: Buffer, signer: { cert: pkijs.Certificate
     ],
     certificates: [signer.cert, ...signer.chain],
   });
-  await signedData.sign(signer.privateKey, 0, 'SHA-256');
+  await signedData.sign(forPkijs(signer.privateKey), 0, 'SHA-256');
   const contentInfo = new pkijs.ContentInfo({ contentType: OID.signedData, content: signedData.toSchema(true) });
   return Buffer.from(contentInfo.toSchema().toBER(false));
 }
