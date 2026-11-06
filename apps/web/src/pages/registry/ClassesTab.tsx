@@ -9,7 +9,7 @@ import { useCan } from '@/lib/session';
 import { useTRPC } from '@/lib/trpc';
 import { fmt, today, useRegistryStatus } from './common';
 
-const describe = (t: Record<string, unknown>) =>
+const describeTerms = (t: Record<string, unknown>) =>
   Object.entries(t)
     .map(([k, v]) => `${k}: ${typeof v === 'string' ? v : JSON.stringify(v)}`)
     .join('; ');
@@ -77,7 +77,7 @@ export function ClassesTab() {
                   </div>
                 </TableCell>
                 <TableCell className="max-w-80 text-xs text-muted-foreground">
-                  {[describe(c.dividendTerms), describe(c.liquidationTerms), c.conversionClause, c.redemptionClause]
+                  {[describeTerms(c.dividendTerms), describeTerms(c.liquidationTerms), c.conversionClause, c.redemptionClause]
                     .filter(Boolean)
                     .join(' · ')}
                 </TableCell>

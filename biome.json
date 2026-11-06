@@ -14,11 +14,14 @@
     "formatter": { "quoteStyle": "single", "semicolons": "always", "trailingCommas": "all" }
   },
   "css": { "parser": { "tailwindDirectives": true } },
+  "markdown": { "formatter": { "enabled": false } },
+  "yaml": { "formatter": { "enabled": false } },
   "assist": { "actions": { "source": { "organizeImports": "on" } } },
   "linter": {
     "enabled": true,
     "rules": {
-      "recommended": true,
+      "preset": "recommended",
+      "complexity": { "useMathMinMax": "off" },
       "style": { "noNonNullAssertion": "off", "noParameterAssign": "off" },
       "suspicious": { "noExplicitAny": "warn", "noArrayIndexKey": "off" },
       "a11y": {
