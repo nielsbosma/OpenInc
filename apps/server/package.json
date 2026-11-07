@@ -17,7 +17,7 @@
     "@openinc/core": "workspace:^",
     "@openinc/db": "workspace:^",
     "@openinc/shared": "workspace:^",
-    "@trpc/server": "^11.19.0",
+    "@trpc/server": "^11.24.0",
     "ai": "^7.0.153",
     "express": "^5.3.0",
     "pg-boss": "^12.38.0",
@@ -29,6 +29,6 @@
     "@types/express": "^5.0.6",
     "@types/supertest": "^7.2.1",
     "supertest": "^7.3.1",
-    "vitest": "^5.0.5"
+    "vitest": "^5.1.0"
   }
 }
