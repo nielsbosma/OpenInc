@@ -26,7 +26,7 @@
     "@signpdf/signpdf": "^4.0.0",
     "@signpdf/utils": "^4.0.0",
     "ai": "^7.0.153",
-    "asn1js": "^3.1.0",
+    "asn1js": "^4.0.0",
     "fflate": "^0.8.3",
     "nodemailer": "^10.2.1",
     "pdf-lib": "^1.17.1",
