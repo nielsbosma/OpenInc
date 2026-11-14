@@ -17,10 +17,10 @@
     "@openinc/core": "workspace:^",
     "@openinc/db": "workspace:^",
     "@openinc/shared": "workspace:^",
-    "@trpc/server": "^11.19.0",
-    "ai": "^7.0.153",
+    "@trpc/server": "^11.28.0",
+    "ai": "^7.0.169",
     "express": "^5.3.0",
-    "pg-boss": "^12.38.0",
+    "pg-boss": "^12.38.2",
     "superjson": "^2.2.6",
     "tsx": "^4.23.15",
     "zod": "^4.6.7"
@@ -28,7 +28,7 @@
   "devDependencies": {
     "@types/express": "^5.0.6",
     "@types/supertest": "^7.2.1",
-    "supertest": "^7.3.1",
-    "vitest": "^5.0.5"
+    "supertest": "^7.3.2",
+    "vitest": "^5.1.0"
   }
 }
